@@ -1,0 +1,349 @@
+/* ============================================================
+   RESET I PODSTAWY
+   ============================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    background: #0a0c0e;
+    font-family: 'Courier New', 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    color: #f0f6fc;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+}
+
+.instrument {
+    width: 100%;
+    max-width: 760px;
+    background: #0c0e12;
+    border: 1px solid #1e2228;
+    border-radius: 8px;
+    padding: 18px 22px 16px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+}
+
+/* ============================================================
+   NAGŁÓWEK
+   ============================================================ */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #1a1e24;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.header-title {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #ccdce8;
+    text-transform: uppercase;
+}
+
+.header-title span {
+    color: #5a6a7a;
+}
+
+.header-status {
+    font-size: 12px;
+    color: #5a6a7a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.header-status .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #2a3240;
+    transition: background 0.4s ease;
+}
+
+.header-status .dot.online {
+    background: #30c060;
+    box-shadow: 0 0 10px rgba(48, 192, 96, 0.4);
+}
+
+.header-status .dot.offline {
+    background: #e05050;
+    box-shadow: 0 0 10px rgba(224, 80, 80, 0.4);
+}
+
+.header-status .dot.warn {
+    background: #e8b830;
+    box-shadow: 0 0 10px rgba(232, 184, 48, 0.4);
+}
+
+/* ============================================================
+   STATUS BAR (dolny pasek)
+   ============================================================ */
+.status-bar {
+    margin-top: 14px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #5a6a7a;
+    background: rgba(20, 24, 32, 0.4);
+    border: 1px solid #1a1e24;
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.status-bar .msg {
+    flex: 1;
+}
+
+.status-bar .msg.ok {
+    color: #70d070;
+}
+
+.status-bar .msg.err {
+    color: #e05050;
+}
+
+.status-bar .msg.info {
+    color: #5a9a8a;
+}
+
+.status-bar .ws-detail {
+    font-size: 10px;
+    color: #2a3240;
+}
+
+/* ============================================================
+   PRZYCISKI
+   ============================================================ */
+.btn-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.btn {
+    padding: 8px 18px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid #2a3240;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #8a9aa8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Courier New', monospace;
+    flex: 1 1 auto;
+    min-width: 90px;
+    text-align: center;
+    text-decoration: none;
+}
+
+.btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #b0c8d8;
+    border-color: #3a4250;
+}
+
+.btn-primary {
+    border-color: #3a6a5a;
+    color: #5a9a8a;
+}
+
+.btn-primary:hover {
+    background: rgba(57, 211, 95, 0.08);
+    border-color: #5a8a7a;
+    color: #70d070;
+}
+
+.btn-danger {
+    border-color: #6a3a3a;
+    color: #c06060;
+}
+
+.btn-danger:hover {
+    background: rgba(224, 80, 80, 0.08);
+    border-color: #8a4a4a;
+    color: #e06060;
+}
+
+.btn-secondary {
+    border-color: #2a3240;
+    color: #6a7a8a;
+}
+
+.btn-secondary:hover {
+    border-color: #4a5a6a;
+    color: #8a9aa8;
+}
+
+.btn-back {
+    border-color: #1a1e24;
+    color: #4a525a;
+}
+
+.btn-back:hover {
+    border-color: #3a4250;
+    color: #6a7a8a;
+}
+
+.btn-full {
+    flex: 1 1 100%;
+}
+
+/* ============================================================
+   FORMULARZE
+   ============================================================ */
+.form-group {
+    margin-bottom: 14px;
+}
+
+.form-group .label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8a9aa8;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.form-group .label .unit {
+    color: #5a6a7a;
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.form-row input[type="number"],
+.form-row input[type="text"],
+.form-row input[type="password"],
+.form-row select {
+    flex: 1;
+    min-width: 90px;
+    background: #161d24;
+    border: 1px solid #2d3744;
+    border-radius: 4px;
+    color: #e6eef8;
+    padding: 8px 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.form-row input[type="number"]:focus,
+.form-row input[type="text"]:focus,
+.form-row input[type="password"]:focus,
+.form-row select:focus {
+    border-color: #5a8a7a;
+}
+
+.form-row input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.form-row input[type="number"]::-webkit-inner-spin-button,
+.form-row input[type="number"]::-webkit-outer-spin-button {
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.form-row select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234a525a'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 10px 6px;
+    padding-right: 32px;
+}
+
+.form-row .hint {
+    font-size: 11px;
+    color: #5a6a7a;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    font-weight: 400;
+}
+
+.form-divider {
+    border: none;
+    border-top: 1px solid #1a1e24;
+    margin: 16px 0;
+}
+
+/* ============================================================
+   RESPONSYWNOŚĆ
+   ============================================================ */
+@media (max-width: 600px) {
+    .instrument {
+        padding: 12px 14px;
+    }
+    .header-title {
+        font-size: 14px;
+    }
+    .form-row input[type="number"],
+    .form-row input[type="text"],
+    .form-row input[type="password"],
+    .form-row select {
+        font-size: 12px;
+        padding: 6px 10px;
+        min-width: 70px;
+    }
+    .btn {
+        font-size: 11px;
+        padding: 6px 14px;
+        min-width: 70px;
+    }
+}
+
+@media (max-width: 400px) {
+    .instrument {
+        padding: 8px 10px;
+    }
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    .form-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .form-row .hint {
+        white-space: normal;
+    }
+    .btn-group {
+        flex-direction: column;
+    }
+    .btn {
+        width: 100%;
+    }
+}

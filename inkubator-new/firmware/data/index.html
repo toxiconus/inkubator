@@ -1,0 +1,2851 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>INKUBATOR · PANEL STEROWANIA</title>
+    <script src="/ws-utils.js"></script>
+    <style>
+        /* ===== RESET I PODSTAWY ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: #0a0c0e;
+            font-family: 'Courier New', 'IBM Plex Mono', monospace;
+            font-size: 16px;
+            line-height: 1.5;
+            overflow: hidden;
+            padding: 4px;
+            color: #f0f6fc;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .instrument {
+            width: 100vw;
+            height: 100vh;
+            max-width: 1920px;
+            max-height: 1080px;
+            background: #101317;
+            display: grid;
+            grid-template-rows: 50px 1fr 36px;
+            grid-template-columns: 1fr;
+            grid-template-areas:
+                "toolbar"
+                "content"
+                "clock";
+            gap: 0px;
+            padding: 8px 12px 8px 12px;
+            box-shadow: 0 0 0 1px #1e2228 inset;
+            border-radius: 4px;
+        }
+
+        /* ===== TOOLBAR ===== */
+        .toolbar {
+            grid-area: toolbar;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            border-bottom: 1px solid #1a1e24;
+            background: rgba(10, 12, 14, 0.9);
+            gap: 10px;
+            flex-wrap: nowrap;
+            min-height: 46px;
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: nowrap;
+            overflow: hidden;
+        }
+
+        .toolbar-logo {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            color: #dde8f2;
+            white-space: nowrap;
+        }
+        .toolbar-logo span {
+            color: #eaf4fc;
+        }
+
+        .toolbar-sep {
+            width: 1px;
+            height: 24px;
+            background: #1f242b;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+
+        .tab {
+            padding: 7px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #c4d2df;
+            background: transparent;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Courier New', monospace;
+            white-space: nowrap;
+        }
+        .tab:hover {
+            color: #d8e8f4;
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .tab.active {
+            color: #e4f0fa;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 -2px 0 #5a8a7a;
+        }
+
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: nowrap;
+            flex-shrink: 0;
+        }
+
+        .tb-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #b8c8d8;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+        .tb-indicator .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #2f3744;
+            transition: all 0.4s ease;
+            flex-shrink: 0;
+        }
+        .tb-indicator .dot.ok {
+            background: #30c060;
+            box-shadow: 0 0 10px rgba(48, 192, 96, 0.5);
+        }
+        .tb-indicator .dot.warn {
+            background: #e8b830;
+            box-shadow: 0 0 10px rgba(232, 184, 48, 0.5);
+        }
+        .tb-indicator .dot.err {
+            background: #e05050;
+            box-shadow: 0 0 10px rgba(224, 80, 80, 0.5);
+        }
+        .tb-indicator .val {
+            color: #e0eef8;
+            font-weight: 700;
+            min-width: 42px;
+            text-align: right;
+            font-size: 14px;
+        }
+        .tb-indicator .unit {
+            color: #9fb3c5;
+            font-size: 11px;
+        }
+
+        .tb-clock {
+            font-size: 15px;
+            color: #9fb3c5;
+            letter-spacing: 0.06em;
+            white-space: nowrap;
+            font-weight: 300;
+            padding-left: 12px;
+            border-left: 1px solid #1b2026;
+        }
+        .tb-clock .time {
+            color: #e0eef8;
+            font-weight: 500;
+        }
+
+        /* ===== CONTENT ===== */
+        .content {
+            grid-area: content;
+            padding: 8px 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .view {
+            display: none;
+            height: 100%;
+            overflow-y: auto;
+            padding: 6px 2px;
+        }
+        .view.active {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .view::-webkit-scrollbar {
+            width: 5px;
+        }
+        .view::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .view::-webkit-scrollbar-thumb {
+            background: #2a3240;
+            border-radius: 2px;
+        }
+
+        /* ===== KARCIKI ===== */
+        .card {
+            background: rgba(12, 14, 18, 0.9);
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            padding: 12px 16px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #ccdce8;
+        }
+
+        .badge {
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 10px;
+            background: rgba(73, 178, 112, 0.18);
+            color: #8fe08a;
+            border: 1px solid rgba(73, 178, 112, 0.25);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        @media (max-width: 1024px) {
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 768px) {
+            .instrument {
+                padding: 4px 6px;
+                grid-template-rows: 42px 1fr 30px;
+            }
+            .toolbar {
+                padding: 0 4px;
+                gap: 4px;
+                flex-wrap: wrap;
+                min-height: 38px;
+            }
+            .toolbar-logo {
+                font-size: 11px;
+            }
+            .tab {
+                font-size: 9px;
+                padding: 4px 8px;
+            }
+            .tb-indicator {
+                font-size: 9px;
+            }
+            .tb-indicator .val {
+                min-width: 26px;
+                font-size: 10px;
+            }
+            .tb-clock {
+                font-size: 11px;
+                padding-left: 6px;
+            }
+            body {
+                font-size: 14px;
+            }
+        }
+        @media (max-width: 600px) {
+            .instrument {
+                padding: 2px;
+                grid-template-rows: 38px 1fr 26px;
+            }
+            .tb-indicator .unit {
+                display: none;
+            }
+            .tb-clock .time {
+                font-size: 10px;
+            }
+            .card {
+                padding: 8px 10px;
+            }
+            body {
+                font-size: 13px;
+            }
+        }
+
+        /* ===== STATUS – ELIPSA ===== */
+        .center-panel {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            min-height: 220px;
+        }
+
+        #balanceCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border-radius: 2px;
+        }
+
+        .trend-panel {
+            border-top: 1px solid #1a1e24;
+            border-bottom: 1px solid #1a1e24;
+            padding: 2px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            height: 54px;
+        }
+
+        #trendCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border-radius: 2px;
+        }
+
+        .trend-label {
+            position: absolute;
+            font-size: 12px;
+            font-weight: 600;
+            color: #a0b0be;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            pointer-events: none;
+        }
+        .trend-label.left {
+            left: 8px;
+            bottom: 2px;
+            color: #b8c8d8;
+        }
+        .trend-label.right {
+            right: 8px;
+            bottom: 2px;
+            color: #b8c8d8;
+        }
+
+        .sensor-hud {
+            position: absolute;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 16px;
+            color: #e8f0f8;
+            letter-spacing: 0.2px;
+            padding: 10px 14px;
+            background: rgba(13, 16, 21, 0.92);
+            border-radius: 4px;
+            border: 1px solid #1e252c;
+            min-width: 120px;
+        }
+        .sensor-hud.left-side {
+            left: 14px;
+            top: 14px;
+        }
+        .sensor-hud.right-side {
+            right: 14px;
+            top: 14px;
+        }
+        .sensor-hud .hud-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            align-items: baseline;
+            font-size: 14px;
+        }
+        .sensor-hud .hud-label {
+            font-size: 12px;
+            color: #a0b0c3;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            min-width: 30px;
+            font-weight: 600;
+        }
+        .sensor-hud .hud-value {
+            font-weight: 700;
+            text-align: right;
+            min-width: 58px;
+            font-size: 16px;
+        }
+        .sensor-hud .hud-value .unit {
+            font-size: 10px;
+            color: #5a6a7a;
+            margin-left: 2px;
+        }
+        .sensor-hud .hud-row.alarm {
+            color: #ff8888;
+        }
+        .sensor-hud .hud-row.warn {
+            color: #e8d660;
+        }
+        .sensor-hud .hud-row.ds {
+            font-size: 12px;
+            color: #7a8a9a;
+        }
+        .sensor-hud .hud-row.ds .hud-value {
+            color: #c0d0e0;
+        }
+        .sensor-hud .hud-row.set {
+            font-size: 10px;
+            color: #5a6a7a;
+        }
+        .sensor-hud .hud-row.set .hud-value {
+            color: #8a9aa8;
+            font-weight: 400;
+        }
+        .sensor-hud .hud-row.set.avg .hud-value {
+            color: #b0c8d8;
+            font-weight: 500;
+        }
+        .sensor-hud .hud-separator {
+            border-top: 1px solid #1a1e24;
+            margin: 4px 0;
+        }
+
+        .sliders-panel {
+            display: flex;
+            gap: 24px;
+            padding: 4px 0;
+            border-bottom: 1px solid #1a1e24;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .indicator-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 160px;
+        }
+        .indicator-group .ind-label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #b4c4d3;
+            min-width: 40px;
+            font-weight: 600;
+        }
+        .indicator-group .ind-bar {
+            flex: 1;
+            height: 8px;
+            background: #16202a;
+            border-radius: 3px;
+            min-width: 60px;
+            position: relative;
+        }
+        .indicator-group .ind-fill {
+            height: 100%;
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        .indicator-group .ind-fill.heater {
+            background: #d4a040;
+        }
+        .indicator-group .ind-fill.diffuser {
+            background: #40b0d4;
+        }
+        .indicator-group .ind-value {
+            font-size: 14px;
+            color: #d8e8f4;
+            min-width: 42px;
+            text-align: right;
+            font-weight: 600;
+        }
+        .diffuser-led {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 2px 12px;
+            border-left: 1px solid #1a1e24;
+            margin-left: 8px;
+        }
+        .diffuser-led .led {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #1a1e24;
+            border: 1px solid #2a3240;
+            transition: background 0.6s ease, box-shadow 0.6s ease;
+        }
+        .diffuser-led .led.on {
+            background: #30c060;
+            box-shadow: 0 0 12px rgba(48, 192, 96, 0.5);
+            border-color: #30c060;
+        }
+        .diffuser-led .led-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #5a6a7a;
+            font-weight: 600;
+        }
+
+        .trays-panel {
+            display: flex;
+            gap: 28px;
+            padding-top: 4px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #1a1e24;
+            padding-bottom: 4px;
+        }
+        .tray-ruler {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+            min-width: 220px;
+        }
+        .tray-ruler .tray-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+        .tray-ruler .tray-header .name {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #ccdbe9;
+        }
+        .tray-ruler .tray-header .name .type {
+            color: #a6b2c1;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+        .tray-ruler .tray-header .day-info {
+            font-size: 13px;
+            font-weight: 600;
+            color: #c2d0e0;
+        }
+        .ruler-track {
+            position: relative;
+            height: 24px;
+            background: #14181e;
+            border: 1px solid #2a3240;
+            border-radius: 2px;
+            width: 100%;
+            overflow: visible;
+            transition: background 0.3s ease;
+        }
+        .ruler-track.lockdown {
+            background: #1a1522;
+            border-color: #5a3a6a;
+        }
+        .ruler-track.lockdown .ruler-ticks .tick-line {
+            background: #5a4a6a;
+        }
+        .ruler-track.lockdown .ruler-ticks .tick-label {
+            color: #6a5a7a;
+        }
+        .ruler-ticks {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            padding: 0 2px;
+        }
+        .ruler-tick {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            flex: 1;
+            position: relative;
+        }
+        .ruler-tick .tick-line {
+            width: 1px;
+            height: 9px;
+            background: #3a4250;
+        }
+        .ruler-tick.major .tick-line {
+            height: 14px;
+            background: #5a6270;
+        }
+        .ruler-tick .tick-label {
+            font-size: 11px;
+            color: #8a9aa6;
+            margin-top: 1px;
+            position: absolute;
+            bottom: -16px;
+            font-weight: 500;
+        }
+        .ruler-marker {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #70d070;
+            z-index: 6;
+            box-shadow: 0 0 14px rgba(112, 208, 112, 0.6);
+            transition: left 0.5s ease;
+        }
+        .ruler-marker::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 2px;
+            background: rgba(112, 208, 112, 0.3);
+            border-radius: 1px;
+            z-index: -1;
+        }
+        .ruler-marker.lockdown {
+            background: #a070d0;
+            box-shadow: 0 0 14px rgba(160, 112, 208, 0.6);
+        }
+        .ruler-marker.lockdown::after {
+            background: rgba(160, 112, 208, 0.3);
+        }
+        .ruler-no-rotate {
+            position: absolute;
+            top: -2px;
+            width: 2px;
+            height: calc(100% + 4px);
+            background: #884444;
+            border-radius: 1px;
+            z-index: 4;
+            opacity: 0.7;
+            transition: left 0.5s ease;
+        }
+        .ruler-no-rotate::after {
+            content: '✕';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 8px;
+            color: #884444;
+        }
+
+        .clock-panel {
+            grid-area: clock;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 4px;
+            font-size: 14px;
+            color: #4a525a;
+            letter-spacing: 0.5px;
+            font-weight: 300;
+            border-top: 1px solid #1a1e24;
+        }
+        .clock-panel .time {
+            color: #8a9aa8;
+            font-family: 'Courier New', monospace;
+            font-weight: 400;
+        }
+
+        /* ===== LĘG – harmonogram ===== */
+        .hatch-controls {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(20, 24, 32, 0.4);
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+        }
+        .hatch-controls .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .hatch-controls .label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #b0becf;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .hatch-controls select,
+        .hatch-controls input[type="number"] {
+            background: #161d24;
+            border: 1px solid #2d3744;
+            color: #e6eef8;
+            padding: 6px 12px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            min-width: 110px;
+        }
+        .hatch-controls .btn {
+            padding: 6px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            border: 1px solid #2a3240;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #c0d3e0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Courier New', monospace;
+        }
+        .hatch-controls .btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #b0c8d8;
+        }
+        .hatch-controls .btn.primary {
+            border-color: #3a6a5a;
+            color: #5a9a8a;
+        }
+        .hatch-controls .btn.primary:hover {
+            background: rgba(57, 211, 95, 0.1);
+            border-color: #5a8a7a;
+        }
+        .hatch-controls .btn.danger {
+            border-color: #6a3a3a;
+            color: #c06060;
+        }
+        .hatch-controls .btn.danger:hover {
+            background: rgba(224, 80, 80, 0.1);
+            border-color: #8a4a4a;
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .schedule-card {
+            background: rgba(12, 14, 18, 0.95);
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .schedule-card .card-header {
+            padding: 6px 14px;
+            border-bottom: 1px solid #1a1e24;
+            background: rgba(20, 24, 32, 0.3);
+            flex-shrink: 0;
+        }
+        .schedule-card .card-header .title {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: #8a9aa8;
+            text-transform: uppercase;
+        }
+        .schedule-table-wrap {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2px 4px;
+        }
+        .schedule-table-wrap::-webkit-scrollbar {
+            width: 5px;
+        }
+        .schedule-table-wrap::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .schedule-table-wrap::-webkit-scrollbar-thumb {
+            background: #2a3240;
+            border-radius: 2px;
+        }
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+        }
+        .schedule-table th {
+            text-align: left;
+            padding: 6px 8px;
+            color: #5a6a7a;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            font-size: 10px;
+            border-bottom: 1px solid #1a1e24;
+            position: sticky;
+            top: 0;
+            background: rgba(12, 14, 18, 0.95);
+            z-index: 2;
+        }
+        .schedule-table td {
+            padding: 4px 8px;
+            border-bottom: 1px solid rgba(26, 30, 36, 0.3);
+            color: #8a9aa8;
+            font-size: 13px;
+        }
+        .schedule-table tr.active td {
+            background: rgba(57, 211, 95, 0.08);
+            color: #d0e8f0;
+        }
+        .schedule-table tr.lockdown td {
+            background: rgba(160, 112, 208, 0.08);
+            color: #b090c0;
+        }
+        .schedule-table td .highlight {
+            color: #70d070;
+        }
+        .schedule-table td .lock {
+            color: #a070d0;
+        }
+        .schedule-table td .no-rotate {
+            color: #884444;
+        }
+
+        .learn-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            flex-shrink: 0;
+            max-height: 150px;
+        }
+        .learn-card {
+            background: rgba(12, 14, 18, 0.9);
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            padding: 10px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .learn-card .learn-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #5a6a7a;
+        }
+        .learn-card .learn-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #7a8a9a;
+        }
+        .learn-card .learn-row .lval {
+            color: #b0c8d8;
+            font-weight: 600;
+        }
+        .learn-card .learn-row .lval.accent {
+            color: #70d070;
+        }
+        .learn-card .learn-row .lval.warn {
+            color: #e8b830;
+        }
+        .learn-card .btn-group {
+            display: flex;
+            gap: 4px;
+            margin-top: 2px;
+        }
+        .learn-card .btn-group .btn {
+            padding: 4px 14px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            border: 1px solid #2a3240;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.04);
+            color: #8a9aa8;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Courier New', monospace;
+        }
+        .learn-card .btn-group .btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #b0c8d8;
+        }
+        .learn-card .btn-group .btn.active-btn {
+            border-color: #3a6a5a;
+            color: #5a9a8a;
+            background: rgba(57, 211, 95, 0.08);
+        }
+        .learn-card .btn-group .btn.danger-btn {
+            border-color: #6a3a3a;
+            color: #c06060;
+        }
+        .learn-card .btn-group .btn.danger-btn:hover {
+            background: rgba(224, 80, 80, 0.1);
+        }
+
+        @media (max-width: 1024px) {
+            .schedule-grid {
+                grid-template-columns: 1fr;
+            }
+            .learn-section {
+                grid-template-columns: 1fr;
+                max-height: none;
+            }
+        }
+        @media (max-width: 768px) {
+            .hatch-controls {
+                gap: 8px;
+                padding: 4px 8px;
+            }
+            .hatch-controls select,
+            .hatch-controls input[type="number"] {
+                font-size: 11px;
+                min-width: 80px;
+            }
+            .schedule-table {
+                font-size: 11px;
+            }
+            .learn-card .learn-row {
+                font-size: 10px;
+            }
+        }
+        @media (max-width: 600px) {
+            .hatch-controls .control-group {
+                gap: 4px;
+            }
+            .schedule-card .card-header .title {
+                font-size: 10px;
+            }
+        }
+
+        /* ===== ESP / LOGS / inne ===== */
+        .esp-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(26, 30, 36, 0.3);
+            font-size: 13px;
+        }
+        .esp-row .esp-key {
+            color: #5a6a7a;
+            font-weight: 600;
+        }
+        .esp-row .esp-val {
+            color: #b0c8d8;
+            font-weight: 500;
+        }
+        .esp-row .esp-val.warn {
+            color: #e8b830;
+        }
+        .esp-row .esp-val.danger {
+            color: #e05050;
+        }
+
+        .log-list {
+            display: grid;
+            gap: 2px;
+            max-height: 40vh;
+            overflow-y: auto;
+        }
+        .log-entry {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            background: rgba(20, 24, 32, 0.3);
+            border: 1px solid transparent;
+        }
+        .log-entry.warn {
+            border-color: rgba(232, 184, 48, 0.2);
+            background: rgba(232, 184, 48, 0.04);
+        }
+        .log-entry.err {
+            border-color: rgba(224, 80, 80, 0.22);
+            background: rgba(224, 80, 80, 0.05);
+        }
+        .log-entry.ok {
+            border-color: rgba(48, 192, 96, 0.18);
+            background: rgba(48, 192, 96, 0.03);
+        }
+        .log-ts {
+            color: #5a6a7a;
+            flex-shrink: 0;
+            font-size: 10px;
+        }
+        .log-msg {
+            color: #8a9aa8;
+            flex: 1;
+            word-break: break-all;
+            font-size: 12px;
+        }
+
+        .wire-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .wire-table th {
+            text-align: left;
+            color: #5a6a7a;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            font-size: 9px;
+            padding: 4px 6px;
+            border-bottom: 1px solid #1a1e24;
+        }
+        .wire-table td {
+            padding: 4px 6px;
+            border-bottom: 1px solid rgba(26, 30, 36, 0.3);
+            color: #8a9aa8;
+            font-size: 12px;
+        }
+        .wire-table code {
+            background: #14181e;
+            border: 1px solid #2a3240;
+            padding: 0 6px;
+            border-radius: 2px;
+            color: #5a9a8a;
+            font-size: 11px;
+        }
+
+        .journal-empty {
+            font-size: 13px;
+            color: #4a525a;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 5px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            border: 1px solid #2a3240;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.04);
+            color: #8a9aa8;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Courier New', monospace;
+        }
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #b0c8d8;
+        }
+        .btn-primary {
+            border-color: #3a6a5a;
+            color: #5a9a8a;
+        }
+        .btn-primary:hover {
+            background: rgba(57, 211, 95, 0.1);
+            border-color: #5a8a7a;
+        }
+        .btn-danger {
+            border-color: #6a3a3a;
+            color: #c06060;
+        }
+        .btn-danger:hover {
+            background: rgba(224, 80, 80, 0.1);
+            border-color: #8a4a4a;
+        }
+        .btn-success {
+            border-color: #3a6a5a;
+            color: #70d070;
+        }
+        .btn-success:hover {
+            background: rgba(57, 211, 95, 0.1);
+        }
+        .btn-ghost {
+            border-color: #1a1e24;
+            color: #5a6a7a;
+        }
+        .btn-ghost:hover {
+            border-color: #3a4250;
+            color: #8a9aa8;
+        }
+
+        .status-msg {
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            min-height: 32px;
+        }
+        .status-msg.ok {
+            color: #70d070;
+            background: rgba(57, 211, 95, 0.08);
+            border-color: rgba(57, 211, 95, 0.15);
+        }
+        .status-msg.err {
+            color: #e05050;
+            background: rgba(224, 80, 80, 0.08);
+            border-color: rgba(224, 80, 80, 0.15);
+        }
+        .status-msg.info {
+            color: #5a9a8a;
+            background: rgba(57, 211, 95, 0.06);
+            border-color: rgba(57, 211, 95, 0.1);
+        }
+
+        .section-label {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            color: #5a6a7a;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="instrument">
+
+        <!-- ===== TOOLBAR ===== -->
+        <header class="toolbar">
+            <div class="toolbar-left">
+                <span class="toolbar-logo">INKUBATOR <span>v2.0</span></span>
+                <span class="toolbar-sep"></span>
+                <nav class="tabs">
+                    <button class="tab active" data-tab="status" onclick="showTab('status')">STATUS</button>
+                    <button class="tab" data-tab="hatch" onclick="showTab('hatch')">LĘG</button>
+                    <button class="tab" data-tab="charts" onclick="showTab('charts')">CHARTS</button>
+                    <button class="tab" data-tab="schedule" onclick="showTab('schedule')">SCHEDULE</button>
+                    <button class="tab" data-tab="journal" onclick="showTab('journal')">JOURNAL</button>
+                    <button class="tab" data-tab="esp" onclick="showTab('esp')">ESP</button>
+                    <button class="tab" data-tab="logs" onclick="showTab('logs')">LOGS</button>
+                    <button class="tab" data-tab="calibrate" onclick="showTab('calibrate')">CALIBRATE</button>
+                    <button class="tab" data-tab="settings" onclick="showTab('settings')">SETTINGS</button>
+                </nav>
+            </div>
+
+            <div class="toolbar-right">
+                <span class="tb-indicator">
+                    <span class="dot ok" id="tbEspDot"></span>
+                    <span class="val" id="tbEspTemp">--</span>
+                    <span class="unit">°C</span>
+                </span>
+                <span class="tb-indicator">
+                    <span class="dot ok" id="tbTempDot"></span>
+                    <span class="val" id="tbTempVal">--</span>
+                    <span class="unit">°C</span>
+                </span>
+                <span class="tb-indicator">
+                    <span class="dot ok" id="tbRhDot"></span>
+                    <span class="val" id="tbRhVal">--</span>
+                    <span class="unit">%</span>
+                </span>
+                <span class="tb-sep" style="width:1px;height:20px;background:#1a1e24;display:inline-block;"></span>
+                <span class="tb-clock">
+                    <span class="time" id="tbClock">--:--:--</span>
+                </span>
+            </div>
+        </header>
+
+        <!-- ===== CONTENT ===== -->
+        <div class="content">
+
+            <!-- ===== ZAKŁADKA STATUS ===== -->
+            <div id="view-status" class="view active">
+                <div class="center-panel">
+                    <canvas id="balanceCanvas"></canvas>
+
+                    <!-- LEWY HUD -->
+                    <div class="sensor-hud left-side">
+                        <div class="hud-row ds">
+                            <span class="hud-label">DS1</span>
+                            <span class="hud-value" id="ds1Val">-- <span class="unit">°C</span></span>
+                        </div>
+                        <div class="hud-row ds">
+                            <span class="hud-label">DS2</span>
+                            <span class="hud-value" id="ds2Val">-- <span class="unit">°C</span></span>
+                        </div>
+                        <div class="hud-separator"></div>
+                        <div class="hud-row" id="avgRow">
+                            <span class="hud-label">ŚRD</span>
+                            <span class="hud-value" id="avgVal">-- <span class="unit">°C</span></span>
+                        </div>
+                        <div class="hud-row" id="dtRow">
+                            <span class="hud-label">ΔT</span>
+                            <span class="hud-value" id="dtVal">-- <span class="unit">°C</span></span>
+                        </div>
+                    </div>
+
+                    <!-- PRAWY HUD -->
+                    <div class="sensor-hud right-side">
+                        <div class="hud-row" id="rhRow">
+                            <span class="hud-label">RH</span>
+                            <span class="hud-value" id="rhVal">-- <span class="unit">%</span></span>
+                        </div>
+                        <div class="hud-row" id="drRow">
+                            <span class="hud-label">ΔRH</span>
+                            <span class="hud-value" id="drVal">-- <span class="unit">%</span></span>
+                        </div>
+                        <div class="hud-separator"></div>
+                        <div class="hud-row set">
+                            <span class="hud-label">SET T1</span>
+                            <span class="hud-value" id="setT1Display">-- <span class="unit">°C</span></span>
+                        </div>
+                        <div class="hud-row set">
+                            <span class="hud-label">SET T2</span>
+                            <span class="hud-value" id="setT2Display">-- <span class="unit">°C</span></span>
+                        </div>
+                        <div class="hud-row set avg">
+                            <span class="hud-label">SET T Ø</span>
+                            <span class="hud-value" id="setTAvgDisplay">-- <span class="unit">°C</span></span>
+                        </div>
+                        <div class="hud-separator"></div>
+                        <div class="hud-row set">
+                            <span class="hud-label">RH1</span>
+                            <span class="hud-value" id="setRh1Display">-- <span class="unit">%</span></span>
+                        </div>
+                        <div class="hud-row set">
+                            <span class="hud-label">RH2</span>
+                            <span class="hud-value" id="setRh2Display">-- <span class="unit">%</span></span>
+                        </div>
+                        <div class="hud-row set avg">
+                            <span class="hud-label">RH Ø</span>
+                            <span class="hud-value" id="setRhAvgDisplay">-- <span class="unit">%</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TREND -->
+                <div class="trend-panel">
+                    <canvas id="trendCanvas"></canvas>
+                    <span class="trend-label left">ΔT [°C]</span>
+                    <span class="trend-label right">ΔRH [%]</span>
+                </div>
+
+                <!-- WSKAŹNIKI MOCY -->
+                <div class="sliders-panel">
+                    <div class="indicator-group">
+                        <span class="ind-label">G1</span>
+                        <div class="ind-bar"><div class="ind-fill heater" id="heaterFill0" style="width:0%"></div></div>
+                        <span class="ind-value" id="heaterVal0">0</span>
+                    </div>
+                    <div class="indicator-group">
+                        <span class="ind-label">G2</span>
+                        <div class="ind-bar"><div class="ind-fill heater" id="heaterFill1" style="width:0%"></div></div>
+                        <span class="ind-value" id="heaterVal1">0</span>
+                    </div>
+                    <div class="diffuser-led">
+                        <span class="led-label">Dyfuzor</span>
+                        <span class="led" id="diffuserLed"></span>
+                    </div>
+                </div>
+
+                <!-- LINIAŁY DNI -->
+                <div class="trays-panel">
+                    <div class="tray-ruler">
+                        <div class="tray-header">
+                            <span class="name">TACA 1 <span class="type" id="tray1Species">--</span></span>
+                            <span class="day-info" id="dayInfo1">Dzień -- / --</span>
+                        </div>
+                        <div class="ruler-track" id="rulerTrack1">
+                            <div class="ruler-ticks" id="rulerTicks1"></div>
+                            <div class="ruler-marker" id="rulerMarker1" style="left: 0%;"></div>
+                            <div class="ruler-no-rotate" id="noRotate1" style="left: 0%; display:none;"></div>
+                        </div>
+                    </div>
+                    <div class="tray-ruler">
+                        <div class="tray-header">
+                            <span class="name">TACA 2 <span class="type" id="tray2Species">--</span></span>
+                            <span class="day-info" id="dayInfo2">Dzień -- / --</span>
+                        </div>
+                        <div class="ruler-track" id="rulerTrack2">
+                            <div class="ruler-ticks" id="rulerTicks2"></div>
+                            <div class="ruler-marker" id="rulerMarker2" style="left: 0%;"></div>
+                            <div class="ruler-no-rotate" id="noRotate2" style="left: 0%; display:none;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alarmy -->
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Alarmy</span></div>
+                    <div id="alerts-box" style="font-size:13px;color:#5a6a7a;min-height:34px;">Brak aktywnych alarmów.</div>
+                </div>
+            </div>
+
+            <!-- ===== ZAKŁADKA LĘG ===== -->
+            <div id="view-hatch" class="view">
+                <div class="hatch-controls">
+                    <div class="control-group">
+                        <span class="label">Gatunek</span>
+                        <select id="speciesSelect">
+                            <option value="CHICKEN">Kura</option>
+                            <option value="DUCK">Kaczka</option>
+                            <option value="GOOSE">Gęś</option>
+                            <option value="QUAIL">Przepiórka</option>
+                            <option value="GUINEA">Perliczka</option>
+                            <option value="PHEASANT">Bażant</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <span class="label">Dzień</span>
+                        <input type="number" id="dayInput" value="12" min="1" max="35">
+                    </div>
+                    <div class="control-group">
+                        <span class="label">Taca</span>
+                        <select id="traySelect">
+                            <option value="0">TACA 1</option>
+                            <option value="1">TACA 2</option>
+                        </select>
+                    </div>
+                    <button class="btn primary" onclick="updateSchedule()">Odśwież</button>
+                    <button class="btn" onclick="applyToTray()">Zastosuj</button>
+                    <button class="btn danger" onclick="resetTray()">Resetuj</button>
+                </div>
+
+                <div class="schedule-grid">
+                    <div class="schedule-card">
+                        <div class="card-header">
+                            <span class="title" id="scheduleTitle">Harmonogram · Kura</span>
+                            <span class="badge" id="scheduleBadge">Dzień 12/21</span>
+                        </div>
+                        <div class="schedule-table-wrap">
+                            <table class="schedule-table" id="scheduleTable">
+                                <thead><tr><th>Dzień</th><th>Temp [°C]</th><th>RH [%]</th><th>Obrót</th><th>Lockdown</th><th>Uwagi</th></tr></thead>
+                                <tbody id="scheduleBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="schedule-card">
+                        <div class="card-header">
+                            <span class="title">Ustawienia · Podgląd</span>
+                            <span class="badge" id="previewBadge">Aktywna</span>
+                        </div>
+                        <div class="schedule-table-wrap">
+                            <table class="schedule-table"><tbody id="previewBody"><tr><td style="color:#5a6a7a;font-size:11px;">Ładowanie...</td></tr></tbody></table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="learn-section">
+                    <div class="learn-card">
+                        <div class="learn-title">⚙ Kalibracja</div>
+                        <div class="learn-row"><span>PWM bazowy</span><span class="lval" id="basePwm">--</span></div>
+                        <div class="learn-row"><span>Korekta</span><span class="lval" id="correction">--</span></div>
+                        <div class="learn-row"><span>Status</span><span class="lval accent" id="calibStatus">OK</span></div>
+                        <div class="btn-group">
+                            <button class="btn active-btn" onclick="startCalibration()">Rozpocznij</button>
+                            <button class="btn" onclick="resetCalibration()">Resetuj</button>
+                        </div>
+                    </div>
+                    <div class="learn-card">
+                        <div class="learn-title">🧠 Uczenie</div>
+                        <div class="learn-row"><span>Tryb</span><span class="lval warn" id="learnMode">OFF</span></div>
+                        <div class="learn-row"><span>Próbki</span><span class="lval" id="learnSamples">0</span></div>
+                        <div class="learn-row"><span>Stabilność</span><span class="lval accent" id="learnStability">--</span></div>
+                        <div class="btn-group">
+                            <button class="btn active-btn" onclick="startLearning()">Uruchom</button>
+                            <button class="btn danger-btn" onclick="stopLearning()">Zatrzymaj</button>
+                            <button class="btn" onclick="resetLearning()">Reset</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ZAKŁADKA CHARTS ===== -->
+            <div id="view-charts" class="view">
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Temperatura</span></div>
+                    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px;">
+                        <button class="btn btn-ghost active" onclick="setChartRange('temp','1h')">1h</button>
+                        <button class="btn btn-ghost" onclick="setChartRange('temp','6h')">6h</button>
+                        <button class="btn btn-ghost" onclick="setChartRange('temp','24h')">24h</button>
+                        <button class="btn btn-ghost" onclick="setChartRange('temp','7d')">7d</button>
+                    </div>
+                    <canvas id="chartTempMain" style="width:100%;height:150px;background:#0c0e12;border:1px solid #1a1e24;border-radius:3px;"></canvas>
+                </div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Wilgotność</span></div>
+                    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px;">
+                        <button class="btn btn-ghost active" onclick="setChartRange('hum','1h')">1h</button>
+                        <button class="btn btn-ghost" onclick="setChartRange('hum','6h')">6h</button>
+                        <button class="btn btn-ghost" onclick="setChartRange('hum','24h')">24h</button>
+                        <button class="btn btn-ghost" onclick="setChartRange('hum','7d')">7d</button>
+                    </div>
+                    <canvas id="chartHumMain" style="width:100%;height:150px;background:#0c0e12;border:1px solid #1a1e24;border-radius:3px;"></canvas>
+                </div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Eksport</span></div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="exportCSV()">Export CSV</button>
+                        <button class="btn btn-ghost" onclick="clearHistory()">Wyczyść historię</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ZAKŁADKA SCHEDULE ===== -->
+            <div id="view-schedule" class="view">
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Harmonogram inkubacji</span></div>
+                    <div style="font-size:12px;color:#5a6a7a;margin-bottom:6px;">Porównanie dni między tacami.</div>
+                    <div class="grid-2">
+                        <div>
+                            <div class="section-label">Taca 1</div>
+                            <div style="max-height:300px;overflow-y:auto;border:1px solid #1a1e24;border-radius:3px;padding:2px;">
+                                <table class="schedule-table"><thead><tr><th>Dzień</th><th>Temp</th><th>RH</th><th>Obrót</th><th>Lock</th></tr></thead><tbody id="schedBody0"><tr><td colspan="5" style="color:#5a6a7a;text-align:center;">Ładowanie...</td></tr></tbody></table>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="section-label">Taca 2</div>
+                            <div style="max-height:300px;overflow-y:auto;border:1px solid #1a1e24;border-radius:3px;padding:2px;">
+                                <table class="schedule-table"><thead><tr><th>Dzień</th><th>Temp</th><th>RH</th><th>Obrót</th><th>Lock</th></tr></thead><tbody id="schedBody1"><tr><td colspan="5" style="color:#5a6a7a;text-align:center;">Ładowanie...</td></tr></tbody></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ZAKŁADKA JOURNAL ===== -->
+            <div id="view-journal" class="view">
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Dziennik inkubacji</span></div>
+                    <div id="journalList" class="journal-empty">Brak wpisów.</div>
+                    <div class="btn-group" style="margin-top:6px;">
+                        <button class="btn btn-primary" onclick="journalAddTest()">+ Dodaj testowy</button>
+                        <button class="btn btn-ghost" onclick="journalClear()">Wyczyść</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ZAKŁADKA ESP ===== -->
+            <div id="view-esp" class="view">
+                <div class="card">
+                    <div class="card-header"><span class="card-title">ESP32-S3</span></div>
+                    <div class="esp-row"><span class="esp-key">Wolna RAM</span><span class="esp-val" id="espFree">--</span></div>
+                    <div class="esp-row"><span class="esp-key">Temp. wewnętrzna</span><span class="esp-val" id="espTemp">--</span></div>
+                    <div class="esp-row"><span class="esp-key">CPU</span><span class="esp-val" id="espCpu">--</span></div>
+                    <div class="esp-row"><span class="esp-key">Wersja config</span><span class="esp-val" id="espCfgVer">--</span></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Pinout</span></div>
+                    <table class="wire-table">
+                        <thead><tr><th>Funkcja</th><th>GPIO</th></tr></thead>
+                        <tbody>
+                            <tr><td>DS18B20</td><td><code>GPIO6</code></td></tr>
+                            <tr><td>DHT11</td><td><code>GPIO8</code></td></tr>
+                            <tr><td>Grzałka CH0</td><td><code>GPIO1</code></td></tr>
+                            <tr><td>Grzałka CH1</td><td><code>GPIO2</code></td></tr>
+                            <tr><td>Dyfuzory</td><td><code>GPIO11/12</code></td></tr>
+                            <tr><td>Tace</td><td><code>GPIO16/17</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== ZAKŁADKA LOGS ===== -->
+            <div id="view-logs" class="view">
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Logi zdarzeń</span><span class="badge" id="logCount">0</span></div>
+                    <div id="logList" class="log-list"><div class="journal-empty">Brak logów.</div></div>
+                    <div class="btn-group" style="margin-top:6px;">
+                        <button class="btn btn-ghost" onclick="clearEventLog()">Wyczyść</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ZAKŁADKA SETTINGS ===== -->
+            <div id="view-settings" class="view">
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Ustawienia</span></div>
+                    <div class="grid-2" style="gap: 10px;">
+                        <a href="/temperature.html" class="btn btn-primary">🌡️ Temperatura</a>
+                        <a href="/humidity.html" class="btn btn-primary">💧 Wilgotność</a>
+                        <a href="/turner.html" class="btn btn-primary">🔄 Obrót</a>
+                        <a href="/incubation.html" class="btn btn-primary">🐣 Inkubacja</a>
+                        <a href="/symulacja_legów.html" class="btn btn-primary">🐣 Symulacja lęgów</a>
+                        <a href="/alarms.html" class="btn btn-primary">🔔 Alarmy</a>
+                        <a href="/wifi.html" class="btn btn-primary">📶 Wi-Fi</a>
+                        <a href="/various.html" class="btn btn-primary">⚙ Różne</a>
+                        <a href="/console.html" class="btn btn-primary">⌨️ Konsola</a>
+                        <a href="/ajustes.html" class="btn btn-primary">📋 Spis ustawień</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ZAKŁADKA CALIBRATE ===== -->
+            <div id="view-calibrate" class="view">
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Kalibracja tacy</span></div>
+                    <div style="font-size:12px;color:#5a6a7a;">Symulacja kalibracji — wersja demonstracyjna.</div>
+                    <div class="grid-2" style="margin-top:6px;">
+                        <div>
+                            <div class="section-label">PWM</div>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <input type="range" min="40" max="100" value="60" id="calPwmSlider" style="flex:1;">
+                                <span id="calPwmVal" style="font-size:13px;min-width:36px;">60%</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="section-label">Faza</div>
+                            <select id="calPhase" style="background:#14181e;border:1px solid #2a3240;color:#b0b8c0;padding:4px 8px;border-radius:3px;font-size:12px;width:100%;">
+                                <option value="0→MAX_P">0 → Max PRAWO</option>
+                                <option value="P→0">Max P → 0</option>
+                                <option value="0→MAX_L">0 → Max LEWO</option>
+                                <option value="L→0">Max L → 0</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="btn-group" style="margin-top:8px;">
+                        <button class="btn btn-primary" onclick="calStart()">Rozpocznij pomiar</button>
+                        <button class="btn btn-danger" onclick="calStop()">Zatrzymaj</button>
+                        <button class="btn btn-ghost" onclick="calReset()">Reset</button>
+                    </div>
+                    <div id="calStatus" class="status-msg" style="margin-top:4px;">Gotowy</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ===== ZEGAR DOLNY ===== -->
+        <div class="clock-panel">
+            <span id="viewLabel">STATUS · </span>
+            <span class="time" id="clockDisplay">--:--:--</span>
+        </div>
+
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================================
+            //  KONFIGURACJA GATUNKÓW – ROZSZERZONA (z profile)
+            // ============================================================
+            const SPECIES = {
+                CHICKEN: {
+                    name: 'Kura',
+                    days: 21,
+                    lockdown: 19,
+                    noRotate: [10, 15, 18],
+                    phases: [
+                        { start: 1, end: 18, temp: 37.8, rh: 55, turn: true, notes: 'Normalna inkubacja' },
+                        { start: 19, end: 21, temp: 37.2, rh: 70, turn: false, notes: '🔴 LOCKDOWN – bez obrotów' }
+                    ],
+                    sensitivity: {
+                        critical: [1, 2, 3, 16, 17, 18],
+                        high: [4, 5, 15, 19, 20],
+                        medium: [6, 7, 8, 9, 10, 11, 12, 13, 14]
+                    }
+                },
+                DUCK: {
+                    name: 'Kaczka',
+                    days: 28,
+                    lockdown: 25,
+                    noRotate: [14, 21, 25],
+                    phases: [
+                        { start: 1, end: 24, temp: 37.8, rh: 60, turn: true, notes: 'Normalna inkubacja' },
+                        { start: 25, end: 28, temp: 37.2, rh: 75, turn: false, notes: '🔴 LOCKDOWN – bez obrotów' }
+                    ],
+                    sensitivity: {
+                        critical: [1, 2, 3, 21, 22, 23, 24],
+                        high: [4, 5, 17, 18, 19, 20, 25, 26, 27],
+                        medium: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                    }
+                },
+                GOOSE: {
+                    name: 'Gęś',
+                    days: 30,
+                    lockdown: 27,
+                    noRotate: [14, 21, 27],
+                    phases: [
+                        { start: 1, end: 26, temp: 37.6, rh: 60, turn: true, notes: 'Normalna inkubacja' },
+                        { start: 27, end: 30, temp: 37.2, rh: 75, turn: false, notes: '🔴 LOCKDOWN – bez obrotów' }
+                    ],
+                    sensitivity: {
+                        critical: [1, 2, 3, 23, 24, 25, 26],
+                        high: [4, 5, 18, 19, 20, 21, 22, 27, 28, 29],
+                        medium: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+                    }
+                },
+                QUAIL: {
+                    name: 'Przepiórka',
+                    days: 17,
+                    lockdown: 15,
+                    noRotate: [8, 12, 15],
+                    phases: [
+                        { start: 1, end: 14, temp: 37.8, rh: 50, turn: true, notes: 'Normalna inkubacja' },
+                        { start: 15, end: 17, temp: 37.3, rh: 70, turn: false, notes: '🔴 LOCKDOWN – bez obrotów' }
+                    ],
+                    sensitivity: {
+                        critical: [1, 2, 3, 14, 15],
+                        high: [4, 5, 12, 13, 16, 17],
+                        medium: [6, 7, 8, 9, 10, 11]
+                    }
+                },
+                GUINEA: {
+                    name: 'Perliczka',
+                    days: 26,
+                    lockdown: 23,
+                    noRotate: [12, 18, 23],
+                    phases: [
+                        { start: 1, end: 22, temp: 37.7, rh: 55, turn: true, notes: 'Normalna inkubacja' },
+                        { start: 23, end: 26, temp: 37.2, rh: 70, turn: false, notes: '🔴 LOCKDOWN – bez obrotów' }
+                    ],
+                    sensitivity: {
+                        critical: [1, 2, 3, 20, 21, 22, 23],
+                        high: [4, 5, 15, 16, 17, 18, 19, 24, 25, 26],
+                        medium: [6, 7, 8, 9, 10, 11, 12, 13, 14]
+                    }
+                },
+                PHEASANT: {
+                    name: 'Bażant',
+                    days: 24,
+                    lockdown: 21,
+                    noRotate: [10, 16, 21],
+                    phases: [
+                        { start: 1, end: 20, temp: 37.8, rh: 55, turn: true, notes: 'Normalna inkubacja' },
+                        { start: 21, end: 24, temp: 37.2, rh: 70, turn: false, notes: '🔴 LOCKDOWN – bez obrotów' }
+                    ],
+                    sensitivity: {
+                        critical: [1, 2, 3, 18, 19, 20, 21],
+                        high: [4, 5, 14, 15, 16, 17, 22, 23, 24],
+                        medium: [6, 7, 8, 9, 10, 11, 12, 13]
+                    }
+                }
+            };
+
+            function getSpeciesInfo(id) { return SPECIES[id] || SPECIES.CHICKEN; }
+
+            function getPhaseForDay(speciesId, day) {
+                const info = getSpeciesInfo(speciesId);
+                for (const p of info.phases) {
+                    if (day >= p.start && day <= p.end) return p;
+                }
+                return info.phases[info.phases.length - 1] || { temp: 37.7, rh: 60, turn: true, notes: '' };
+            }
+
+            function getSensitivity(speciesId, day) {
+                const info = getSpeciesInfo(speciesId);
+                if (!info.sensitivity) return 'MEDIUM';
+                if (info.sensitivity.critical.includes(day)) return 'CRITICAL';
+                if (info.sensitivity.high.includes(day)) return 'HIGH';
+                return 'MEDIUM';
+            }
+
+            function getSensitivityColor(sensitivity) {
+                if (sensitivity === 'CRITICAL') return '#ff4444';
+                if (sensitivity === 'HIGH') return '#ff8844';
+                return '#70d070';
+            }
+
+            // ============================================================
+            //  STAN
+            // ============================================================
+            let statusData = null;
+            let trayData = null;
+            let history = [];
+            let trendHistory = [];
+            const TREND_LEN = 60;
+            const HISTORY_LEN = 45;
+            let tempRange = 1.0;
+            let rhRange = 5.0;
+            let chartTempRange = '1h';
+            let chartHumRange = '1h';
+            const RANGE_MS = { '1h': 3600000, '6h': 21600000, '24h': 86400000, '7d': 604800000 };
+            const API_FETCH_TIMEOUT_MS = 5000;
+            let apiOnline = false;
+            let apiRetries = 0;
+
+            // Logi
+            const eventLog = [];
+            const EVENT_LOG_MAX = 100;
+
+            // Journal
+            let journalEntries = [];
+
+            // ============================================================
+            //  CANVAS – ELIPSA
+            // ============================================================
+            const canvas = document.getElementById('balanceCanvas');
+            const ctx = canvas.getContext('2d');
+            let W, H, dpr;
+
+            function resizeCanvas() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                dpr = window.devicePixelRatio || 1;
+                W = rect.width;
+                H = rect.height;
+                canvas.width = W * dpr;
+                canvas.height = H * dpr;
+                canvas.style.width = W + 'px';
+                canvas.style.height = H + 'px';
+                ctx.scale(dpr, dpr);
+                if (statusData) draw();
+            }
+
+            // ============================================================
+            //  CANVAS – TREND
+            // ============================================================
+            const trendCanvas = document.getElementById('trendCanvas');
+            const tctx = trendCanvas.getContext('2d');
+            let tW, tH, tdpr;
+
+            function resizeTrend() {
+                const rect = trendCanvas.parentElement.getBoundingClientRect();
+                tdpr = window.devicePixelRatio || 1;
+                tW = rect.width;
+                tH = rect.height;
+                trendCanvas.width = tW * tdpr;
+                trendCanvas.height = tH * tdpr;
+                trendCanvas.style.width = tW + 'px';
+                trendCanvas.style.height = tH + 'px';
+                tctx.scale(tdpr, tdpr);
+                drawTrend();
+            }
+
+            // ============================================================
+            //  AUTO-SKALOWANIE
+            // ============================================================
+            function autoScale(avgTemp, rh, setTemp, setRh) {
+                const tDev = Math.abs(avgTemp - setTemp);
+                const rDev = Math.abs(rh - setRh);
+                if (tDev > tempRange * 0.7) { tempRange = Math.min(5.0, tempRange * 1.12); } else if (tDev < tempRange *
+                    0.2) { tempRange = Math.max(0.4, tempRange * 0.93); }
+                if (rDev > rhRange * 0.7) { rhRange = Math.min(25.0, rhRange * 1.12); } else if (rDev < rhRange * 0.2) { rhRange
+                        = Math.max(2.0, rhRange * 0.93); }
+            }
+
+            // ============================================================
+            //  RYSOWANIE ELIPSY
+            // ============================================================
+            function draw() {
+                if (W === 0 || H === 0 || !statusData) return;
+                ctx.clearRect(0, 0, W, H);
+
+                const setpoint = getSetpointsFromTrays();
+                const setTemp = setpoint.tempAvg || statusData.target_temp || 37.7;
+                const setRh = setpoint.rhAvg || statusData.target_humidity || 60.0;
+
+                const avgTemp = statusData.temp_chamber ?? 0;
+                const rh = statusData.humidity ?? 0;
+
+                autoScale(avgTemp, rh, setTemp, setRh);
+
+                const pad = Math.min(W, H) * 0.08;
+                const cx = W / 2;
+                const cy = H / 2;
+                const rx = Math.min(W / 2 - pad, H / 2 - pad) * 0.92;
+                const ry = rx * 0.55;
+
+                const tDev = avgTemp - setTemp;
+                const rDev = rh - setRh;
+
+                const tFrac = Math.max(-1, Math.min(1, tDev / tempRange));
+                const rFrac = Math.max(-1, Math.min(1, rDev / rhRange));
+                const px = cx + rFrac * rx * 0.92;
+                const py = cy - tFrac * ry * 0.92;
+
+                // Topografia
+                const levels = [0.2, 0.4, 0.6, 0.8, 1.0];
+                for (const lv of levels) {
+                    ctx.beginPath();
+                    ctx.ellipse(cx, cy, rx * lv, ry * lv, 0, 0, Math.PI * 2);
+                    ctx.strokeStyle = lv === 1.0 ? '#3a4250' : '#1e2530';
+                    ctx.lineWidth = lv === 1.0 ? 1.2 : 0.6;
+                    ctx.stroke();
+                }
+
+                // Tolerancja
+                const tolRx = rx * (0.3 / Math.max(0.3, tempRange));
+                const tolRy = ry * (3.0 / Math.max(3.0, rhRange));
+                ctx.beginPath();
+                ctx.ellipse(cx, cy, Math.min(tolRx, rx * 0.85), Math.min(tolRy, ry * 0.85), 0, 0, Math.PI * 2);
+                ctx.strokeStyle = '#3a6a5a';
+                ctx.lineWidth = 1.2;
+                ctx.setLineDash([4, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Osie
+                ctx.strokeStyle = '#2a3240';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(cx - rx - 20, cy);
+                ctx.lineTo(cx + rx + 20, cy);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - ry - 20);
+                ctx.lineTo(cx, cy + ry + 20);
+                ctx.stroke();
+
+                // Podziałki
+                ctx.fillStyle = '#5a6270';
+                ctx.font = '8px Courier New, monospace';
+                for (let v = -tempRange; v <= tempRange; v += 0.2) {
+                    const x = cx + (v / tempRange) * rx;
+                    const isMajor = Math.abs((v * 10) % 5) < 0.1;
+                    ctx.beginPath();
+                    ctx.moveTo(x, cy - (isMajor ? 5 : 2.5));
+                    ctx.lineTo(x, cy + (isMajor ? 5 : 2.5));
+                    ctx.strokeStyle = isMajor ? '#7a8290' : '#4a5260';
+                    ctx.lineWidth = isMajor ? 0.8 : 0.5;
+                    ctx.stroke();
+                    if (isMajor || Math.abs(v) < 0.05) {
+                        ctx.fillStyle = '#7a8290';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'top';
+                        let label = Math.abs(v) < 0.05 ? '0' : (v > 0 ? '+' : '') + v.toFixed(1);
+                        ctx.fillText(label, x, cy + 10);
+                    }
+                }
+                for (let v = -rhRange; v <= rhRange; v += 1.0) {
+                    const y = cy - (v / rhRange) * ry;
+                    const isMajor = Math.abs((v * 2) % 2) < 0.1;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - (isMajor ? 5 : 2.5), y);
+                    ctx.lineTo(cx + (isMajor ? 5 : 2.5), y);
+                    ctx.strokeStyle = isMajor ? '#7a8290' : '#4a5260';
+                    ctx.lineWidth = isMajor ? 0.8 : 0.5;
+                    ctx.stroke();
+                    if (isMajor || Math.abs(v) < 0.05) {
+                        ctx.fillStyle = '#7a8290';
+                        ctx.textAlign = 'right';
+                        ctx.textBaseline = 'middle';
+                        let label = Math.abs(v) < 0.05 ? '0' : (v > 0 ? '+' : '') + v.toFixed(0);
+                        ctx.fillText(label, cx - 12, y);
+                    }
+                }
+
+                // Historia
+                for (let i = 0; i < history.length; i++) {
+                    const h = history[i];
+                    const hTDev = h.temp - setTemp;
+                    const hRDev = h.wilg - setRh;
+                    const hTFrac = Math.max(-1, Math.min(1, hTDev / tempRange));
+                    const hRFrac = Math.max(-1, Math.min(1, hRDev / rhRange));
+                    const hx = cx + hRFrac * rx * 0.92;
+                    const hy = cy - hTFrac * ry * 0.92;
+                    const age = (Date.now() - h.timestamp) / 1000;
+                    const opacity = Math.max(0, 1 - age / 50);
+                    ctx.beginPath();
+                    ctx.arc(hx, hy, 1.5 + opacity * 1.0, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(140,150,160,${opacity * 0.35})`;
+                    ctx.fill();
+                }
+
+                // Punkt pracy
+                const tAlarm = Math.abs(tDev) > 1.5;
+                const rAlarm = Math.abs(rDev) > 8.0;
+                const alarm = tAlarm || rAlarm;
+                const warn = (Math.abs(tDev) > 0.3 || Math.abs(rDev) > 3.0) && !alarm;
+
+                if (alarm || warn) {
+                    const grad = ctx.createRadialGradient(px, py, 1, px, py, 12);
+                    const color = alarm ? 'rgba(255,100,100,' : 'rgba(232,214,96,';
+                    grad.addColorStop(0, color + '0.5)');
+                    grad.addColorStop(0.4, color + '0.1)');
+                    grad.addColorStop(1, color + '0)');
+                    ctx.beginPath();
+                    ctx.arc(px, py, 12, 0, Math.PI * 2);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                }
+
+                ctx.beginPath();
+                ctx.arc(px, py, 4, 0, Math.PI * 2);
+                ctx.fillStyle = alarm ? '#ff6666' : (warn ? '#e8d660' : '#c0c8d0');
+                ctx.fill();
+                ctx.strokeStyle = '#0c0e12';
+                ctx.lineWidth = 1.0;
+                ctx.stroke();
+
+                // Etykiety osi
+                ctx.font = '7px Courier New, monospace';
+                ctx.fillStyle = '#3a4250';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText('ΔT [°C]', cx, cy + ry + 28);
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('ΔRH [%]', cx + rx + 22, cy);
+            }
+
+            // ============================================================
+            //  RYSOWANIE TRENDU
+            // ============================================================
+            function drawTrend() {
+                if (tW === 0 || tH === 0 || !statusData) return;
+                tctx.clearRect(0, 0, tW, tH);
+
+                const setpoint = getSetpointsFromTrays();
+                const setTemp = setpoint.tempAvg || statusData.target_temp || 37.7;
+                const setRh = setpoint.rhAvg || statusData.target_humidity || 60.0;
+
+                const data = trendHistory.slice(-TREND_LEN);
+                if (data.length < 3) {
+                    tctx.fillStyle = '#2a3240';
+                    tctx.font = '8px Courier New, monospace';
+                    tctx.textAlign = 'center';
+                    tctx.fillText('oczekiwanie na dane...', tW / 2, tH / 2 + 3);
+                    return;
+                }
+
+                let tMin = Infinity,
+                    tMax = -Infinity,
+                    rMin = Infinity,
+                    rMax = -Infinity;
+                for (const d of data) {
+                    const td = d.temp - setTemp;
+                    const rd = d.rh - setRh;
+                    if (isFinite(td)) { if (td < tMin) tMin = td; if (td > tMax) tMax = td; }
+                    if (isFinite(rd)) { if (rd < rMin) rMin = rd; if (rd > rMax) rMax = rd; }
+                }
+
+                const tMargin = Math.max(0.1, (tMax - tMin) * 0.15);
+                const rMargin = Math.max(0.3, (rMax - rMin) * 0.15);
+                const tLo = Math.min(-0.3, tMin - tMargin);
+                const tHi = Math.max(0.3, tMax + tMargin);
+                const rLo = Math.min(-3.0, rMin - rMargin);
+                const rHi = Math.max(3.0, rMax + rMargin);
+
+                const pad = { top: 6, bottom: 6, left: 20, right: 20 };
+                const plotW = tW - pad.left - pad.right;
+                const plotH = tH - pad.top - pad.bottom;
+
+                const mapX = (idx) => pad.left + (idx / (data.length - 1)) * plotW;
+                const mapYT = (v) => pad.top + plotH - ((v - tLo) / (tHi - tLo)) * plotH;
+                const mapYR = (v) => pad.top + plotH - ((v - rLo) / (rHi - rLo)) * plotH;
+
+                // Zielony pas tolerancji (temp)
+                const tolBandT = 0.3;
+                const yTlo = mapYT(-tolBandT);
+                const yThi = mapYT(tolBandT);
+                tctx.fillStyle = 'rgba(34,197,94,0.08)';
+                tctx.fillRect(pad.left, yTlo, plotW, Math.max(1, yThi - yTlo));
+
+                // Zielony pas tolerancji (RH)
+                const tolBandR = 3.0;
+                const yRlo = mapYR(-tolBandR);
+                const yRhi = mapYR(tolBandR);
+                tctx.fillStyle = 'rgba(34,197,94,0.06)';
+                tctx.fillRect(pad.left, yRlo, plotW, Math.max(1, yRhi - yRlo));
+
+                // Setpoint (przerywana)
+                const ySetT = mapYT(0);
+                const ySetR = mapYR(0);
+                tctx.strokeStyle = 'rgba(180,190,200,0.25)';
+                tctx.lineWidth = 0.8;
+                tctx.setLineDash([3, 4]);
+                tctx.beginPath();
+                tctx.moveTo(pad.left, ySetT);
+                tctx.lineTo(tW - pad.right, ySetT);
+                tctx.stroke();
+                tctx.beginPath();
+                tctx.moveTo(pad.left, ySetR);
+                tctx.lineTo(tW - pad.right, ySetR);
+                tctx.stroke();
+                tctx.setLineDash([]);
+
+                // Trend temp
+                tctx.strokeStyle = 'rgba(180,200,220,0.35)';
+                tctx.lineWidth = 1.2;
+                tctx.beginPath();
+                for (let i = 0; i < data.length; i++) {
+                    const d = data[i];
+                    const td = d.temp - setTemp;
+                    const x = mapX(i);
+                    const y = mapYT(td);
+                    if (i === 0) tctx.moveTo(x, y);
+                    else tctx.lineTo(x, y);
+                }
+                tctx.stroke();
+
+                // Trend RH
+                tctx.strokeStyle = 'rgba(180,220,200,0.25)';
+                tctx.lineWidth = 1.0;
+                tctx.beginPath();
+                for (let i = 0; i < data.length; i++) {
+                    const d = data[i];
+                    const rd = d.rh - setRh;
+                    const x = mapX(i);
+                    const y = mapYR(rd);
+                    if (i === 0) tctx.moveTo(x, y);
+                    else tctx.lineTo(x, y);
+                }
+                tctx.stroke();
+
+                // Ostatnie punkty
+                if (data.length > 0) {
+                    const last = data[data.length - 1];
+                    const tLast = last.temp - setTemp;
+                    const rLast = last.rh - setRh;
+                    const xLast = mapX(data.length - 1);
+                    const yT = mapYT(tLast);
+                    tctx.fillStyle = 'rgba(180,200,220,0.5)';
+                    tctx.beginPath();
+                    tctx.arc(xLast, yT, 2.5, 0, Math.PI * 2);
+                    tctx.fill();
+                    const yR = mapYR(rLast);
+                    tctx.fillStyle = 'rgba(180,220,200,0.4)';
+                    tctx.beginPath();
+                    tctx.arc(xLast, yR, 2.0, 0, Math.PI * 2);
+                    tctx.fill();
+                }
+
+                // Etykiety osi
+                tctx.fillStyle = '#3a424a';
+                tctx.font = '6px Courier New, monospace';
+                tctx.textAlign = 'right';
+                tctx.textBaseline = 'middle';
+                const tLabels = [Math.round(tLo * 10) / 10, 0, Math.round(tHi * 10) / 10];
+                for (const v of tLabels) {
+                    const y = mapYT(v);
+                    if (y > pad.top + 2 && y < pad.top + plotH - 2) {
+                        tctx.fillText(v.toFixed(1), pad.left - 3, y);
+                    }
+                }
+                tctx.textAlign = 'left';
+                tctx.textBaseline = 'middle';
+                const rLabels = [Math.round(rLo), 0, Math.round(rHi)];
+                for (const v of rLabels) {
+                    const y = mapYR(v);
+                    if (y > pad.top + 2 && y < pad.top + plotH - 2) {
+                        tctx.fillText(v.toFixed(0), tW - pad.right + 3, y);
+                    }
+                }
+            }
+
+            // ============================================================
+            //  OBLICZANIE SETPOINTÓW Z TAC
+            // ============================================================
+            function getSetpointsFromTrays() {
+                let temp1 = null,
+                    temp2 = null,
+                    rh1 = null,
+                    rh2 = null;
+                let count = 0;
+                if (trayData && trayData.trays) {
+                    for (let i = 0; i < trayData.trays.length && i < 2; i++) {
+                        const tray = trayData.trays[i] || {};
+                        const speciesId = tray.species_id || 'CHICKEN';
+                        const day = tray.current_day || 1;
+                        const phase = getPhaseForDay(speciesId, day);
+                        if (i === 0) { temp1 = phase.temp;
+                            rh1 = phase.rh; } else { temp2 = phase.temp;
+                            rh2 = phase.rh; }
+                        count++;
+                    }
+                }
+                if (count === 0) { return { temp1: null, temp2: null, rh1: null, rh2: null, tempAvg: null, rhAvg: null }; }
+                let tempSum = 0,
+                    rhSum = 0,
+                    validT = 0,
+                    validR = 0;
+                if (temp1 !== null) { tempSum += temp1;
+                    validT++; }
+                if (temp2 !== null) { tempSum += temp2;
+                    validT++; }
+                if (rh1 !== null) { rhSum += rh1;
+                    validR++; }
+                if (rh2 !== null) { rhSum += rh2;
+                    validR++; }
+                return { temp1, temp2, rh1, rh2, tempAvg: validT > 0 ? tempSum / validT : null, rhAvg: validR > 0 ? rhSum /
+                        validR : null };
+            }
+
+            // ============================================================
+            //  LINIAŁY DNI
+            // ============================================================
+            function buildRuler(containerId, markerId, noRotateId, speciesId, currentDay) {
+                const container = document.getElementById(containerId);
+                const marker = document.getElementById(markerId);
+                const noRotate = document.getElementById(noRotateId);
+                const ticksContainer = container.querySelector('.ruler-ticks');
+                ticksContainer.innerHTML = '';
+
+                const info = getSpeciesInfo(speciesId);
+                const totalDays = info.days;
+                const lockdownDay = info.lockdown || totalDays;
+                const noRotateDays = info.noRotate || [];
+
+                const isLockdown = currentDay >= lockdownDay;
+                container.classList.toggle('lockdown', isLockdown);
+
+                const step = Math.max(1, Math.floor(totalDays / 10));
+                for (let d = 0; d <= totalDays; d += step) {
+                    const tick = document.createElement('div');
+                    tick.className = 'ruler-tick' + (d % 7 === 0 ? ' major' : '');
+                    const line = document.createElement('div');
+                    line.className = 'tick-line';
+                    tick.appendChild(line);
+                    if (d % 7 === 0 || d === 0 || d === totalDays) {
+                        const label = document.createElement('div');
+                        label.className = 'tick-label';
+                        label.textContent = d;
+                        tick.appendChild(label);
+                    }
+                    ticksContainer.appendChild(tick);
+                }
+
+                const clamped = Math.max(0, Math.min(totalDays, currentDay || 0));
+                const percent = totalDays > 0 ? (clamped / totalDays) * 100 : 0;
+                marker.style.left = percent + '%';
+                marker.classList.toggle('lockdown', isLockdown);
+
+                let closest = null,
+                    closestDist = Infinity;
+                for (const d of noRotateDays) {
+                    const dist = Math.abs(d - clamped);
+                    if (dist < closestDist) { closestDist = dist;
+                        closest = d; }
+                }
+                if (closest !== null && closestDist < 2) {
+                    const nrPercent = (closest / totalDays) * 100;
+                    noRotate.style.left = nrPercent + '%';
+                    noRotate.style.display = 'block';
+                } else { noRotate.style.display = 'none'; }
+                return { clamped, totalDays, isLockdown };
+            }
+
+            function updateTrays() {
+                if (!trayData || !trayData.trays) return;
+                for (let i = 0; i < 2; i++) {
+                    const tray = trayData.trays[i] || {};
+                    const speciesId = tray.species_id || 'CHICKEN';
+                    const currentDay = tray.current_day || 0;
+                    const totalDays = tray.total_days || getSpeciesInfo(speciesId).days;
+                    const info = getSpeciesInfo(speciesId);
+                    document.getElementById('tray' + (i + 1) + 'Species').textContent = info.name;
+                    document.getElementById('dayInfo' + (i + 1)).textContent = 'Dzień ' + currentDay + ' / ' + totalDays;
+                    buildRuler('rulerTrack' + (i + 1), 'rulerMarker' + (i + 1), 'noRotate' + (i + 1), speciesId,
+                    currentDay);
+                }
+            }
+
+            // ============================================================
+            //  AKTUALIZACJA HUD
+            // ============================================================
+            function updateHUD() {
+                if (!statusData) return;
+                const setpoint = getSetpointsFromTrays();
+                const avgTemp = statusData.temp_chamber ?? 0;
+                const rh = statusData.humidity ?? 0;
+                const ds1 = statusData.temp_chamber ?? 0;
+                const ds2 = statusData.temp_aquarium ?? 0;
+                const setTemp = setpoint.tempAvg || statusData.target_temp || 37.7;
+                const setRh = setpoint.rhAvg || statusData.target_humidity || 60.0;
+                const tDev = avgTemp - setTemp;
+                const rDev = rh - setRh;
+
+                document.getElementById('ds1Val').innerHTML = (isFinite(ds1) ? ds1.toFixed(2) : '--') +
+                    ' <span class="unit">°C</span>';
+                document.getElementById('ds2Val').innerHTML = (isFinite(ds2) ? ds2.toFixed(2) : '--') +
+                    ' <span class="unit">°C</span>';
+                document.getElementById('avgVal').innerHTML = (isFinite(avgTemp) ? avgTemp.toFixed(2) : '--') +
+                    ' <span class="unit">°C</span>';
+                document.getElementById('rhVal').innerHTML = (isFinite(rh) ? rh.toFixed(1) : '--') +
+                    ' <span class="unit">%</span>';
+
+                const tDevStr = isFinite(tDev) ? (tDev >= 0 ? '+' : '') + tDev.toFixed(2) : '--';
+                const rDevStr = isFinite(rDev) ? (rDev >= 0 ? '+' : '') + rDev.toFixed(1) : '--';
+                document.getElementById('dtVal').innerHTML = tDevStr + ' <span class="unit">°C</span>';
+                document.getElementById('drVal').innerHTML = rDevStr + ' <span class="unit">%</span>';
+
+                const fmt = (v) => (v !== null && isFinite(v) ? v.toFixed(2) : '--');
+                const fmtRh = (v) => (v !== null && isFinite(v) ? v.toFixed(1) : '--');
+                document.getElementById('setT1Display').innerHTML = fmt(setpoint.temp1) + ' <span class="unit">°C</span>';
+                document.getElementById('setT2Display').innerHTML = fmt(setpoint.temp2) + ' <span class="unit">°C</span>';
+                document.getElementById('setTAvgDisplay').innerHTML = fmt(setpoint.tempAvg) + ' <span class="unit">°C</span>';
+                document.getElementById('setRh1Display').innerHTML = fmtRh(setpoint.rh1) + ' <span class="unit">%</span>';
+                document.getElementById('setRh2Display').innerHTML = fmtRh(setpoint.rh2) + ' <span class="unit">%</span>';
+                document.getElementById('setRhAvgDisplay').innerHTML = fmtRh(setpoint.rhAvg) + ' <span class="unit">%</span>';
+
+                const tAlarm = isFinite(tDev) && Math.abs(tDev) > 1.5;
+                const tWarn = isFinite(tDev) && Math.abs(tDev) > 0.3 && !tAlarm;
+                const rAlarm = isFinite(rDev) && Math.abs(rDev) > 8.0;
+                const rWarn = isFinite(rDev) && Math.abs(rDev) > 3.0 && !rAlarm;
+                document.getElementById('avgRow').className = 'hud-row' + (tAlarm ? ' alarm' : tWarn ? ' warn' : '');
+                document.getElementById('dtRow').className = 'hud-row' + (tAlarm ? ' alarm' : tWarn ? ' warn' : '');
+                document.getElementById('rhRow').className = 'hud-row' + (rAlarm ? ' alarm' : rWarn ? ' warn' : '');
+                document.getElementById('drRow').className = 'hud-row' + (rAlarm ? ' alarm' : rWarn ? ' warn' : '');
+
+                const pwm0 = statusData.heater_pwm_ch0 ?? 0;
+                const pwm1 = statusData.heater_pwm_ch1 ?? 0;
+                const pct0 = Math.min(100, (pwm0 / 4095) * 100);
+                const pct1 = Math.min(100, (pwm1 / 4095) * 100);
+                document.getElementById('heaterFill0').style.width = pct0 + '%';
+                document.getElementById('heaterFill1').style.width = pct1 + '%';
+                document.getElementById('heaterVal0').textContent = Math.round(pct0) + '%';
+                document.getElementById('heaterVal1').textContent = Math.round(pct1) + '%';
+
+                const diffOn = statusData.diffuser_0_on || statusData.diffuser_on || false;
+                document.getElementById('diffuserLed').className = 'led' + (diffOn ? ' on' : '');
+            }
+
+            // ============================================================
+            //  TOOLBAR
+            // ============================================================
+            function updateToolbar() {
+                if (!statusData) return;
+                const espTemp = statusData.esp_internal_temp;
+                const espDot = document.getElementById('tbEspDot');
+                const espVal = document.getElementById('tbEspTemp');
+                if (isFinite(espTemp)) {
+                    espVal.textContent = espTemp.toFixed(1);
+                    espDot.className = 'dot ' + (espTemp > 65 ? 'err' : espTemp > 55 ? 'warn' : 'ok');
+                } else { espVal.textContent = '--';
+                    espDot.className = 'dot err'; }
+
+                const temp = statusData.temp_chamber;
+                const tgt = statusData.target_temp || 37.7;
+                const tDot = document.getElementById('tbTempDot');
+                const tVal = document.getElementById('tbTempVal');
+                if (isFinite(temp)) {
+                    tVal.textContent = temp.toFixed(1);
+                    const diff = Math.abs(temp - tgt);
+                    tDot.className = 'dot ' + (diff > 1.5 ? 'err' : diff > 0.3 ? 'warn' : 'ok');
+                } else { tVal.textContent = '--';
+                    tDot.className = 'dot err'; }
+
+                const rh = statusData.humidity;
+                const rhDot = document.getElementById('tbRhDot');
+                const rhVal = document.getElementById('tbRhVal');
+                if (isFinite(rh) && rh >= 0 && rh <= 100) {
+                    rhVal.textContent = rh.toFixed(1);
+                    const rhTgt = statusData.target_humidity || 60;
+                    const diff = Math.abs(rh - rhTgt);
+                    rhDot.className = 'dot ' + (diff > 8 ? 'err' : diff > 3 ? 'warn' : 'ok');
+                } else { rhVal.textContent = '--';
+                    rhDot.className = 'dot err'; }
+            }
+
+            // ============================================================
+            //  POBIERANIE DANYCH
+            // ============================================================
+            async function fetchJsonWithTimeout(url, options={}, timeoutMs=5000) {
+                const controller = new AbortController();
+                const signal = controller.signal;
+                const timer = setTimeout(() => controller.abort(), timeoutMs);
+                try {
+                    const resp = await fetch(url, { ...options, signal });
+                    clearTimeout(timer);
+                    return resp;
+                } catch (e) {
+                    clearTimeout(timer);
+                    throw e;
+                }
+            }
+
+            async function fetchJson(url, options={}, timeoutMs=5000) {
+                const response = await fetchJsonWithTimeout(url, options, timeoutMs);
+                return response.json();
+            }
+
+            async function fetchData() {
+                try {
+                    const [statusResp, trayResp] = await Promise.all([
+                        fetchJson('/api/status', {}, API_FETCH_TIMEOUT_MS),
+                        fetchJson('/api/trays', {}, API_FETCH_TIMEOUT_MS)
+                    ]);
+                    statusData = statusResp;
+                    trayData = trayResp;
+                    apiOnline = true;
+                    apiRetries = 0;
+                } catch (e) {
+                    apiRetries++;
+                    if (apiRetries >= 3) apiOnline = false;
+                    console.warn('Błąd pobierania danych, używam symulacji:', e.message);
+                    statusData = {
+                        temp_chamber: 37.65 + (Math.random() - 0.5) * 0.2,
+                        temp_aquarium: 37.55 + (Math.random() - 0.5) * 0.2,
+                        humidity: 60.2 + (Math.random() - 0.5) * 0.8,
+                        target_temp: 37.7,
+                        target_humidity: 60.0,
+                        humidity_target_min: 55,
+                        humidity_target_max: 65,
+                        heater_pwm_ch0: 1500 + Math.random() * 1000,
+                        heater_pwm_ch1: 800 + Math.random() * 800,
+                        diffuser_0_on: Math.random() > 0.5,
+                        esp_internal_temp: 42 + Math.random() * 6
+                    };
+                    trayData = { trays: [{ species_id: 'CHICKEN', current_day: 12, total_days: 21 }, { species_id: 'DUCK',
+                            current_day: 8, total_days: 28 }] };
+                }
+
+                if (statusData) {
+                    const avgTemp = statusData.temp_chamber ?? 0;
+                    const rh = statusData.humidity ?? 0;
+                    history.push({ temp: avgTemp, wilg: rh, timestamp: Date.now() });
+                    if (history.length > HISTORY_LEN) history.shift();
+                    trendHistory.push({ temp: avgTemp, rh: rh, timestamp: Date.now() });
+                    if (trendHistory.length > TREND_LEN * 2) trendHistory.shift();
+                    updateHUD();
+                    updateToolbar();
+                    draw();
+                    drawTrend();
+                    updateAlerts();
+                    renderCharts();
+                }
+                if (trayData) {
+                    updateTrays();
+                    renderScheduleTables();
+                }
+            }
+
+            // ============================================================
+            //  ALARMY
+            // ============================================================
+            function updateAlerts() {
+                const box = document.getElementById('alerts-box');
+                if (!statusData) { box.textContent = 'Brak danych.'; return; }
+                const alerts = [];
+                const t = statusData.temp_chamber,
+                    tgt = statusData.target_temp;
+                if (isFinite(t) && isFinite(tgt) && Math.abs(t - tgt) >= 1.5) alerts.push(
+                    'Temperatura odbiega od celu ≥ 1.5°C');
+                if (isFinite(t) && t >= 40.5) alerts.push('Ryzyko przegrzania (≥ 40.5°C)');
+                const rh = statusData.humidity,
+                    hMin = statusData.humidity_target_min || 45;
+                if (isFinite(rh) && rh < hMin - 5) alerts.push('Niska wilgotność (poniżej minimum)');
+                if (alerts.length) { box.innerHTML = alerts.map(a => '<div style="color:#e05050;">• ' + a + '</div>').join(
+                    ''); } else { box.textContent = 'Brak aktywnych alarmów.';
+                    box.style.color = '#5a6a7a'; }
+            }
+
+            // ============================================================
+            //  CHARTS
+            // ============================================================
+            function renderCharts() {
+                const tempC = document.getElementById('chartTempMain');
+                const humC = document.getElementById('chartHumMain');
+                if (!tempC || !humC) return;
+                drawChart(tempC, 'temp', chartTempRange);
+                drawChart(humC, 'hum', chartHumRange);
+            }
+
+            function drawChart(canvas, metric, range) {
+                const ctx2 = canvas.getContext('2d');
+                const rect = canvas.getBoundingClientRect();
+                const w = rect.width || 400;
+                const h = rect.height || 150;
+                canvas.width = w * 2;
+                canvas.height = h * 2;
+                canvas.style.width = w + 'px';
+                canvas.style.height = h + 'px';
+                ctx2.scale(2, 2);
+                ctx2.clearRect(0, 0, w, h);
+
+                const store = metric === 'temp' ? history : trendHistory;
+                const data = store.slice(-50);
+                if (data.length < 2) {
+                    ctx2.fillStyle = '#3a424a';
+                    ctx2.font = '10px monospace';
+                    ctx2.textAlign = 'center';
+                    ctx2.fillText('oczekiwanie na dane...', w / 2, h / 2);
+                    return;
+                }
+
+                const vals = data.map(d => metric === 'temp' ? d.temp : d.rh).filter(isFinite);
+                if (vals.length < 2) return;
+                const lo = Math.min(...vals) - 0.5;
+                const hi = Math.max(...vals) + 0.5;
+
+                const pad = { top: 12, bottom: 12, left: 30, right: 10 };
+                const plotW = w - pad.left - pad.right;
+                const plotH = h - pad.top - pad.bottom;
+
+                const mapX = (i) => pad.left + (i / (data.length - 1)) * plotW;
+                const mapY = (v) => pad.top + plotH - ((v - lo) / (hi - lo)) * plotH;
+
+                // Zielony pas
+                const mid = (lo + hi) / 2;
+                const band = (hi - lo) * 0.2;
+                ctx2.fillStyle = 'rgba(34,197,94,0.08)';
+                ctx2.fillRect(pad.left, mapY(mid + band), plotW, mapY(mid - band) - mapY(mid + band));
+
+                // Linia trendu
+                ctx2.strokeStyle = '#7a8a9a';
+                ctx2.lineWidth = 1.2;
+                ctx2.beginPath();
+                data.forEach((d, i) => {
+                    const v = metric === 'temp' ? d.temp : d.rh;
+                    if (!isFinite(v)) return;
+                    const x = mapX(i);
+                    const y = mapY(v);
+                    if (i === 0) ctx2.moveTo(x, y);
+                    else ctx2.lineTo(x, y);
+                });
+                ctx2.stroke();
+
+                // Ostatnia kropka
+                const last = data[data.length - 1];
+                const lv = metric === 'temp' ? last.temp : last.rh;
+                if (isFinite(lv)) {
+                    ctx2.fillStyle = '#70d070';
+                    ctx2.beginPath();
+                    ctx2.arc(mapX(data.length - 1), mapY(lv), 3, 0, Math.PI * 2);
+                    ctx2.fill();
+                }
+
+                // Etykiety osi
+                ctx2.fillStyle = '#3a424a';
+                ctx2.font = '7px monospace';
+                ctx2.textAlign = 'right';
+                ctx2.textBaseline = 'middle';
+                const labels = [lo, (lo + hi) / 2, hi];
+                labels.forEach(v => {
+                    ctx2.fillText(v.toFixed(1), pad.left - 4, mapY(v));
+                });
+            }
+
+            window.setChartRange = function(metric, range) {
+                if (metric === 'temp') chartTempRange = range;
+                else chartHumRange = range;
+                renderCharts();
+                document.querySelectorAll('#view-charts .btn-ghost').forEach(b => b.classList.remove('active'));
+                const btns = document.querySelectorAll('#view-charts .btn-ghost');
+                btns.forEach(b => { if (b.textContent === range) b.classList.add('active'); });
+            };
+
+            // ============================================================
+            //  ZAKŁADKA LĘG – harmonogram z kolorami wrażliwości
+            // ============================================================
+            function renderSchedule(speciesId, day) {
+                const info = getSpeciesInfo(speciesId);
+                document.getElementById('scheduleTitle').textContent = 'Harmonogram · ' + info.name;
+                document.getElementById('scheduleBadge').textContent = 'Dzień ' + day + '/' + info.days;
+
+                const tbody = document.getElementById('scheduleBody');
+                tbody.innerHTML = '';
+                for (let d = 1; d <= info.days; d++) {
+                    let phase = null;
+                    for (const p of info.phases) { if (d >= p.start && d <= p.end) { phase = p; break; } }
+                    if (!phase) continue;
+                    const isActive = d === day;
+                    const isLockdown = d >= info.lockdown;
+                    const noRotate = info.noRotate.includes(d);
+                    const sens = getSensitivity(speciesId, d);
+                    const sensColor = getSensitivityColor(sens);
+                    const tr = document.createElement('tr');
+                    if (isActive) tr.className = 'active';
+                    if (isLockdown) tr.className = 'lockdown';
+                    if (sens === 'CRITICAL') tr.style.background = 'rgba(255,68,68,0.08)';
+                    else if (sens === 'HIGH') tr.style.background = 'rgba(255,136,68,0.06)';
+                    let turnHtml = phase.turn ? '✓' : '✗';
+                    if (noRotate && isLockdown) turnHtml = '<span class="no-rotate">✕</span>';
+                    const sensLabel = sens === 'CRITICAL' ? '🔴' : (sens === 'HIGH' ? '🟠' : '🟢');
+                    tr.innerHTML =
+                        `<td>${isActive ? '▶ ' : ''}${d}</td><td style="color:${sensColor};font-weight:${sens === 'CRITICAL' ? 'bold' : 'normal'}">${phase.temp.toFixed(1)}</td><td>${phase.rh.toFixed(0)}</td><td>${turnHtml}</td><td>${isLockdown ? '<span class="lock">LOCK</span>' : '—'}</td><td style="font-size:9px;color:#5a6a7a;">${sensLabel} ${phase.notes || ''}</td>`;
+                    tbody.appendChild(tr);
+                }
+
+                // Przewiń do aktywnego dnia
+                const wrap = tbody.closest('.schedule-table-wrap');
+                if (wrap) {
+                    const activeRow = tbody.querySelector('tr.active');
+                    if (activeRow) {
+                        const rowTop = activeRow.offsetTop;
+                        wrap.scrollTop = Math.max(0, rowTop - 60);
+                    }
+                }
+
+                updatePreview(speciesId, day);
+            }
+
+            function updatePreview(speciesId, day) {
+                const info = getSpeciesInfo(speciesId);
+                let phase = null;
+                for (const p of info.phases) { if (day >= p.start && day <= p.end) { phase = p; break; } }
+                const tbody = document.getElementById('previewBody');
+                if (!phase) {
+                    tbody.innerHTML =
+                        '<tr><td style="color:#5a6a7a;font-size:11px;">Brak danych dla tego dnia</td></tr>';
+                    return;
+                }
+                const isLockdown = day >= (info.lockdown || info.days);
+                const noRotate = (info.noRotate || []).includes(day);
+                const sens = getSensitivity(speciesId, day);
+                const sensColor = getSensitivityColor(sens);
+                tbody.innerHTML = `
+                    <tr><td style="color:#5a6a7a;font-size:11px;padding:2px 4px;border-bottom:1px solid rgba(26,30,36,0.3);">Gatunek</td>
+                        <td style="text-align:right;color:#b0c8d8;font-size:12px;">${info.name}</td></tr>
+                    <tr><td style="color:#5a6a7a;font-size:11px;padding:2px 4px;border-bottom:1px solid rgba(26,30,36,0.3);">Dzień</td>
+                        <td style="text-align:right;color:#b0c8d8;font-size:12px;">${day} / ${info.days}</td></tr>
+                    <tr><td style="color:#5a6a7a;font-size:11px;padding:2px 4px;border-bottom:1px solid rgba(26,30,36,0.3);">Temp. zadana</td>
+                        <td style="text-align:right;color:${sensColor};font-size:12px;font-weight:${sens === 'CRITICAL' ? 'bold' : 'normal'}">${phase.temp.toFixed(1)} °C</td></tr>
+                    <tr><td style="color:#5a6a7a;font-size:11px;padding:2px 4px;border-bottom:1px solid rgba(26,30,36,0.3);">Wilgotność</td>
+                        <td style="text-align:right;color:#70d070;font-size:12px;">${phase.rh.toFixed(0)} %</td></tr>
+                    <tr><td style="color:#5a6a7a;font-size:11px;padding:2px 4px;border-bottom:1px solid rgba(26,30,36,0.3);">Obrót</td>
+                        <td style="text-align:right;color:${noRotate ? '#884444' : (phase.turn ? '#70d070' : '#a070d0')};font-size:12px;">${noRotate ? '✕ BRAK' : (phase.turn ? '✓ TAK' : '✗ NIE')}</td></tr>
+                    <tr><td style="color:#5a6a7a;font-size:11px;padding:2px 4px;border-bottom:1px solid rgba(26,30,36,0.3);">Faza</td>
+                        <td style="text-align:right;color:${sensColor};font-size:12px;font-weight:${sens === 'CRITICAL' ? 'bold' : 'normal'}">${sens} ${isLockdown ? '🔒' : ''}</td></tr>
+                    <tr><td style="color:#5a6a7a;font-size:11px;padding:2px 4px;">Uwagi</td>
+                        <td style="text-align:right;color:#6a7a8a;font-size:11px;">${phase.notes || ''}</td></tr>
+                `;
+            }
+
+            window.updateSchedule = function() {
+                const species = document.getElementById('speciesSelect').value;
+                const day = parseInt(document.getElementById('dayInput').value) || 1;
+                renderSchedule(species, Math.max(1, Math.min(getSpeciesInfo(species).days, day)));
+            };
+
+            window.applyToTray = function() {
+                const tray = parseInt(document.getElementById('traySelect').value);
+                const species = document.getElementById('speciesSelect').value;
+                const day = parseInt(document.getElementById('dayInput').value) || 1;
+                const badge = document.getElementById('previewBadge');
+                badge.textContent = 'Zapisano T' + (tray + 1);
+                badge.style.borderColor = '#5a8a7a';
+                badge.style.color = '#5a9a8a';
+                setTimeout(() => { badge.textContent = 'Aktywna';
+                    badge.style.borderColor = 'rgba(57,211,95,0.2)';
+                    badge.style.color = '#5a9a8a'; }, 2000);
+                addLog('cmd', 'Zastosowano do tacy ' + (tray + 1) + ': ' + species + ' dzień ' + day);
+            };
+
+            window.resetTray = function() {
+                if (!confirm('Resetować ustawienia tacy?')) return;
+                document.getElementById('dayInput').value = 1;
+                document.getElementById('speciesSelect').value = 'CHICKEN';
+                renderSchedule('CHICKEN', 1);
+                addLog('cmd', 'Reset tacy');
+            };
+
+            // ============================================================
+            //  KALIBRACJA / UCZENIE (symulacja)
+            // ============================================================
+            let learnInterval = null;
+            let learnSamples = 0;
+
+            window.startCalibration = function() {
+                document.getElementById('basePwm').textContent = Math.round(80 + Math.random() * 40) + '%';
+                document.getElementById('correction').textContent = (Math.random() * 10 - 5).toFixed(1) + '%';
+                document.getElementById('calibStatus').textContent = '🔧 TRWA';
+                document.getElementById('calibStatus').className = 'lval warn';
+                setTimeout(() => {
+                    document.getElementById('calibStatus').textContent = '✅ OK';
+                    document.getElementById('calibStatus').className = 'lval accent';
+                    addLog('ok', 'Kalibracja zakończona');
+                }, 3000);
+                addLog('info', 'Rozpoczęto kalibrację');
+            };
+
+            window.resetCalibration = function() {
+                document.getElementById('basePwm').textContent = '--';
+                document.getElementById('correction').textContent = '--';
+                document.getElementById('calibStatus').textContent = 'OK';
+                document.getElementById('calibStatus').className = 'lval accent';
+                addLog('cmd', 'Reset kalibracji');
+            };
+
+            window.startLearning = function() {
+                if (learnInterval) return;
+                document.getElementById('learnMode').textContent = 'ON';
+                document.getElementById('learnMode').className = 'lval accent';
+                learnSamples = 0;
+                document.getElementById('learnSamples').textContent = '0';
+                learnInterval = setInterval(() => {
+                    learnSamples++;
+                    document.getElementById('learnSamples').textContent = learnSamples;
+                    const stability = 80 + Math.random() * 18;
+                    document.getElementById('learnStability').textContent = stability.toFixed(1) + '%';
+                    document.getElementById('learnStability').className = 'lval ' + (stability > 90 ? 'accent' :
+                        'warn');
+                    if (learnSamples > 50) {
+                        stopLearning();
+                        document.getElementById('learnStability').textContent = '98.5%';
+                        document.getElementById('learnStability').className = 'lval accent';
+                        addLog('ok', 'Uczenie zakończone, stabilność 98.5%');
+                    }
+                }, 500);
+                addLog('info', 'Uruchomiono uczenie');
+            };
+
+            window.stopLearning = function() {
+                if (learnInterval) { clearInterval(learnInterval);
+                    learnInterval = null; }
+                document.getElementById('learnMode').textContent = 'OFF';
+                document.getElementById('learnMode').className = 'lval warn';
+                addLog('cmd', 'Zatrzymano uczenie');
+            };
+
+            window.resetLearning = function() {
+                stopLearning();
+                learnSamples = 0;
+                document.getElementById('learnSamples').textContent = '0';
+                document.getElementById('learnStability').textContent = '--';
+                document.getElementById('learnStability').className = 'lval accent';
+                addLog('cmd', 'Reset uczenia');
+            };
+
+            // ============================================================
+            //  SCHEDULE TAB
+            // ============================================================
+            function renderScheduleTables() {
+                if (!trayData || !trayData.trays) return;
+                for (let i = 0; i < 2; i++) {
+                    const tray = trayData.trays[i] || {};
+                    const speciesId = tray.species_id || 'CHICKEN';
+                    const currentDay = tray.current_day || 1;
+                    const info = getSpeciesInfo(speciesId);
+                    const body = document.getElementById('schedBody' + i);
+                    body.innerHTML = '';
+                    for (let d = 1; d <= info.days; d++) {
+                        let phase = null;
+                        for (const p of info.phases) { if (d >= p.start && d <= p.end) { phase = p; break; } }
+                        if (!phase) continue;
+                        const isLock = d >= info.lockdown;
+                        const sens = getSensitivity(speciesId, d);
+                        const sensColor = getSensitivityColor(sens);
+                        const tr = document.createElement('tr');
+                        if (d === currentDay) tr.className = 'active';
+                        if (isLock) tr.className = 'lockdown';
+                        if (sens === 'CRITICAL') tr.style.background = 'rgba(255,68,68,0.06)';
+                        tr.innerHTML =
+                            `<td style="font-weight:${sens === 'CRITICAL' ? 'bold' : 'normal'};color:${sensColor};">${d}</td><td>${phase.temp.toFixed(1)}</td><td>${phase.rh.toFixed(0)}</td><td>${phase.turn ? '✓' : '✗'}</td><td>${isLock ? '🔒' : '—'}</td>`;
+                        body.appendChild(tr);
+                    }
+                }
+            }
+
+            // ============================================================
+            //  JOURNAL
+            // ============================================================
+            window.journalAddTest = function() {
+                const now = new Date();
+                journalEntries.unshift({
+                    id: Date.now(),
+                    date: now.toLocaleDateString('pl-PL'),
+                    time: now.toLocaleTimeString('pl-PL'),
+                    text: 'Testowy wpis — ' + Math.random().toString(36).substring(2, 8)
+                });
+                renderJournal();
+                addLog('cmd', 'Dodano wpis do dziennika');
+            };
+
+            window.journalClear = function() {
+                if (!confirm('Wyczyścić dziennik?')) return;
+                journalEntries = [];
+                renderJournal();
+                addLog('cmd', 'Wyczyszczono dziennik');
+            };
+
+            function renderJournal() {
+                const list = document.getElementById('journalList');
+                if (!journalEntries.length) { list.innerHTML = '<div class="journal-empty">Brak wpisów.</div>'; return; }
+                list.innerHTML = journalEntries.map(e =>
+                    `<div style="padding:4px 8px;border-bottom:1px solid rgba(26,30,36,0.3);font-size:11px;display:flex;justify-content:space-between;"><span>${e.date} ${e.time}</span><span style="color:#8a9aa8;">${e.text}</span></div>`
+                ).join('');
+            }
+
+            // ============================================================
+            //  LOGI
+            // ============================================================
+            function addLog(type, msg) {
+                eventLog.push({ ts: Date.now(), type, msg });
+                if (eventLog.length > EVENT_LOG_MAX) eventLog.shift();
+                renderLogs();
+            }
+
+            function renderLogs() {
+                const list = document.getElementById('logList');
+                const count = document.getElementById('logCount');
+                if (count) count.textContent = eventLog.length;
+                if (!eventLog.length) { list.innerHTML = '<div class="journal-empty">Brak logów.</div>'; return; }
+                list.innerHTML = eventLog.slice().reverse().map(e => {
+                    const d = new Date(e.ts);
+                    const ts = d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    const icon = { info: 'ℹ', warn: '⚠', err: '✗', ok: '✓', cmd: '→' } [e.type] || '·';
+                    return `<div class="log-entry ${e.type}"><span class="log-ts">${ts}</span><span class="log-msg">${icon} ${e.msg}</span></div>`;
+                }).join('');
+            }
+
+            window.clearEventLog = function() {
+                eventLog.length = 0;
+                renderLogs();
+            };
+
+            // ============================================================
+            //  CALIBRATE
+            // ============================================================
+            let calRunning = false;
+            const calPwmSlider = document.getElementById('calPwmSlider');
+            const calPwmVal = document.getElementById('calPwmVal');
+            if (calPwmSlider) {
+                calPwmSlider.addEventListener('input', function() {
+                    calPwmVal.textContent = this.value + '%';
+                });
+            }
+
+            window.calStart = function() {
+                if (calRunning) return;
+                calRunning = true;
+                document.getElementById('calStatus').textContent = '⏳ Pomiar w toku...';
+                document.getElementById('calStatus').className = 'status-msg info';
+                const pwm = calPwmSlider ? calPwmSlider.value : 60;
+                addLog('info', 'Rozpoczęto pomiar kalibracji, PWM=' + pwm + '%');
+                setTimeout(() => {
+                    calRunning = false;
+                    document.getElementById('calStatus').textContent = '✅ Pomiar zakończony';
+                    document.getElementById('calStatus').className = 'status-msg ok';
+                    addLog('ok', 'Kalibracja zakończona pomyślnie');
+                }, 3000);
+            };
+
+            window.calStop = function() {
+                calRunning = false;
+                document.getElementById('calStatus').textContent = '■ Zatrzymano';
+                document.getElementById('calStatus').className = 'status-msg err';
+                addLog('cmd', 'Zatrzymano kalibrację');
+            };
+
+            window.calReset = function() {
+                calRunning = false;
+                document.getElementById('calStatus').textContent = 'Gotowy';
+                document.getElementById('calStatus').className = 'status-msg';
+                addLog('cmd', 'Reset kalibracji');
+            };
+
+            // ============================================================
+            //  EKSPORT / HISTORIA
+            // ============================================================
+            window.exportCSV = function() {
+                if (!history.length) { alert('Brak danych do eksportu.'); return; }
+                let csv = 'timestamp,temp,rh\n';
+                history.forEach(h => {
+                    csv += new Date(h.timestamp).toISOString() + ',' + h.temp.toFixed(2) + ',' + h.wilg.toFixed(
+                        1) + '\n';
+                });
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'inkubator_historia_' + new Date().toISOString().slice(0, 19).replace(/:/g, '-') +
+                    '.csv';
+                link.click();
+                addLog('cmd', 'Eksport CSV');
+            };
+
+            window.clearHistory = function() {
+                if (!confirm('Wyczyścić historię?')) return;
+                history = [];
+                trendHistory = [];
+                addLog('cmd', 'Wyczyszczono historię');
+            };
+
+            // ============================================================
+            //  ZAKŁADKI
+            // ============================================================
+            window.showTab = function(name) {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelector(`.tab[data-tab="${name}"]`)?.classList.add('active');
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                const view = document.getElementById('view-' + name);
+                if (view) view.classList.add('active');
+                document.getElementById('viewLabel').textContent = name.toUpperCase() + ' · ';
+                if (name === 'status') { setTimeout(() => { resizeCanvas();
+                        resizeTrend(); }, 50); }
+                if (name === 'charts') { setTimeout(renderCharts, 50); }
+                if (name === 'schedule') { renderScheduleTables(); }
+                if (name === 'logs') { renderLogs(); }
+                if (name === 'journal') { renderJournal(); }
+            };
+
+            // ============================================================
+            //  ZEGAR
+            // ============================================================
+            function updateClock() {
+                const now = new Date();
+                const h = String(now.getHours()).padStart(2, '0');
+                const m = String(now.getMinutes()).padStart(2, '0');
+                const s = String(now.getSeconds()).padStart(2, '0');
+                const timeStr = h + ':' + m + ':' + s;
+                document.getElementById('clockDisplay').textContent = timeStr;
+                document.getElementById('tbClock').textContent = timeStr;
+            }
+
+            // ============================================================
+            //  START
+            // ============================================================
+            window.addEventListener('resize', () => { resizeCanvas();
+                resizeTrend(); });
+
+            setTimeout(() => {
+                resizeCanvas();
+                resizeTrend();
+                fetchData();
+                updateClock();
+                renderSchedule('CHICKEN', 12);
+                renderJournal();
+                renderLogs();
+                document.getElementById('speciesSelect').addEventListener('change', window.updateSchedule);
+                document.getElementById('dayInput').addEventListener('change', window.updateSchedule);
+                document.querySelectorAll('#view-charts .btn-ghost').forEach((b, i) => {
+                    if (i === 0) b.classList.add('active');
+                });
+            }, 100);
+
+            setInterval(updateClock, 1000);
+            setInterval(fetchData, 5000);
+
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => { resizeCanvas();
+                    resizeTrend(); }, 200);
+            });
+
+            addLog('info', 'Panel uruchomiony ' + new Date().toLocaleString('pl-PL'));
+            window.debug = { statusData, trayData, history, trendHistory };
+
+        })();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,303 @@
+{
+  "version": "2.0",
+  "sensitivity_colors": {
+    "CRITICAL": "#ff4444",
+    "HIGH": "#ff8844",
+    "MEDIUM": "#70d070"
+  },
+  "species": {
+    "chicken": {
+      "id": "gallus_gallus_domesticus",
+      "common_name": "Kura",
+      "incubation_days": 21,
+      "description": "Standardowy cykl inkubacji kurzej – 21 dni",
+      "reference": "Poultry Hub Australia, Petersime",
+      "turning_frequency_per_day": 4,
+      "critical_phases": {
+        "early": [1, 2, 3],
+        "late": [16, 17, 18],
+        "lockdown": [19, 20, 21]
+      },
+      "day_by_day": [
+        {"day": 1, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 50, "humidity_range": [40, 60], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 POCZĄTEK – Embrion nie produkuje ciepła. NIE OTWIERAJ drzwi!"},
+        {"day": 2, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 50, "humidity_range": [40, 60], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Bardzo młody embrion – wrażliwy na wahania. Drzwi zamknięte."},
+        {"day": 3, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 50, "humidity_range": [40, 60], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Serce zaczyna bić. Metabolizm się rozpędza. Nie przeszkadzać."},
+        {"day": 4, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 50, "humidity_range": [40, 60], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Żyłki rozprzestrzeniają się. Krótkie otwarcia OK (max 2-3 min)."},
+        {"day": 5, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 50, "humidity_range": [40, 60], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Krótkie otwarcia drzwi OK, ale szybko zamykaj."},
+        {"day": 6, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 50, "humidity_range": [40, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion rośnie, zaczyna produkować ciepło. Krótkie przerwy tolerowane."},
+        {"day": 7, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 50, "humidity_range": [40, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Punkt przegięcia: produkcja ciepła ~0.009W, temp jaja ≈ temp powietrza."},
+        {"day": 8, "shell_temp": 37.8, "air_temp_target": 37.45, "humidity_set": 50, "humidity_range": [40, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion produkuje więcej ciepła – jajo będzie cieplejsze od powietrza."},
+        {"day": 9, "shell_temp": 37.8, "air_temp_target": 37.4, "humidity_set": 50, "humidity_range": [40, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion widoczny w świetle. Stabilna faza."},
+        {"day": 10, "shell_temp": 37.8, "air_temp_target": 37.35, "humidity_set": 50, "humidity_range": [40, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Pierwsze kandle. Można sprawdzić, ale szybko."},
+        {"day": 11, "shell_temp": 37.8, "air_temp_target": 37.3, "humidity_set": 50, "humidity_range": [40, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion rośnie. Stabilna faza."},
+        {"day": 12, "shell_temp": 37.8, "air_temp_target": 37.3, "humidity_set": 50, "humidity_range": [40, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Ostatni dzień stabilnego SET. Jutro wzrost temperatury."},
+        {"day": 13, "shell_temp": 37.9, "air_temp_target": 37.35, "humidity_set": 50, "humidity_range": [40, 62], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost temperatury: +0.1°C. Embrion przyspiesza metabolizm."},
+        {"day": 14, "shell_temp": 38.0, "air_temp_target": 37.4, "humidity_set": 50, "humidity_range": [40, 62], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost: +0.2°C. Embrion znacznie większy."},
+        {"day": 15, "shell_temp": 38.1, "air_temp_target": 37.5, "humidity_set": 50, "humidity_range": [40, 63], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Wzrost: +0.3°C. Embrion masywnie się rozpędza. Uważaj na wahania."},
+        {"day": 16, "shell_temp": 38.2, "air_temp_target": 37.6, "humidity_set": 50, "humidity_range": [40, 64], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Wzrost: +0.4°C. Embrion przygotowuje się do oddychania. NIE OTWIERAJ!"},
+        {"day": 17, "shell_temp": 38.3, "air_temp_target": 37.7, "humidity_set": 50, "humidity_range": [40, 65], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Wzrost: +0.5°C. Embrion ma dostęp do powietrza. Zamknij drzwi!"},
+        {"day": 18, "shell_temp": 38.4, "air_temp_target": 37.8, "humidity_set": 50, "humidity_range": [40, 65], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 TRANSFER – Maksimum: +0.6°C. Ostatnie obracanie."},
+        {"day": 19, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 72, "humidity_range": [65, 80], "turning": false, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 LOCKDOWN – Temperatura SPADA. STOP obracania! Wilgotność UP."},
+        {"day": 20, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 72, "humidity_range": [65, 80], "turning": false, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 LOCKDOWN – Embrion wchodzi w drożdżenie. ZAMKNĄĆ DRZWI!"},
+        {"day": 21, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 72, "humidity_range": [65, 80], "turning": false, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 HATCH DAY – Wylęganie. Nie otwierać do ~50% wysiewu."}
+      ]
+    },
+    "duck_indian_runner": {
+      "id": "anas_platyrhynchos_domesticus_runner",
+      "common_name": "Kaczka Biegus",
+      "incubation_days": 28,
+      "description": "Cykl inkubacji kaczki biegus (Indian Runner) – 28 dni",
+      "reference": "Vet Verified, ECE Homestead",
+      "turning_frequency_per_day": 4,
+      "critical_phases": {
+        "early": [1, 2, 3],
+        "late": [23, 24, 25],
+        "lockdown": [26, 27, 28]
+      },
+      "day_by_day": [
+        {"day": 1, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Start. Kaczka nie produkuje ciepła. Wyższa wilgotność niż kurze."},
+        {"day": 2, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Bardzo młody embrion."},
+        {"day": 3, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Serce się kształtuje."},
+        {"day": 4, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Żyłki rozprzestrzeniają się."},
+        {"day": 5, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Krótkie otwarcia OK."},
+        {"day": 6, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion rosnący."},
+        {"day": 7, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Punkt przegięcia."},
+        {"day": 8, "shell_temp": 37.8, "air_temp_target": 37.45, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion zaczyna dominować termicznie."},
+        {"day": 9, "shell_temp": 37.8, "air_temp_target": 37.4, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion widoczny w świetle."},
+        {"day": 10, "shell_temp": 37.8, "air_temp_target": 37.35, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": true, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 CANDLE. Opcjonalne misting od dzisiaj."},
+        {"day": 11, "shell_temp": 37.8, "air_temp_target": 37.3, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": true, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Stabilna faza."},
+        {"day": 12, "shell_temp": 37.8, "air_temp_target": 37.3, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": true, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Ostatni dzień stałego SET."},
+        {"day": 13, "shell_temp": 37.86, "air_temp_target": 37.35, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": true, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost: +0.06°C/dzień."},
+        {"day": 14, "shell_temp": 37.92, "air_temp_target": 37.4, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": true, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost: +0.12°C."},
+        {"day": 15, "shell_temp": 37.98, "air_temp_target": 37.45, "humidity_set": 55, "humidity_range": [50, 63], "turning": true, "misting": true, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost: +0.18°C."},
+        {"day": 16, "shell_temp": 38.04, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 63], "turning": true, "misting": true, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost: +0.24°C."},
+        {"day": 17, "shell_temp": 38.1, "air_temp_target": 37.55, "humidity_set": 55, "humidity_range": [50, 63], "turning": true, "misting": true, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Wzrost: +0.30°C. Embrion masywnie rosnący."},
+        {"day": 18, "shell_temp": 38.16, "air_temp_target": 37.6, "humidity_set": 55, "humidity_range": [50, 64], "turning": true, "misting": true, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Wzrost: +0.36°C."},
+        {"day": 19, "shell_temp": 38.22, "air_temp_target": 37.65, "humidity_set": 55, "humidity_range": [50, 64], "turning": true, "misting": true, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Wzrost: +0.42°C (analogia dnia 16 u kury)."},
+        {"day": 20, "shell_temp": 38.28, "air_temp_target": 37.7, "humidity_set": 55, "humidity_range": [50, 64], "turning": true, "misting": true, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Wzrost: +0.48°C."},
+        {"day": 21, "shell_temp": 38.34, "air_temp_target": 37.75, "humidity_set": 55, "humidity_range": [50, 64], "turning": true, "misting": true, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Wzrost: +0.54°C. Embrion przygotowuje się."},
+        {"day": 22, "shell_temp": 38.34, "air_temp_target": 37.75, "humidity_set": 56, "humidity_range": [50, 65], "turning": true, "misting": true, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Stabilizacja na wysokiej temp."},
+        {"day": 23, "shell_temp": 38.4, "air_temp_target": 37.8, "humidity_set": 57, "humidity_range": [50, 65], "turning": true, "misting": true, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Maksimum: +0.6°C. Embrion prawie gotowy."},
+        {"day": 24, "shell_temp": 38.4, "air_temp_target": 37.8, "humidity_set": 58, "humidity_range": [50, 65], "turning": true, "misting": true, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Ostatni dzień pełnego obracania."},
+        {"day": 25, "shell_temp": 38.4, "air_temp_target": 37.8, "humidity_set": 62, "humidity_range": [55, 70], "turning": false, "misting": true, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 TRANSFER – STOP obracania. Wilgotność wzrasta."},
+        {"day": 26, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 68, "humidity_range": [65, 75], "turning": false, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 LOCKDOWN – Temp SPADA. ZAMKNĄĆ DRZWI!"},
+        {"day": 27, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 68, "humidity_range": [65, 75], "turning": false, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 LOCKDOWN – Drożdżenie. BEZ DOSTĘPU!"},
+        {"day": 28, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 68, "humidity_range": [65, 75], "turning": false, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 HATCH DAY – Kaczuszki wylegują się. Nie otwierać do ~50% wysiewu."}
+      ]
+    },
+    "goose": {
+      "id": "anser_anser_domesticus",
+      "common_name": "Gęś",
+      "incubation_days": 30,
+      "description": "Cykl inkubacji gęsi – 30 dni",
+      "reference": "Dane szacunkowe na podstawie literatury",
+      "turning_frequency_per_day": 4,
+      "critical_phases": {
+        "early": [1, 2, 3],
+        "late": [24, 25, 26],
+        "lockdown": [27, 28, 29, 30]
+      },
+      "day_by_day": [
+        {"day": 1, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Start inkubacji gęsi. Wyższa wilgotność."},
+        {"day": 2, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Młody embrion."},
+        {"day": 3, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Serce."},
+        {"day": 4, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Żyłki."},
+        {"day": 5, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Krótkie otwarcia OK."},
+        {"day": 6, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion rośnie."},
+        {"day": 7, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Punkt przegięcia."},
+        {"day": 8, "shell_temp": 37.8, "air_temp_target": 37.45, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion widoczny."},
+        {"day": 9, "shell_temp": 37.8, "air_temp_target": 37.4, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Stabilna faza."},
+        {"day": 10, "shell_temp": 37.8, "air_temp_target": 37.35, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 CANDLE."},
+        {"day": 11, "shell_temp": 37.8, "air_temp_target": 37.3, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion rośnie."},
+        {"day": 12, "shell_temp": 37.8, "air_temp_target": 37.3, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Ostatni dzień stałego SET."},
+        {"day": 13, "shell_temp": 37.86, "air_temp_target": 37.35, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost: +0.06°C."},
+        {"day": 14, "shell_temp": 37.92, "air_temp_target": 37.4, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost: +0.12°C."},
+        {"day": 15, "shell_temp": 37.98, "air_temp_target": 37.45, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost: +0.18°C."},
+        {"day": 16, "shell_temp": 38.04, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost: +0.24°C."},
+        {"day": 17, "shell_temp": 38.1, "air_temp_target": 37.55, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Wzrost: +0.30°C."},
+        {"day": 18, "shell_temp": 38.16, "air_temp_target": 37.6, "humidity_set": 55, "humidity_range": [50, 63], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Wzrost: +0.36°C."},
+        {"day": 19, "shell_temp": 38.22, "air_temp_target": 37.65, "humidity_set": 55, "humidity_range": [50, 63], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Wzrost: +0.42°C."},
+        {"day": 20, "shell_temp": 38.28, "air_temp_target": 37.7, "humidity_set": 55, "humidity_range": [50, 63], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Wzrost: +0.48°C."},
+        {"day": 21, "shell_temp": 38.34, "air_temp_target": 37.75, "humidity_set": 55, "humidity_range": [50, 63], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Wzrost: +0.54°C."},
+        {"day": 22, "shell_temp": 38.34, "air_temp_target": 37.75, "humidity_set": 56, "humidity_range": [50, 65], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Stabilizacja."},
+        {"day": 23, "shell_temp": 38.4, "air_temp_target": 37.8, "humidity_set": 57, "humidity_range": [50, 65], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Maksimum: +0.6°C."},
+        {"day": 24, "shell_temp": 38.4, "air_temp_target": 37.8, "humidity_set": 58, "humidity_range": [50, 65], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 WRAŻLIWA FAZA."},
+        {"day": 25, "shell_temp": 38.4, "air_temp_target": 37.8, "humidity_set": 60, "humidity_range": [50, 65], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Ostatni dzień obracania."},
+        {"day": 26, "shell_temp": 38.4, "air_temp_target": 37.8, "humidity_set": 62, "humidity_range": [55, 70], "turning": false, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 TRANSFER – STOP obracania."},
+        {"day": 27, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 68, "humidity_range": [65, 75], "turning": false, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 LOCKDOWN – ZAMKNĄĆ DRZWI!"},
+        {"day": 28, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 68, "humidity_range": [65, 75], "turning": false, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 LOCKDOWN – Drożdżenie."},
+        {"day": 29, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 68, "humidity_range": [65, 75], "turning": false, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 LOCKDOWN – Przygotowanie do wylęgu."},
+        {"day": 30, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 68, "humidity_range": [65, 75], "turning": false, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 HATCH DAY – Wylęganie."}
+      ]
+    },
+    "quail": {
+      "id": "coturnix_japonica",
+      "common_name": "Przepiórka",
+      "incubation_days": 17,
+      "description": "Cykl inkubacji przepiórki – 17 dni",
+      "reference": "Dane szacunkowe",
+      "turning_frequency_per_day": 4,
+      "critical_phases": {
+        "early": [1, 2, 3],
+        "late": [14, 15],
+        "lockdown": [15, 16, 17]
+      },
+      "day_by_day": [
+        {"day": 1, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 50, "humidity_range": [45, 55], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Start inkubacji przepiórki."},
+        {"day": 2, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 50, "humidity_range": [45, 55], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Młody embrion."},
+        {"day": 3, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 50, "humidity_range": [45, 55], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Serce bije."},
+        {"day": 4, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 50, "humidity_range": [45, 55], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Żyłki."},
+        {"day": 5, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 50, "humidity_range": [45, 55], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Krótkie otwarcia OK."},
+        {"day": 6, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 50, "humidity_range": [45, 55], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion rośnie."},
+        {"day": 7, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 50, "humidity_range": [45, 55], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Punkt przegięcia."},
+        {"day": 8, "shell_temp": 37.8, "air_temp_target": 37.45, "humidity_set": 50, "humidity_range": [45, 55], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion widoczny."},
+        {"day": 9, "shell_temp": 37.8, "air_temp_target": 37.4, "humidity_set": 50, "humidity_range": [45, 55], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Stabilna faza."},
+        {"day": 10, "shell_temp": 37.8, "air_temp_target": 37.35, "humidity_set": 50, "humidity_range": [45, 55], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 CANDLE."},
+        {"day": 11, "shell_temp": 37.8, "air_temp_target": 37.3, "humidity_set": 50, "humidity_range": [45, 55], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion rośnie."},
+        {"day": 12, "shell_temp": 37.9, "air_temp_target": 37.35, "humidity_set": 50, "humidity_range": [45, 56], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost: +0.1°C."},
+        {"day": 13, "shell_temp": 38.0, "air_temp_target": 37.4, "humidity_set": 50, "humidity_range": [45, 57], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Wzrost: +0.2°C."},
+        {"day": 14, "shell_temp": 38.1, "air_temp_target": 37.5, "humidity_set": 50, "humidity_range": [45, 58], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Wzrost: +0.3°C. Embrion przygotowuje się."},
+        {"day": 15, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 65, "humidity_range": [60, 70], "turning": false, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 LOCKDOWN – STOP obracania. Wilgotność UP."},
+        {"day": 16, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 65, "humidity_range": [60, 70], "turning": false, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 LOCKDOWN – Drożdżenie."},
+        {"day": 17, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 65, "humidity_range": [60, 70], "turning": false, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 HATCH DAY – Wylęganie."}
+      ]
+    },
+    "guinea_fowl": {
+      "id": "numida_meleagris",
+      "common_name": "Perliczka",
+      "incubation_days": 26,
+      "description": "Cykl inkubacji perliczki – 26 dni",
+      "reference": "Dane szacunkowe",
+      "turning_frequency_per_day": 4,
+      "critical_phases": {
+        "early": [1, 2, 3],
+        "late": [23, 24],
+        "lockdown": [24, 25, 26]
+      },
+      "day_by_day": [
+        {"day": 1, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Start inkubacji perliczki."},
+        {"day": 2, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Młody embrion."},
+        {"day": 3, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Serce."},
+        {"day": 4, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Żyłki."},
+        {"day": 5, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Krótkie otwarcia OK."},
+        {"day": 6, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion rośnie."},
+        {"day": 7, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Punkt przegięcia."},
+        {"day": 8, "shell_temp": 37.8, "air_temp_target": 37.45, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion widoczny."},
+        {"day": 9, "shell_temp": 37.8, "air_temp_target": 37.4, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Stabilna faza."},
+        {"day": 10, "shell_temp": 37.8, "air_temp_target": 37.35, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 CANDLE."},
+        {"day": 11, "shell_temp": 37.8, "air_temp_target": 37.3, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion rośnie."},
+        {"day": 12, "shell_temp": 37.8, "air_temp_target": 37.3, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Ostatni dzień stałego SET."},
+        {"day": 13, "shell_temp": 37.86, "air_temp_target": 37.35, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost: +0.06°C."},
+        {"day": 14, "shell_temp": 37.92, "air_temp_target": 37.4, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost: +0.12°C."},
+        {"day": 15, "shell_temp": 37.98, "air_temp_target": 37.45, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost: +0.18°C."},
+        {"day": 16, "shell_temp": 38.04, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost: +0.24°C."},
+        {"day": 17, "shell_temp": 38.1, "air_temp_target": 37.55, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Wzrost: +0.30°C."},
+        {"day": 18, "shell_temp": 38.16, "air_temp_target": 37.6, "humidity_set": 55, "humidity_range": [50, 63], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Wzrost: +0.36°C."},
+        {"day": 19, "shell_temp": 38.22, "air_temp_target": 37.65, "humidity_set": 55, "humidity_range": [50, 63], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Wzrost: +0.42°C."},
+        {"day": 20, "shell_temp": 38.28, "air_temp_target": 37.7, "humidity_set": 55, "humidity_range": [50, 63], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Wzrost: +0.48°C."},
+        {"day": 21, "shell_temp": 38.34, "air_temp_target": 37.75, "humidity_set": 55, "humidity_range": [50, 63], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Wzrost: +0.54°C."},
+        {"day": 22, "shell_temp": 38.34, "air_temp_target": 37.75, "humidity_set": 56, "humidity_range": [50, 65], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Stabilizacja."},
+        {"day": 23, "shell_temp": 38.4, "air_temp_target": 37.8, "humidity_set": 57, "humidity_range": [50, 65], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Maksimum: +0.6°C."},
+        {"day": 24, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 62, "humidity_range": [55, 70], "turning": false, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 TRANSFER – STOP obracania."},
+        {"day": 25, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 68, "humidity_range": [65, 75], "turning": false, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 LOCKDOWN – ZAMKNĄĆ DRZWI!"},
+        {"day": 26, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 68, "humidity_range": [65, 75], "turning": false, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 HATCH DAY – Wylęganie."}
+      ]
+    },
+    "pheasant": {
+      "id": "phasianus_colchicus",
+      "common_name": "Bażant",
+      "incubation_days": 24,
+      "description": "Cykl inkubacji bażanta – 24 dni",
+      "reference": "Dane szacunkowe",
+      "turning_frequency_per_day": 4,
+      "critical_phases": {
+        "early": [1, 2, 3],
+        "late": [20, 21],
+        "lockdown": [21, 22, 23, 24]
+      },
+      "day_by_day": [
+        {"day": 1, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Start inkubacji bażanta."},
+        {"day": 2, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Młody embrion."},
+        {"day": 3, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Serce."},
+        {"day": 4, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Żyłki."},
+        {"day": 5, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Krótkie otwarcia OK."},
+        {"day": 6, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion rośnie."},
+        {"day": 7, "shell_temp": 37.8, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Punkt przegięcia."},
+        {"day": 8, "shell_temp": 37.8, "air_temp_target": 37.45, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion widoczny."},
+        {"day": 9, "shell_temp": 37.8, "air_temp_target": 37.4, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Stabilna faza."},
+        {"day": 10, "shell_temp": 37.8, "air_temp_target": 37.35, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 CANDLE."},
+        {"day": 11, "shell_temp": 37.8, "air_temp_target": 37.3, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Embrion rośnie."},
+        {"day": 12, "shell_temp": 37.8, "air_temp_target": 37.3, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Ostatni dzień stałego SET."},
+        {"day": 13, "shell_temp": 37.86, "air_temp_target": 37.35, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost: +0.06°C."},
+        {"day": 14, "shell_temp": 37.92, "air_temp_target": 37.4, "humidity_set": 55, "humidity_range": [50, 60], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost: +0.12°C."},
+        {"day": 15, "shell_temp": 37.98, "air_temp_target": 37.45, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost: +0.18°C."},
+        {"day": 16, "shell_temp": 38.04, "air_temp_target": 37.5, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": false, "sensitivity": "MEDIUM", "status_color": "#70d070", "notes": "🟢 Wzrost: +0.24°C."},
+        {"day": 17, "shell_temp": 38.1, "air_temp_target": 37.55, "humidity_set": 55, "humidity_range": [50, 62], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Wzrost: +0.30°C."},
+        {"day": 18, "shell_temp": 38.16, "air_temp_target": 37.6, "humidity_set": 55, "humidity_range": [50, 63], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Wzrost: +0.36°C."},
+        {"day": 19, "shell_temp": 38.22, "air_temp_target": 37.65, "humidity_set": 55, "humidity_range": [50, 63], "turning": true, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 Wzrost: +0.42°C."},
+        {"day": 20, "shell_temp": 38.28, "air_temp_target": 37.7, "humidity_set": 55, "humidity_range": [50, 63], "turning": true, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 Wzrost: +0.48°C."},
+        {"day": 21, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 62, "humidity_range": [55, 70], "turning": false, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 TRANSFER – STOP obracania."},
+        {"day": 22, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 68, "humidity_range": [65, 75], "turning": false, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 LOCKDOWN – ZAMKNĄĆ DRZWI!"},
+        {"day": 23, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 68, "humidity_range": [65, 75], "turning": false, "misting": false, "sensitivity": "HIGH", "status_color": "#ff8844", "notes": "🟠 LOCKDOWN – Drożdżenie."},
+        {"day": 24, "shell_temp": 37.5, "air_temp_target": 37.5, "humidity_set": 68, "humidity_range": [65, 75], "turning": false, "misting": false, "sensitivity": "CRITICAL", "status_color": "#ff4444", "notes": "🔴 HATCH DAY – Wylęganie."}
+      ]
+    }
+  },
+  "alarm_system": {
+    "sensitivity_levels": {
+      "CRITICAL": {
+        "temp_tolerance": 0.5,
+        "duration_threshold_seconds": 120,
+        "alarm_level": 3,
+        "allow_door_open": false,
+        "description": "🔴 KRYTYCZNE – Embrion bardzo wrażliwy. Nie otwieraj drzwi!"
+      },
+      "HIGH": {
+        "temp_tolerance": 0.8,
+        "duration_threshold_seconds": 300,
+        "alarm_level": 2,
+        "allow_door_open": "very_short_only",
+        "description": "🟠 WRAŻLIWE – Krótkie otwarcia OK (max 2-3 min)."
+      },
+      "MEDIUM": {
+        "temp_tolerance": 1.0,
+        "duration_threshold_seconds": 600,
+        "alarm_level": 1,
+        "allow_door_open": true,
+        "description": "🟢 NORMALNE – Krótkie przerwy tolerowane."
+      }
+    },
+    "alarm_events": {
+      "TEMP_CRITICAL_HIGH": {
+        "level": 3,
+        "message": "🔴 ALARM: Temperatura zbyt wysoka! Sprawdź grzałkę.",
+        "above_threshold": 0.8
+      },
+      "TEMP_CRITICAL_LOW": {
+        "level": 3,
+        "message": "🔴 ALARM: Temperatura zbyt niska! Sprawdź zasilanie.",
+        "below_threshold": 0.8
+      },
+      "HUMIDITY_CRITICAL_HIGH": {
+        "level": 3,
+        "message": "🔴 ALARM: Wilgotność zbyt wysoka! Zmniejsz wodę.",
+        "above_threshold": 15
+      },
+      "HUMIDITY_CRITICAL_LOW": {
+        "level": 3,
+        "message": "🔴 ALARM: Wilgotność zbyt niska! Dodaj wodę.",
+        "below_threshold": 5
+      },
+      "CRITICAL_PHASE_DOOR_WARNING": {
+        "level": 2,
+        "message": "⚠️ UWAGA: Otwierasz w WRAŻLIWEJ FAZIE! Szybko zamknij drzwi!",
+        "duration_threshold_seconds": 180
+      },
+      "HUMIDITY_OSCILLATION": {
+        "level": 2,
+        "message": "⚠️ OSTRZEŻENIE: Duże wahania wilgoci – embrion może być stresowany.",
+        "oscillation_range": 10
+      }
+    }
+  }
+}

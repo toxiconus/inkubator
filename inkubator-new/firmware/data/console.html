@@ -1,0 +1,139 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Konsola · Terminal</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <style>
+        /* ===== STYLE SPECYFICZNE DLA KONSOLI ===== */
+        #console {
+            width: 100%;
+            height: 320px;
+            overflow-y: scroll;
+            background: #0a0c0e;
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            padding: 10px 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #70d070;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-bottom: 10px;
+        }
+
+        #console::-webkit-scrollbar {
+            width: 4px;
+        }
+        #console::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #console::-webkit-scrollbar-thumb {
+            background: #2a3240;
+            border-radius: 2px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .input-row input[type="text"] {
+            flex: 1;
+            min-width: 140px;
+            background: #161d24;
+            border: 1px solid #2d3744;
+            border-radius: 4px;
+            color: #e6eef8;
+            padding: 8px 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-row input[type="text"]:focus {
+            border-color: #5a8a7a;
+        }
+
+        .user-message {
+            color: #b0d0ff;
+        }
+
+        .system-message {
+            color: #70d070;
+        }
+
+        .error-message {
+            color: #e05050;
+        }
+
+        .cmd-message {
+            color: #e8b830;
+        }
+
+        @media (max-width: 600px) {
+            #console {
+                height: 220px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .input-row {
+                flex-direction: column;
+            }
+            .input-row input[type="text"] {
+                min-width: unset;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="instrument">
+
+        <!-- ===== NAGŁÓWEK ===== -->
+        <div class="header">
+            <div class="header-title">
+                <span>⚙</span> Konsola · <span id="pageTitle">Terminal</span>
+            </div>
+            <div class="header-status">
+                <span class="dot" id="wsDot"></span>
+                <span id="wsStatus">Łączenie...</span>
+            </div>
+        </div>
+
+        <!-- ===== KONSOLA ===== -->
+        <div id="console">--- Konsola gotowa ---</div>
+
+        <!-- ===== WEJŚCIE ===== -->
+        <div class="input-row">
+            <input type="text" id="cmdInput" placeholder="Wpisz komendę..." />
+            <button class="btn btn-primary" id="sendBtn">Wyślij</button>
+            <button class="btn btn-danger" id="clearBtn">Wyczyść</button>
+        </div>
+
+        <!-- ===== PRZYCISKI ===== -->
+        <div class="btn-group">
+            <button type="button" class="btn btn-back btn-full" id="backBtn">← Wróć do panelu</button>
+        </div>
+
+        <!-- ===== STATUS BAR ===== -->
+        <div class="status-bar">
+            <span class="msg" id="statusMsg">Gotowy</span>
+            <span class="ws-detail" id="wsDetail"></span>
+        </div>
+
+    </div>
+
+    <!-- ===== SKRYPTY ===== -->
+    <script src="/js/common.js"></script>
+    <script src="/js/pages/console.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,75 @@
+{
+  "config_version": 2,
+  "tray_count": 2,
+  "trays": [
+    {
+      "active": true,
+      "species": "CHICKEN",
+      "start_day_offset": 0,
+      "start_unix": 0,
+      "pin": 16,
+      "label": "Taca 1",
+      "signal_active_low": false,
+      "has_angle_sensor": false,
+      "rotation_interval_ms": 17280000,
+      "rotation_duration_ms": 15000,
+      "rotation_pwm_speed": 102,
+      "rotations_per_day": 5
+    },
+    {
+      "active": true,
+      "species": "CHICKEN",
+      "start_day_offset": 0,
+      "start_unix": 0,
+      "pin": 17,
+      "label": "Taca 2",
+      "signal_active_low": false,
+      "has_angle_sensor": false,
+      "rotation_interval_ms": 17280000,
+      "rotation_duration_ms": 15000,
+      "rotation_pwm_speed": 102,
+      "rotations_per_day": 5
+    }
+  ],
+  "sensors": {
+    "ds18b20_count": 0,
+    "ds18b20_pins": [-1, -1, -1, -1],
+    "ds18b20_labels": ["", "", "", ""],
+    "dht11_enabled": false,
+    "dht11_pin": 8,
+    "water_level_enabled": false,
+    "water_level_pin": -1,
+    "door_sensor_enabled": false,
+    "door_sensor_pin": -1,
+    "aquarium_sensor_index": 0,
+    "aquarium_target_temp": 25.0,
+    "bmp180_enabled": false,
+    "bmp180_sda_pin": 4,
+    "bmp180_scl_pin": 5,
+    "i2c_sda_pin": 4,
+    "i2c_scl_pin": 5
+  },
+  "system": {
+    "target_temp": 37.7,
+    "temp_hysteresis": 0.5,
+    "alarm_max_temp": 40.0,
+    "alarm_min_temp": 36.0,
+    "temp_calibration": 0.0,
+    "control_mode": 0,
+    "fan_delay_sec": 5,
+    "target_humidity": 60.0,
+    "humidity_hysteresis": 5.0,
+    "alarm_max_humidity": 75.0,
+    "alarm_min_humidity": 30.0,
+    "humidity_calibration": 0.0,
+    "log_interval_sec": 60
+  },
+  "diffusers": {
+    "count": 1,
+    "on_time_sec": 30,
+    "off_time_sec": 120,
+    "profile": "fast",
+    "pins": [11, -1],
+    "labels": ["Diffuser 1", ""]
+  }
+}

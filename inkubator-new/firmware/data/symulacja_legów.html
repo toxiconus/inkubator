@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analiza lęgów · Porównanie</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <style>
+        /* ===== STYLE SPECYFICZNE DLA SYMULACJI ===== */
+        .config-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 16px;
+            padding: 10px 14px;
+            background: rgba(20, 24, 32, 0.4);
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .config-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .config-group label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #8a9aa8;
+        }
+
+        .config-group select,
+        .config-group input[type="number"],
+        .config-group input[type="range"] {
+            background: #161d24;
+            border: 1px solid #2d3744;
+            border-radius: 4px;
+            color: #e6eef8;
+            padding: 4px 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            outline: none;
+            min-width: 60px;
+        }
+
+        .config-group select:focus,
+        .config-group input:focus {
+            border-color: #5a8a7a;
+        }
+
+        .config-group input[type="range"] {
+            width: 120px;
+            padding: 0;
+            accent-color: #5a8a7a;
+        }
+
+        .config-group .day-display {
+            font-size: 16px;
+            font-weight: 700;
+            color: #70d070;
+            min-width: 32px;
+            text-align: center;
+        }
+
+        .sim-label {
+            font-weight: 700;
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .sim-label.sim1 {
+            background: rgba(57, 170, 255, 0.2);
+            color: #4ab0ff;
+            border: 1px solid rgba(57, 170, 255, 0.3);
+        }
+
+        .sim-label.sim2 {
+            background: rgba(255, 100, 100, 0.2);
+            color: #ff6a6a;
+            border: 1px solid rgba(255, 100, 100, 0.3);
+        }
+
+        /* ===== WYKRESY ===== */
+        .chart-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .chart-box {
+            background: rgba(12, 14, 18, 0.8);
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            padding: 6px 10px;
+        }
+
+        .chart-box .chart-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #5a6a7a;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            letter-spacing: 0.06em;
+        }
+
+        .chart-box .chart-title .legend {
+            font-weight: 400;
+            color: #5a6a7a;
+            font-size: 9px;
+        }
+
+        .chart-box canvas {
+            width: 100%;
+            height: 200px;
+            display: block;
+            background: transparent;
+            border-radius: 2px;
+        }
+
+        /* ===== INFO PANEL ===== */
+        .info-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .info-card {
+            background: rgba(20, 24, 32, 0.4);
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            padding: 8px 12px;
+        }
+
+        .info-card .info-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #5a6a7a;
+            letter-spacing: 0.08em;
+            margin-bottom: 4px;
+            border-bottom: 1px solid rgba(26, 30, 36, 0.4);
+            padding-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(26, 30, 36, 0.15);
+        }
+
+        .info-row .label {
+            color: #5a6a7a;
+        }
+
+        .info-row .value {
+            color: #b0c8d8;
+            font-weight: 600;
+        }
+
+        .info-row .value.critical {
+            color: #e05050;
+        }
+
+        .info-row .value.warning {
+            color: #e8b830;
+        }
+
+        .info-row .value.ok {
+            color: #70d070;
+        }
+
+        .alarm-box {
+            margin-top: 4px;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            min-height: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .alarm-box.ok {
+            background: rgba(48, 192, 96, 0.08);
+            border: 1px solid rgba(48, 192, 96, 0.15);
+            color: #70d070;
+        }
+
+        .alarm-box.warning {
+            background: rgba(232, 184, 48, 0.08);
+            border: 1px solid rgba(232, 184, 48, 0.15);
+            color: #e8b830;
+        }
+
+        .alarm-box.err {
+            background: rgba(224, 80, 80, 0.08);
+            border: 1px solid rgba(224, 80, 80, 0.15);
+            color: #e05050;
+        }
+
+        /* ===== COMPARISON CARD ===== */
+        .comparison-card {
+            background: rgba(20, 24, 32, 0.4);
+            border: 2px solid rgba(48, 192, 96, 0.2);
+            border-radius: 4px;
+            padding: 8px 12px;
+            grid-column: 1 / -1;
+        }
+
+        .comparison-card .card-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #70d070;
+            letter-spacing: 0.08em;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ===== RESPONSYWNOŚĆ ===== */
+        @media (max-width: 1024px) {
+            .chart-container {
+                grid-template-columns: 1fr;
+            }
+            .info-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .config-panel {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 6px;
+            }
+            .config-group {
+                justify-content: space-between;
+            }
+            .config-group input[type="range"] {
+                width: 100px;
+            }
+            .chart-box canvas {
+                height: 160px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .instrument {
+                padding: 8px 10px;
+            }
+            .config-group {
+                flex-wrap: wrap;
+            }
+            .config-group input[type="range"] {
+                width: 80px;
+            }
+            .chart-box canvas {
+                height: 140px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="instrument">
+
+        <!-- ===== NAGŁÓWEK ===== -->
+        <div class="header">
+            <div class="header-title">
+                <span>⚙</span> Analiza lęgów · <span id="pageTitle">Porównanie</span>
+            </div>
+            <div class="header-status">
+                <span class="dot" id="wsDot"></span>
+                <span id="wsStatus">Łączenie...</span>
+            </div>
+        </div>
+
+        <!-- ===== PANEL KONFIGURACJI ===== -->
+        <div class="config-panel">
+            <div class="config-group">
+                <span class="sim-label sim1">SIM1</span>
+                <label>Gatunek</label>
+                <select id="species1">
+                    <option value="chicken">Kura (21d)</option>
+                    <option value="duck_indian_runner">Kaczka Biegus (28d)</option>
+                    <option value="goose">Gęś (30d)</option>
+                    <option value="quail">Przepiórka (17d)</option>
+                </select>
+                <label>Offset</label>
+                <input type="number" id="offset1" min="0" max="10" value="0" />
+                <span style="color:#5a6a7a;font-size:9px;">dni</span>
+            </div>
+
+            <div class="config-group">
+                <span class="sim-label sim2">SIM2</span>
+                <label>Gatunek</label>
+                <select id="species2">
+                    <option value="chicken">Kura (21d)</option>
+                    <option value="duck_indian_runner" selected>Kaczka Biegus (28d)</option>
+                    <option value="goose">Gęś (30d)</option>
+                    <option value="quail">Przepiórka (17d)</option>
+                </select>
+                <label>Offset</label>
+                <input type="number" id="offset2" min="0" max="10" value="5" />
+                <span style="color:#5a6a7a;font-size:9px;">dni</span>
+            </div>
+
+            <div class="config-group" style="flex:1;min-width:200px;">
+                <label>Dzień</label>
+                <input type="range" id="daySlider" min="1" max="30" value="10" />
+                <span class="day-display" id="dayDisplay">10</span>
+                <button type="button" class="btn btn-primary" id="updateBtn" style="font-size:10px;padding:4px 12px;min-width:60px;">Odśwież</button>
+            </div>
+        </div>
+
+        <!-- ===== WYKRESY ===== -->
+        <div class="chart-container">
+            <div class="chart-box">
+                <div class="chart-title">
+                    <span>Temperatura powłoki (°C)</span>
+                    <span class="legend" id="tempLegend">SIM1: -- | SIM2: --</span>
+                </div>
+                <canvas id="tempChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">
+                    <span>Wilgotność (%)</span>
+                    <span class="legend" id="humLegend">SIM1: -- | SIM2: --</span>
+                </div>
+                <canvas id="humChart"></canvas>
+            </div>
+        </div>
+
+        <!-- ===== INFO PANEL ===== -->
+        <div class="info-panel">
+            <div class="info-card">
+                <div class="info-title">
+                    <span class="sim-label sim1">SIM1</span>
+                    <span id="info1Name">Kura</span>
+                </div>
+                <div class="info-row"><span class="label">Dzień</span><span class="value" id="info1Day">1/21</span></div>
+                <div class="info-row"><span class="label">Temp. SET</span><span class="value" id="info1Temp">37.80°C</span></div>
+                <div class="info-row"><span class="label">Temp. zakres</span><span class="value" id="info1TempRange" style="font-size:9px;">±0.3°C</span></div>
+                <div class="info-row"><span class="label">Wilgotność SET</span><span class="value" id="info1Hum">50%</span></div>
+                <div class="info-row"><span class="label">RH zakres</span><span class="value" id="info1HumRange" style="font-size:9px;">40-60%</span></div>
+                <div class="info-row"><span class="label">Wrażliwość</span><span class="value" id="info1Sens">NORMALNA</span></div>
+                <div class="info-row"><span class="label">Obracanie</span><span class="value" id="info1Turn">✓ TAK</span></div>
+                <div class="alarm-box ok" id="alarm1">✓ Brak alarmów</div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-title">
+                    <span class="sim-label sim2">SIM2</span>
+                    <span id="info2Name">Kaczka</span>
+                </div>
+                <div class="info-row"><span class="label">Dzień</span><span class="value" id="info2Day">1/28</span></div>
+                <div class="info-row"><span class="label">Temp. SET</span><span class="value" id="info2Temp">37.80°C</span></div>
+                <div class="info-row"><span class="label">Temp. zakres</span><span class="value" id="info2TempRange" style="font-size:9px;">±0.3°C</span></div>
+                <div class="info-row"><span class="label">Wilgotność SET</span><span class="value" id="info2Hum">55%</span></div>
+                <div class="info-row"><span class="label">RH zakres</span><span class="value" id="info2HumRange" style="font-size:9px;">50-62%</span></div>
+                <div class="info-row"><span class="label">Wrażliwość</span><span class="value" id="info2Sens">NORMALNA</span></div>
+                <div class="info-row"><span class="label">Obracanie</span><span class="value" id="info2Turn">✓ TAK</span></div>
+                <div class="alarm-box ok" id="alarm2">✓ Brak alarmów</div>
+            </div>
+
+            <div class="comparison-card">
+                <div class="card-title">● Kompromis (część wspólna)</div>
+                <div class="info-row"><span class="label">Zakres temp.</span><span class="value" id="compTemp">--°C do --°C</span></div>
+                <div class="info-row"><span class="label">Zakres wilg.</span><span class="value" id="compHum">--% do --%</span></div>
+                <div class="info-row"><span class="label">Kompatybilność</span><span class="value" id="compStatus">--</span></div>
+                <div style="margin-top:2px;font-size:9px;color:#5a6a7a;" id="compDesc">Wyznacz zakresy wspólne dla obu gatunków na wybranym dniu</div>
+            </div>
+        </div>
+
+        <!-- ===== PRZYCISKI ===== -->
+        <div class="btn-group">
+            <button type="button" class="btn btn-primary" id="exportBtn">Eksportuj CSV</button>
+            <button type="button" class="btn btn-secondary" id="resetBtn">Reset</button>
+        </div>
+
+        <div class="btn-group" style="margin-top:6px;">
+            <button type="button" class="btn btn-back btn-full" id="backBtn">← Wróć do panelu</button>
+        </div>
+
+        <!-- ===== STATUS BAR ===== -->
+        <div class="status-bar">
+            <span class="msg" id="statusMsg">Gotowy</span>
+            <span class="ws-detail" id="wsDetail"></span>
+        </div>
+
+    </div>
+
+    <!-- ===== SKRYPTY ===== -->
+    <script src="/js/common.js"></script>
+    <script src="/js/pages/symulacja_legów.js"></script>
+
+</body>
+</html>

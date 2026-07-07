@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ustawienia · Spis</title>
+    <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+    <div class="instrument">
+
+        <!-- ===== NAGŁÓWEK ===== -->
+        <div class="header">
+            <div class="header-title">
+                <span>⚙</span> Ustawienia · <span id="pageTitle">Spis</span>
+            </div>
+            <div class="header-status">
+                <span class="dot" id="wsDot"></span>
+                <span id="wsStatus">Łączenie...</span>
+            </div>
+        </div>
+
+        <!-- ===== SIATKA USTAWIEŃ (BEZ EMOJI) ===== -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+
+            <a href="/temperature.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
+                Temperatura
+            </a>
+            <a href="/humidity.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
+                Wilgotność
+            </a>
+            <a href="/turner.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
+                Obrót jaj
+            </a>
+            <a href="/incubation.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
+                Inkubacja
+            </a>
+            <a href="/alarms.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
+                Alarmy
+            </a>
+            <a href="/wifi.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
+                Wi-Fi
+            </a>
+            <a href="/various.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
+                Różne
+            </a>
+            <a href="/console.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
+                Konsola
+            </a>
+
+        </div>
+
+        <!-- ===== PRZYCISK POWROTU ===== -->
+        <div class="btn-group">
+            <a href="/" class="btn btn-back btn-full">← Wróć do panelu</a>
+        </div>
+
+        <!-- ===== STATUS BAR ===== -->
+        <div class="status-bar">
+            <span class="msg" id="statusMsg">Gotowy</span>
+            <span class="ws-detail" id="wsDetail"></span>
+        </div>
+
+    </div>
+
+    <!-- ===== SKRYPTY ===== -->
+    <script src="/js/common.js"></script>
+    <script src="/js/pages/ajustes.js"></script>
+
+</body>
+</html>

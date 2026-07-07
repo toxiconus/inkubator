@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ustawienia · Inkubacja</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <script src="/js/common.js"></script>
+  <script src="/js/pages/incubation.js" defer></script>
+</head>
+<body>
+
+    <div class="instrument">
+
+        <!-- ===== NAGŁÓWEK ===== -->
+        <div class="header">
+            <div class="header-title">
+                <span>🐣</span> Ustawienia · <span id="pageTitle">Inkubacja</span>
+            </div>
+            <div class="header-status">
+                <span class="dot" id="wsDot"></span>
+                <span id="wsStatus">Łączenie...</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <span class="label">Długość inkubacji [dni]</span>
+            <div class="form-row">
+                <span id="incubationDays">--</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <span class="label">Pierwsze dni</span>
+            <div class="form-row">
+                <span id="incFirstDays">--</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <span class="label">Ostatnie dni</span>
+            <div class="form-row">
+                <span id="incLastDays">--</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <span class="label">Lockdown</span>
+            <div class="form-row">
+                <span id="incLockdown">--</span>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button type="button" class="btn btn-secondary" id="incubationRefreshBtn">Odśwież</button>
+        </div>
+
+        <div class="status-bar">
+            <span class="msg" id="statusMsg">Gotowy</span>
+            <span class="ws-detail" id="wsDetail"></span>
+        </div>
+
+    </div>
+
+</body>
+</html>

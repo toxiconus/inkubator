@@ -1,0 +1,275 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ustawienia · Obrót jaj</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <style>
+        /* ===== STYLE SPECYFICZNE DLA OBRÓTU ===== */
+        .tray-section {
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            background: rgba(20, 24, 32, 0.3);
+        }
+
+        .tray-section .tray-title {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: #8a9aa8;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #1a1e24;
+            padding-bottom: 4px;
+        }
+
+        .tray-section .tray-title .tray-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .tray-section .tray-title .tray-indicator.active {
+            background: #70d070;
+            box-shadow: 0 0 8px rgba(48, 192, 96, 0.3);
+        }
+
+        .tray-section .tray-title .tray-indicator.inactive {
+            background: #5a6a7a;
+        }
+
+        .tray-section .tray-title .tray-indicator.rotating {
+            background: #e8b830;
+            box-shadow: 0 0 8px rgba(232, 184, 48, 0.3);
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .test-panel {
+            border-top: 1px solid #1a1e24;
+            padding-top: 12px;
+            margin-top: 4px;
+        }
+
+        .test-panel .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .test-panel .test-header .test-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #5a6a7a;
+        }
+
+        #timerDisplay {
+            font-size: 14px;
+            color: #70d070;
+            padding: 4px 0;
+            font-weight: 600;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 6px;
+        }
+
+        .test-controls select {
+            background: #161d24;
+            border: 1px solid #2d3744;
+            border-radius: 4px;
+            color: #e6eef8;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .test-controls select:focus {
+            border-color: #5a8a7a;
+        }
+
+        .form-row .hint {
+            font-size: 10px;
+            color: #5a6a7a;
+        }
+
+        @media (max-width: 600px) {
+            .tray-section {
+                padding: 8px 10px;
+            }
+            .test-panel .test-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            #timerDisplay {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="instrument">
+
+        <!-- ===== NAGŁÓWEK ===== -->
+        <div class="header">
+            <div class="header-title">
+                <span>⚙</span> Ustawienia · <span id="pageTitle">Obrót jaj</span>
+            </div>
+            <div class="header-status">
+                <span class="dot" id="wsDot"></span>
+                <span id="wsStatus">Łączenie...</span>
+            </div>
+        </div>
+
+        <!-- ===== FORMULARZ ===== -->
+        <form id="configForm">
+
+            <!-- ===== TACA 1 ===== -->
+            <div class="tray-section" id="traySection0">
+                <div class="tray-title">
+                    <span class="tray-indicator" id="trayIndicator0"></span>
+                    Taca 1
+                    <span style="font-size:10px;color:#5a6a7a;font-weight:400;margin-left:8px;" id="trayStatus0">--</span>
+                </div>
+
+                <div class="form-group">
+                    <span class="label">Tryb pracy</span>
+                    <div class="form-row">
+                        <select id="mode1">
+                            <option value="0">Ciągły</option>
+                            <option value="1">Cykl</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <span class="label">Czas pracy <span class="unit">(10–60 s)</span></span>
+                    <div class="form-row">
+                        <input type="number" id="workTime1" min="10" max="60" step="1" value="15" />
+                        <span class="hint">sekund</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <span class="label">Czas przerwy <span class="unit">(1–4 h)</span></span>
+                    <div class="form-row">
+                        <input type="number" id="restTime1" min="1" max="4" step="1" value="2" />
+                        <span class="hint">godzin</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <span class="label">PWM <span class="unit">(0–255)</span></span>
+                    <div class="form-row">
+                        <input type="number" id="pwm1" min="0" max="255" step="1" value="128" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== TACA 2 ===== -->
+            <div class="tray-section" id="traySection1">
+                <div class="tray-title">
+                    <span class="tray-indicator" id="trayIndicator1"></span>
+                    Taca 2
+                    <span style="font-size:10px;color:#5a6a7a;font-weight:400;margin-left:8px;" id="trayStatus1">--</span>
+                </div>
+
+                <div class="form-group">
+                    <span class="label">Tryb pracy</span>
+                    <div class="form-row">
+                        <select id="mode2">
+                            <option value="0">Ciągły</option>
+                            <option value="1">Cykl</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <span class="label">Czas pracy <span class="unit">(10–60 s)</span></span>
+                    <div class="form-row">
+                        <input type="number" id="workTime2" min="10" max="60" step="1" value="15" />
+                        <span class="hint">sekund</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <span class="label">Czas przerwy <span class="unit">(1–4 h)</span></span>
+                    <div class="form-row">
+                        <input type="number" id="restTime2" min="1" max="4" step="1" value="2" />
+                        <span class="hint">godzin</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <span class="label">PWM <span class="unit">(0–255)</span></span>
+                    <div class="form-row">
+                        <input type="number" id="pwm2" min="0" max="255" step="1" value="128" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== TEST MANUALNY ===== -->
+            <div class="test-panel">
+                <div class="test-header">
+                    <span class="test-label">⚙ Test manualny</span>
+                    <span id="timerDisplay">--</span>
+                </div>
+
+                <div class="test-controls">
+                    <select id="testTray">
+                        <option value="0">Taca 1</option>
+                        <option value="1">Taca 2</option>
+                    </select>
+                    <button type="button" class="btn btn-primary" id="testStartBtn">▶ Start</button>
+                    <button type="button" class="btn btn-danger" id="testStopBtn">■ Stop</button>
+                </div>
+            </div>
+
+            <!-- ===== PRZYCISKI ===== -->
+            <div class="btn-group" style="margin-top:12px;">
+                <button type="button" class="btn btn-primary" id="saveBtn">Zapisz ustawienia</button>
+                <button type="button" class="btn btn-secondary" id="refreshBtn">Odśwież</button>
+            </div>
+
+            <div class="btn-group" style="margin-top:6px;">
+                <button type="button" class="btn btn-back btn-full" id="backBtn">← Wróć do panelu</button>
+            </div>
+
+        </form>
+
+        <!-- ===== STATUS BAR ===== -->
+        <div class="status-bar">
+            <span class="msg" id="statusMsg">Gotowy</span>
+            <span class="ws-detail" id="wsDetail"></span>
+        </div>
+
+    </div>
+
+    <!-- ===== SKRYPTY ===== -->
+    <script src="/js/common.js"></script>
+    <script src="/js/pages/turner.js"></script>
+
+</body>
+</html>
