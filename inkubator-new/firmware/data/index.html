@@ -1146,6 +1146,232 @@
             text-transform: uppercase;
             margin-bottom: 4px;
         }
+
+        /* ===== NOWY WYGLĄD: ciepły przyrząd pomiarowy ===== */
+        :root {
+            --bg: #0d0e10;
+            --panel: #15171a;
+            --panel-2: #1b1e22;
+            --line: #262a30;
+            --text: #ebe6dc;
+            --text-2: #aaa499;
+            --text-3: #75706a;
+            --amber: #e3a04a;
+            --amber-soft: rgba(227, 160, 74, 0.14);
+            --ok: #8fbf8f;
+            --err: #e0786b;
+            --info: #7fa6c4;
+            --radius: 10px;
+            --mono: ui-monospace, "JetBrains Mono", Consolas, "Courier New", monospace;
+            --ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--ui);
+        }
+        .instrument {
+            background: var(--bg);
+            box-shadow: none;
+            border-radius: 0;
+            padding: 10px 16px;
+            grid-template-rows: 54px 1fr 36px;
+            gap: 10px;
+        }
+        .toolbar {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 0 12px;
+        }
+        .toolbar-logo {
+            font-family: var(--ui);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.16em;
+            color: var(--text);
+        }
+        .toolbar-logo span {
+            color: var(--amber);
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            margin-left: 4px;
+        }
+        .toolbar-sep {
+            background: var(--line);
+        }
+        .tabs {
+            gap: 2px;
+            background: var(--bg);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 3px;
+        }
+        .tab {
+            font-family: var(--ui);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            color: var(--text-3);
+            padding: 6px 12px;
+            border-radius: 6px;
+        }
+        .tab:hover {
+            color: var(--text-2);
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .tab.active {
+            color: #1a1408;
+            background: var(--amber);
+            box-shadow: none;
+        }
+        .tb-indicator {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text-2);
+            letter-spacing: 0;
+        }
+        .tb-indicator .val {
+            color: var(--text);
+            font-weight: 600;
+        }
+        .tb-indicator .unit {
+            color: var(--text-3);
+        }
+        .tb-clock .time {
+            font-family: var(--mono);
+            font-size: 13px;
+            color: var(--text-2);
+        }
+        .dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+        .dot.ok { background: var(--ok); }
+        .dot.warn { background: var(--amber); }
+        .dot.err { background: var(--err); }
+        .content {
+            padding: 0;
+        }
+        .view {
+            padding: 4px 2px;
+        }
+        .view::-webkit-scrollbar-thumb {
+            background: var(--line);
+        }
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+        }
+        .card-title {
+            font-family: var(--ui);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            color: var(--text-2);
+        }
+        .badge {
+            font-family: var(--ui);
+            font-size: 11px;
+            letter-spacing: 0.03em;
+            border-radius: 999px;
+            background: var(--panel-2);
+            border: 1px solid var(--line);
+            color: var(--text-2);
+        }
+        .section-label {
+            font-family: var(--ui);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            color: var(--text-3);
+        }
+        .hud-value, .val, .time, .log-ts, .esp-row, .wire-table {
+            font-family: var(--mono);
+        }
+        .btn {
+            text-decoration: none;
+            font-family: var(--ui);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            text-transform: none;
+            padding: 7px 14px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--panel-2);
+            color: var(--text-2);
+        }
+        .btn:hover {
+            background: #22262b;
+            border-color: #343942;
+            color: var(--text);
+        }
+        .btn-primary {
+            background: var(--amber-soft);
+            border-color: rgba(227, 160, 74, 0.45);
+            color: var(--amber);
+        }
+        .btn-primary:hover {
+            background: rgba(227, 160, 74, 0.22);
+            border-color: var(--amber);
+            color: #f2c27e;
+        }
+        .btn-danger {
+            background: rgba(224, 120, 107, 0.08);
+            border-color: rgba(224, 120, 107, 0.4);
+            color: var(--err);
+        }
+        .btn-danger:hover {
+            background: rgba(224, 120, 107, 0.18);
+            border-color: var(--err);
+        }
+        .btn-success {
+            background: rgba(143, 191, 143, 0.08);
+            border-color: rgba(143, 191, 143, 0.4);
+            color: var(--ok);
+        }
+        .btn-success:hover {
+            background: rgba(143, 191, 143, 0.16);
+        }
+        .btn-ghost {
+            background: transparent;
+            border-color: transparent;
+            color: var(--text-3);
+        }
+        .btn-ghost:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--line);
+            color: var(--text-2);
+        }
+        .status-msg {
+            font-family: var(--ui);
+            font-size: 12px;
+            border-radius: 8px;
+            background: var(--panel-2);
+            border: 1px solid var(--line);
+            color: var(--text-2);
+        }
+        .status-msg.ok {
+            color: var(--ok);
+            background: rgba(143, 191, 143, 0.08);
+            border-color: rgba(143, 191, 143, 0.2);
+        }
+        .status-msg.err {
+            color: var(--err);
+            background: rgba(224, 120, 107, 0.08);
+            border-color: rgba(224, 120, 107, 0.2);
+        }
+        .status-msg.info {
+            color: var(--info);
+            background: rgba(127, 166, 196, 0.08);
+            border-color: rgba(127, 166, 196, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -1375,7 +1601,7 @@
 
                 <div class="learn-section">
                     <div class="learn-card">
-                        <div class="learn-title">⚙ Kalibracja</div>
+                        <div class="learn-title">Kalibracja</div>
                         <div class="learn-row"><span>PWM bazowy</span><span class="lval" id="basePwm">--</span></div>
                         <div class="learn-row"><span>Korekta</span><span class="lval" id="correction">--</span></div>
                         <div class="learn-row"><span>Status</span><span class="lval accent" id="calibStatus">OK</span></div>
@@ -1385,7 +1611,7 @@
                         </div>
                     </div>
                     <div class="learn-card">
-                        <div class="learn-title">🧠 Uczenie</div>
+                        <div class="learn-title">Uczenie</div>
                         <div class="learn-row"><span>Tryb</span><span class="lval warn" id="learnMode">OFF</span></div>
                         <div class="learn-row"><span>Próbki</span><span class="lval" id="learnSamples">0</span></div>
                         <div class="learn-row"><span>Stabilność</span><span class="lval accent" id="learnStability">--</span></div>
@@ -1504,16 +1730,16 @@
                 <div class="card">
                     <div class="card-header"><span class="card-title">Ustawienia</span></div>
                     <div class="grid-2" style="gap: 10px;">
-                        <a href="/temperature.html" class="btn btn-primary">🌡️ Temperatura</a>
-                        <a href="/humidity.html" class="btn btn-primary">💧 Wilgotność</a>
-                        <a href="/turner.html" class="btn btn-primary">🔄 Obrót</a>
-                        <a href="/incubation.html" class="btn btn-primary">🐣 Inkubacja</a>
-                        <a href="/symulacja_legów.html" class="btn btn-primary">🐣 Symulacja lęgów</a>
-                        <a href="/alarms.html" class="btn btn-primary">🔔 Alarmy</a>
-                        <a href="/wifi.html" class="btn btn-primary">📶 Wi-Fi</a>
-                        <a href="/various.html" class="btn btn-primary">⚙ Różne</a>
-                        <a href="/console.html" class="btn btn-primary">⌨️ Konsola</a>
-                        <a href="/ajustes.html" class="btn btn-primary">📋 Spis ustawień</a>
+                        <a href="/temperature.html" class="btn btn-primary">Temperatura</a>
+                        <a href="/humidity.html" class="btn btn-primary">Wilgotność</a>
+                        <a href="/turner.html" class="btn btn-primary">Obrót</a>
+                        <a href="/incubation.html" class="btn btn-primary">Inkubacja</a>
+                        <a href="/symulacja_legów.html" class="btn btn-primary">Symulacja lęgów</a>
+                        <a href="/alarms.html" class="btn btn-primary">Alarmy</a>
+                        <a href="/wifi.html" class="btn btn-primary">Wi-Fi</a>
+                        <a href="/various.html" class="btn btn-primary">Różne</a>
+                        <a href="/console.html" class="btn btn-primary">Konsola</a>
+                        <a href="/ajustes.html" class="btn btn-primary">Spis ustawień</a>
                     </div>
                 </div>
             </div>
@@ -1575,7 +1801,7 @@
                     noRotate: [10, 15, 18],
                     phases: [
                         { start: 1, end: 18, temp: 37.8, rh: 55, turn: true, notes: 'Normalna inkubacja' },
-                        { start: 19, end: 21, temp: 37.2, rh: 70, turn: false, notes: '🔴 LOCKDOWN – bez obrotów' }
+                        { start: 19, end: 21, temp: 37.2, rh: 70, turn: false, notes: '● LOCKDOWN – bez obrotów' }
                     ],
                     sensitivity: {
                         critical: [1, 2, 3, 16, 17, 18],
@@ -1590,7 +1816,7 @@
                     noRotate: [14, 21, 25],
                     phases: [
                         { start: 1, end: 24, temp: 37.8, rh: 60, turn: true, notes: 'Normalna inkubacja' },
-                        { start: 25, end: 28, temp: 37.2, rh: 75, turn: false, notes: '🔴 LOCKDOWN – bez obrotów' }
+                        { start: 25, end: 28, temp: 37.2, rh: 75, turn: false, notes: '● LOCKDOWN – bez obrotów' }
                     ],
                     sensitivity: {
                         critical: [1, 2, 3, 21, 22, 23, 24],
@@ -1605,7 +1831,7 @@
                     noRotate: [14, 21, 27],
                     phases: [
                         { start: 1, end: 26, temp: 37.6, rh: 60, turn: true, notes: 'Normalna inkubacja' },
-                        { start: 27, end: 30, temp: 37.2, rh: 75, turn: false, notes: '🔴 LOCKDOWN – bez obrotów' }
+                        { start: 27, end: 30, temp: 37.2, rh: 75, turn: false, notes: '● LOCKDOWN – bez obrotów' }
                     ],
                     sensitivity: {
                         critical: [1, 2, 3, 23, 24, 25, 26],
@@ -1620,7 +1846,7 @@
                     noRotate: [8, 12, 15],
                     phases: [
                         { start: 1, end: 14, temp: 37.8, rh: 50, turn: true, notes: 'Normalna inkubacja' },
-                        { start: 15, end: 17, temp: 37.3, rh: 70, turn: false, notes: '🔴 LOCKDOWN – bez obrotów' }
+                        { start: 15, end: 17, temp: 37.3, rh: 70, turn: false, notes: '● LOCKDOWN – bez obrotów' }
                     ],
                     sensitivity: {
                         critical: [1, 2, 3, 14, 15],
@@ -1635,7 +1861,7 @@
                     noRotate: [12, 18, 23],
                     phases: [
                         { start: 1, end: 22, temp: 37.7, rh: 55, turn: true, notes: 'Normalna inkubacja' },
-                        { start: 23, end: 26, temp: 37.2, rh: 70, turn: false, notes: '🔴 LOCKDOWN – bez obrotów' }
+                        { start: 23, end: 26, temp: 37.2, rh: 70, turn: false, notes: '● LOCKDOWN – bez obrotów' }
                     ],
                     sensitivity: {
                         critical: [1, 2, 3, 20, 21, 22, 23],
@@ -1650,7 +1876,7 @@
                     noRotate: [10, 16, 21],
                     phases: [
                         { start: 1, end: 20, temp: 37.8, rh: 55, turn: true, notes: 'Normalna inkubacja' },
-                        { start: 21, end: 24, temp: 37.2, rh: 70, turn: false, notes: '🔴 LOCKDOWN – bez obrotów' }
+                        { start: 21, end: 24, temp: 37.2, rh: 70, turn: false, notes: '● LOCKDOWN – bez obrotów' }
                     ],
                     sensitivity: {
                         critical: [1, 2, 3, 18, 19, 20, 21],
@@ -2479,7 +2705,7 @@
                     else if (sens === 'HIGH') tr.style.background = 'rgba(255,136,68,0.06)';
                     let turnHtml = phase.turn ? '✓' : '✗';
                     if (noRotate && isLockdown) turnHtml = '<span class="no-rotate">✕</span>';
-                    const sensLabel = sens === 'CRITICAL' ? '🔴' : (sens === 'HIGH' ? '🟠' : '🟢');
+                    const sensLabel = '●';
                     tr.innerHTML =
                         `<td>${isActive ? '▶ ' : ''}${d}</td><td style="color:${sensColor};font-weight:${sens === 'CRITICAL' ? 'bold' : 'normal'}">${phase.temp.toFixed(1)}</td><td>${phase.rh.toFixed(0)}</td><td>${turnHtml}</td><td>${isLockdown ? '<span class="lock">LOCK</span>' : '—'}</td><td style="font-size:9px;color:#5a6a7a;">${sensLabel} ${phase.notes || ''}</td>`;
                     tbody.appendChild(tr);
@@ -2524,7 +2750,7 @@
                     <tr><td style="color:#5a6a7a;font-size:11px;padding:2px 4px;border-bottom:1px solid rgba(26,30,36,0.3);">Obrót</td>
                         <td style="text-align:right;color:${noRotate ? '#884444' : (phase.turn ? '#70d070' : '#a070d0')};font-size:12px;">${noRotate ? '✕ BRAK' : (phase.turn ? '✓ TAK' : '✗ NIE')}</td></tr>
                     <tr><td style="color:#5a6a7a;font-size:11px;padding:2px 4px;border-bottom:1px solid rgba(26,30,36,0.3);">Faza</td>
-                        <td style="text-align:right;color:${sensColor};font-size:12px;font-weight:${sens === 'CRITICAL' ? 'bold' : 'normal'}">${sens} ${isLockdown ? '🔒' : ''}</td></tr>
+                        <td style="text-align:right;color:${sensColor};font-size:12px;font-weight:${sens === 'CRITICAL' ? 'bold' : 'normal'}">${sens} ${isLockdown ? 'LOCK' : ''}</td></tr>
                     <tr><td style="color:#5a6a7a;font-size:11px;padding:2px 4px;">Uwagi</td>
                         <td style="text-align:right;color:#6a7a8a;font-size:11px;">${phase.notes || ''}</td></tr>
                 `;
@@ -2567,10 +2793,10 @@
             window.startCalibration = function() {
                 document.getElementById('basePwm').textContent = Math.round(80 + Math.random() * 40) + '%';
                 document.getElementById('correction').textContent = (Math.random() * 10 - 5).toFixed(1) + '%';
-                document.getElementById('calibStatus').textContent = '🔧 TRWA';
+                document.getElementById('calibStatus').textContent = 'TRWA';
                 document.getElementById('calibStatus').className = 'lval warn';
                 setTimeout(() => {
-                    document.getElementById('calibStatus').textContent = '✅ OK';
+                    document.getElementById('calibStatus').textContent = 'OK';
                     document.getElementById('calibStatus').className = 'lval accent';
                     addLog('ok', 'Kalibracja zakończona');
                 }, 3000);
@@ -2649,7 +2875,7 @@
                         if (isLock) tr.className = 'lockdown';
                         if (sens === 'CRITICAL') tr.style.background = 'rgba(255,68,68,0.06)';
                         tr.innerHTML =
-                            `<td style="font-weight:${sens === 'CRITICAL' ? 'bold' : 'normal'};color:${sensColor};">${d}</td><td>${phase.temp.toFixed(1)}</td><td>${phase.rh.toFixed(0)}</td><td>${phase.turn ? '✓' : '✗'}</td><td>${isLock ? '🔒' : '—'}</td>`;
+                            `<td style="font-weight:${sens === 'CRITICAL' ? 'bold' : 'normal'};color:${sensColor};">${d}</td><td>${phase.temp.toFixed(1)}</td><td>${phase.rh.toFixed(0)}</td><td>${phase.turn ? '✓' : '✗'}</td><td>${isLock ? 'LOCK' : '—'}</td>`;
                         body.appendChild(tr);
                     }
                 }
@@ -2733,7 +2959,7 @@
                 addLog('info', 'Rozpoczęto pomiar kalibracji, PWM=' + pwm + '%');
                 setTimeout(() => {
                     calRunning = false;
-                    document.getElementById('calStatus').textContent = '✅ Pomiar zakończony';
+                    document.getElementById('calStatus').textContent = 'Pomiar zakończony';
                     document.getElementById('calStatus').className = 'status-msg ok';
                     addLog('ok', 'Kalibracja zakończona pomyślnie');
                 }, 3000);
