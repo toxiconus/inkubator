@@ -746,24 +746,26 @@ void handleWebSocketMessage(uint8_t num, WStype_t type, uint8_t* payload, size_t
 
     // ===== ALARMY =====
     else if (msg == "carregarAlarmes" || msg == "getAlarms") {
-        webSocket.sendTXT(num, "alarmsStatus:1,1,1,1,1,1,1,1,1,1");
+        // Brak zapisu flag alarmów w konfiguracji – zgłaszamy to wprost, nie udajemy danych.
+        webSocket.sendTXT(num, "err:carregarAlarmes:notImplemented");
     }
     else if (msg.startsWith("salvarAlarmes:")) {
-        webSocket.sendTXT(num, "ok:salvarAlarmes");
+        webSocket.sendTXT(num, "err:salvarAlarmes:notImplemented");
     }
 
     // ===== WI-FI =====
     else if (msg == "carregarRede" || msg == "getWifiConfig") {
-        webSocket.sendTXT(num, "wifiConfig:ssid=MojaSiec,senha=********");
+        webSocket.sendTXT(num, "err:carregarRede:notImplemented");
     }
     else if (msg == "status" || msg == "getWifiStatus") {
-        webSocket.sendTXT(num, "wifiStatus:connected");
+        // Urządzenie działa tylko jako punkt dostępowy (AP), bez połączenia z routerem.
+        webSocket.sendTXT(num, "wifiStatus:ap_only");
     }
     else if (msg.startsWith("salvarRede:") || msg.startsWith("setWifi:")) {
-        webSocket.sendTXT(num, "ok:setWifi");
+        webSocket.sendTXT(num, "err:setWifi:notImplemented");
     }
     else if (msg == "removerRede" || msg == "removeWifi") {
-        webSocket.sendTXT(num, "ok:removeWifi");
+        webSocket.sendTXT(num, "err:removeWifi:notImplemented");
     }
 
     // ===== RTC =====

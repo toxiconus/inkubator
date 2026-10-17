@@ -8,21 +8,21 @@
     <style>
         /* ===== STYLE SPECYFICZNE DLA OBRÓTU ===== */
         .tray-section {
-            border: 1px solid #1a1e24;
+            border: 1px solid #262a30;
             border-radius: 4px;
             padding: 12px 14px;
             margin-bottom: 12px;
-            background: rgba(20, 24, 32, 0.3);
+            background: rgba(21, 23, 26, 0.3);
         }
 
         .tray-section .tray-title {
             font-size: 13px;
             font-weight: 700;
             letter-spacing: 0.08em;
-            color: #8a9aa8;
+            color: #aaa499;
             text-transform: uppercase;
             margin-bottom: 8px;
-            border-bottom: 1px solid #1a1e24;
+            border-bottom: 1px solid #262a30;
             padding-bottom: 4px;
         }
 
@@ -35,17 +35,17 @@
         }
 
         .tray-section .tray-title .tray-indicator.active {
-            background: #70d070;
-            box-shadow: 0 0 8px rgba(48, 192, 96, 0.3);
+            background: #8fbf8f;
+            box-shadow: 0 0 8px rgba(143, 191, 143, 0.3);
         }
 
         .tray-section .tray-title .tray-indicator.inactive {
-            background: #5a6a7a;
+            background: #75706a;
         }
 
         .tray-section .tray-title .tray-indicator.rotating {
-            background: #e8b830;
-            box-shadow: 0 0 8px rgba(232, 184, 48, 0.3);
+            background: #e3a04a;
+            box-shadow: 0 0 8px rgba(227, 160, 74, 0.3);
             animation: pulse 1s ease-in-out infinite;
         }
 
@@ -55,7 +55,7 @@
         }
 
         .test-panel {
-            border-top: 1px solid #1a1e24;
+            border-top: 1px solid #262a30;
             padding-top: 12px;
             margin-top: 4px;
         }
@@ -73,12 +73,12 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            color: #5a6a7a;
+            color: #75706a;
         }
 
         #timerDisplay {
             font-size: 14px;
-            color: #70d070;
+            color: #8fbf8f;
             padding: 4px 0;
             font-weight: 600;
             min-width: 60px;
@@ -94,10 +94,10 @@
         }
 
         .test-controls select {
-            background: #161d24;
-            border: 1px solid #2d3744;
+            background: #1b1e22;
+            border: 1px solid #343942;
             border-radius: 4px;
-            color: #e6eef8;
+            color: #ebe6dc;
             padding: 6px 10px;
             font-size: 12px;
             font-family: 'Courier New', monospace;
@@ -106,12 +106,12 @@
         }
 
         .test-controls select:focus {
-            border-color: #5a8a7a;
+            border-color: #b07a3e;
         }
 
         .form-row .hint {
             font-size: 10px;
-            color: #5a6a7a;
+            color: #75706a;
         }
 
         @media (max-width: 600px) {
@@ -135,7 +135,7 @@
         <!-- ===== NAGŁÓWEK ===== -->
         <div class="header">
             <div class="header-title">
-                <span>⚙</span> Ustawienia · <span id="pageTitle">Obrót jaj</span>
+                <span></span> Ustawienia · <span id="pageTitle">Obrót jaj</span>
             </div>
             <div class="header-status">
                 <span class="dot" id="wsDot"></span>
@@ -151,7 +151,7 @@
                 <div class="tray-title">
                     <span class="tray-indicator" id="trayIndicator0"></span>
                     Taca 1
-                    <span style="font-size:10px;color:#5a6a7a;font-weight:400;margin-left:8px;" id="trayStatus0">--</span>
+                    <span style="font-size:10px;color:#75706a;font-weight:400;margin-left:8px;" id="trayStatus0">--</span>
                 </div>
 
                 <div class="form-group">
@@ -193,7 +193,7 @@
                 <div class="tray-title">
                     <span class="tray-indicator" id="trayIndicator1"></span>
                     Taca 2
-                    <span style="font-size:10px;color:#5a6a7a;font-weight:400;margin-left:8px;" id="trayStatus1">--</span>
+                    <span style="font-size:10px;color:#75706a;font-weight:400;margin-left:8px;" id="trayStatus1">--</span>
                 </div>
 
                 <div class="form-group">
@@ -233,7 +233,7 @@
             <!-- ===== TEST MANUALNY ===== -->
             <div class="test-panel">
                 <div class="test-header">
-                    <span class="test-label">⚙ Test manualny</span>
+                    <span class="test-label">Test manualny</span>
                     <span id="timerDisplay">--</span>
                 </div>
 

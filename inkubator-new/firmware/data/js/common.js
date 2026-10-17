@@ -11,8 +11,9 @@
     //  KONFIGURACJA
     // ============================================================
     const WS_PORT = 81;
-    const MAX_RECONNECT_ATTEMPTS = 10;
-    const RECONNECT_INTERVAL_MS = 30000;
+    const RECONNECT_BASE_MS = 1000;   // pierwsza próba po 1 s
+    const RECONNECT_MAX_MS = 10000;   // wykładnicze wydłużanie, max 10 s
+    const RECONNECT_WATCHDOG_MS = 30000; // siatka bezpieczeństwa, gdy nic nie działa
 
     // ============================================================
     //  STAN
@@ -87,6 +88,10 @@
             };
 
             ws.onmessage = function(event) {
+                // Każda odpowiedź błędu z ESP trafia do paska statusu – nic nie znika po cichu.
+                if (typeof event.data === 'string' && event.data.indexOf('err:') === 0) {
+                    setStatus(event.data.substring(4).replace(/:/g, ' · '), 'err');
+                }
                 statusCallbacks.forEach(cb => cb('message', ws, event.data));
             };
 
@@ -109,14 +114,12 @@
         }
     }
 
+    // Ponawianie bez limitu prób: wykładniczo do RECONNECT_MAX_MS.
+    // Strona zawsze sama wraca po restarcie ESP; przycisk/kropka wymusza natychmiastową próbę.
     function scheduleReconnect() {
         if (reconnectTimer) clearTimeout(reconnectTimer);
         reconnectAttempts++;
-        if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) {
-            setStatus('Brak połączenia – spróbuj ponownie ręcznie', 'err');
-            return;
-        }
-        const delay = Math.min(5000, 1000 * Math.pow(1.5, reconnectAttempts));
+        const delay = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * Math.pow(1.5, reconnectAttempts - 1));
         reconnectTimer = setTimeout(wsConnect, delay);
     }
 
@@ -166,9 +169,10 @@
 
         wsConnect();
 
+        // Watchdog: jeśli połączenia nie ma, spróbuj ponownie – bez zerowania licznika backoffu.
         setInterval(function() {
-            if (!wsConnected) reconnectManually();
-        }, RECONNECT_INTERVAL_MS);
+            if (!wsConnected) wsConnect();
+        }, RECONNECT_WATCHDOG_MS);
     });
 
     window.addEventListener('beforeunload', function() {

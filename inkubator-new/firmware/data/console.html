@@ -11,13 +11,13 @@
             width: 100%;
             height: 320px;
             overflow-y: scroll;
-            background: #0a0c0e;
-            border: 1px solid #1a1e24;
+            background: #0d0e10;
+            border: 1px solid #262a30;
             border-radius: 4px;
             padding: 10px 12px;
             font-family: 'Courier New', monospace;
             font-size: 13px;
-            color: #70d070;
+            color: #8fbf8f;
             line-height: 1.7;
             white-space: pre-wrap;
             word-break: break-all;
@@ -31,7 +31,7 @@
             background: transparent;
         }
         #console::-webkit-scrollbar-thumb {
-            background: #2a3240;
+            background: #343942;
             border-radius: 2px;
         }
 
@@ -45,10 +45,10 @@
         .input-row input[type="text"] {
             flex: 1;
             min-width: 140px;
-            background: #161d24;
-            border: 1px solid #2d3744;
+            background: #1b1e22;
+            border: 1px solid #343942;
             border-radius: 4px;
-            color: #e6eef8;
+            color: #ebe6dc;
             padding: 8px 12px;
             font-family: 'Courier New', monospace;
             font-size: 14px;
@@ -57,23 +57,23 @@
         }
 
         .input-row input[type="text"]:focus {
-            border-color: #5a8a7a;
+            border-color: #b07a3e;
         }
 
         .user-message {
-            color: #b0d0ff;
+            color: #ebe6dc;
         }
 
         .system-message {
-            color: #70d070;
+            color: #8fbf8f;
         }
 
         .error-message {
-            color: #e05050;
+            color: #e0786b;
         }
 
         .cmd-message {
-            color: #e8b830;
+            color: #e3a04a;
         }
 
         @media (max-width: 600px) {
@@ -100,7 +100,7 @@
         <!-- ===== NAGŁÓWEK ===== -->
         <div class="header">
             <div class="header-title">
-                <span>⚙</span> Konsola · <span id="pageTitle">Terminal</span>
+                <span></span> Konsola · <span id="pageTitle">Terminal</span>
             </div>
             <div class="header-status">
                 <span class="dot" id="wsDot"></span>

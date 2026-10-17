@@ -63,11 +63,11 @@
         }
 
         if (anyActive) {
-            overallStatus.textContent = '⚠️ ALARM';
-            overallStatus.style.color = '#e05050';
+            overallStatus.textContent = '⚠ALARM';
+            overallStatus.style.color = '#e0786b';
         } else {
             overallStatus.textContent = '✓ OK';
-            overallStatus.style.color = '#70d070';
+            overallStatus.style.color = '#8fbf8f';
         }
     }
 

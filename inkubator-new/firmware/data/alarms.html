@@ -12,36 +12,59 @@
             justify-content: space-between;
             align-items: center;
             padding: 8px 4px;
-            border-bottom: 1px solid rgba(26, 30, 36, 0.4);
+            border-bottom: 1px solid rgba(21, 23, 26, 0.4);
         }
 
         .alarm-group label {
+            flex: 1;
             font-size: 13px;
-            color: #8a9aa8;
+            color: #aaa499;
             cursor: pointer;
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.06em;
         }
 
+        /* Przełącznik zamiast natywnego checkboxa (natywny ignoruje tło). */
         .alarm-group input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            accent-color: #5a8a7a;
+            -webkit-appearance: none;
+            appearance: none;
+            position: relative;
+            width: 34px;
+            height: 18px;
+            border-radius: 999px;
+            background: #343942;
+            border: 1px solid #343942;
             cursor: pointer;
-            background: #161d24;
-            border: 1px solid #2d3744;
-            border-radius: 3px;
             flex-shrink: 0;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .alarm-group input[type="checkbox"]::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #aaa499;
+            transition: transform 0.2s ease, background 0.2s ease;
         }
 
         .alarm-group input[type="checkbox"]:checked {
-            accent-color: #70d070;
+            background: rgba(143, 191, 143, 0.25);
+            border-color: #8fbf8f;
+        }
+
+        .alarm-group input[type="checkbox"]:checked::before {
+            transform: translateX(16px);
+            background: #8fbf8f;
         }
 
         .alarm-group .alarm-id {
             font-size: 10px;
-            color: #5a6a7a;
+            color: #75706a;
             margin-right: 8px;
             font-weight: 600;
             min-width: 24px;
@@ -57,21 +80,21 @@
         }
 
         .alarm-group .alarm-status.on {
-            color: #70d070;
-            background: rgba(48, 192, 96, 0.12);
-            border: 1px solid rgba(48, 192, 96, 0.2);
+            color: #8fbf8f;
+            background: rgba(143, 191, 143, 0.12);
+            border: 1px solid rgba(143, 191, 143, 0.2);
         }
 
         .alarm-group .alarm-status.off {
-            color: #5a6a7a;
-            background: rgba(90, 106, 122, 0.12);
-            border: 1px solid rgba(90, 106, 122, 0.2);
+            color: #75706a;
+            background: rgba(117, 112, 106, 0.12);
+            border: 1px solid rgba(117, 112, 106, 0.2);
         }
 
         .alarm-group .alarm-status.active {
-            color: #e05050;
-            background: rgba(224, 80, 80, 0.12);
-            border: 1px solid rgba(224, 80, 80, 0.2);
+            color: #e0786b;
+            background: rgba(224, 120, 107, 0.12);
+            border: 1px solid rgba(224, 120, 107, 0.2);
         }
 
         .alarm-section-title {
@@ -79,9 +102,9 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            color: #5a6a7a;
+            color: #75706a;
             padding: 6px 4px 4px 4px;
-            border-bottom: 1px solid #1a1e24;
+            border-bottom: 1px solid #262a30;
             margin-bottom: 4px;
         }
 
@@ -103,7 +126,7 @@
         <!-- ===== NAGŁÓWEK ===== -->
         <div class="header">
             <div class="header-title">
-                <span>⚙</span> Ustawienia · <span id="pageTitle">Alarmy</span>
+                <span></span> Ustawienia · <span id="pageTitle">Alarmy</span>
             </div>
             <div class="header-status">
                 <span class="dot" id="wsDot"></span>
@@ -114,15 +137,15 @@
         <!-- ===== TREŚĆ ===== -->
         <form id="configForm">
 
-            <div class="alarm-section-title">🔴 Alarmy krytyczne</div>
+            <div class="alarm-section-title">Alarmy krytyczne</div>
             <div id="alarmList">
                 <!-- Alarmy będą generowane przez JS -->
             </div>
 
-            <div style="margin-top:10px;padding:8px 4px;background:rgba(20,24,32,0.3);border-radius:4px;border:1px solid #1a1e24;">
-                <div style="display:flex;justify-content:space-between;font-size:11px;color:#5a6a7a;padding:2px 4px;">
+            <div style="margin-top:10px;padding:8px 4px;background:rgba(21,23,26,0.3);border-radius:4px;border:1px solid #262a30;">
+                <div style="display:flex;justify-content:space-between;font-size:11px;color:#75706a;padding:2px 4px;">
                     <span>Status ogólny</span>
-                    <span id="alarmOverallStatus" style="color:#70d070;font-weight:600;">OK</span>
+                    <span id="alarmOverallStatus" style="color:#8fbf8f;font-weight:600;">OK</span>
                 </div>
             </div>
 

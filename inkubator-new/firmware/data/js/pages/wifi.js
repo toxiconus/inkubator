@@ -16,7 +16,7 @@
 
     function updateWifiStatusText(text, type = 'info') {
         statusVal.textContent = text;
-        statusVal.style.color = type === 'err' ? '#e05050' : type === 'ok' ? '#70d070' : '#8a9aa8';
+        statusVal.style.color = type === 'err' ? '#e0786b' : type === 'ok' ? '#8fbf8f' : '#aaa499';
     }
 
     ink.onWsEvent(function(type, ws, data) {

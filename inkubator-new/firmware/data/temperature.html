@@ -12,8 +12,8 @@
             justify-content: space-between;
             align-items: center;
             padding: 8px 12px;
-            background: rgba(20, 24, 32, 0.4);
-            border: 1px solid #1a1e24;
+            background: rgba(21, 23, 26, 0.4);
+            border: 1px solid #262a30;
             border-radius: 4px;
             margin-bottom: 12px;
         }
@@ -22,31 +22,31 @@
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.08em;
-            color: #5a6a7a;
+            color: #75706a;
             font-weight: 600;
         }
 
         .current-value .value {
             font-size: 18px;
             font-weight: 700;
-            color: #f0f6fc;
+            color: #ebe6dc;
         }
 
         .current-value .value.ok {
-            color: #70d070;
+            color: #8fbf8f;
         }
 
         .current-value .value.warn {
-            color: #e8b830;
+            color: #e3a04a;
         }
 
         .current-value .value.err {
-            color: #e05050;
+            color: #e0786b;
         }
 
         .current-value .unit {
             font-size: 12px;
-            color: #5a6a7a;
+            color: #75706a;
             font-weight: 400;
             margin-left: 2px;
         }
@@ -74,7 +74,7 @@
         <!-- ===== NAGŁÓWEK ===== -->
         <div class="header">
             <div class="header-title">
-                <span>⚙</span> Ustawienia · <span id="pageTitle">Temperatura</span>
+                <span></span> Ustawienia · <span id="pageTitle">Temperatura</span>
             </div>
             <div class="header-status">
                 <span class="dot" id="wsDot"></span>
@@ -84,7 +84,7 @@
 
         <!-- ===== AKTUALNA WARTOŚĆ ===== -->
         <div class="current-value">
-            <span class="label">🌡️ Aktualna temperatura</span>
+            <span class="label">Aktualna temperatura</span>
             <span class="value" id="currentTemp">-- <span class="unit">°C</span></span>
         </div>
 

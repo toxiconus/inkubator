@@ -78,9 +78,9 @@
     };
 
     const SENSITIVITY_COLORS = {
-        'CRITICAL': '#e05050',
-        'HIGH': '#e8b830',
-        'MEDIUM': '#70d070'
+        'CRITICAL': '#e0786b',
+        'HIGH': '#e3a04a',
+        'MEDIUM': '#8fbf8f'
     };
 
     const SENSITIVITY_LABELS = {
@@ -186,7 +186,7 @@
         document.getElementById(prefix + 'Hum').textContent = dayData.humidity_set + '%';
         document.getElementById(prefix + 'HumRange').textContent = dayData.humidity_range.join('-') + '%';
 
-        const sensColor = SENSITIVITY_COLORS[dayData.sensitivity] || '#70d070';
+        const sensColor = SENSITIVITY_COLORS[dayData.sensitivity] || '#8fbf8f';
         const sensLabel = SENSITIVITY_LABELS[dayData.sensitivity] || 'NORMALNA';
         document.getElementById(prefix + 'Sens').innerHTML = '<span style="color:' + sensColor + ';">' + sensLabel + '</span>';
         document.getElementById(prefix + 'Turn').textContent = dayData.turning ? '✓ TAK' : '✗ NIE';
@@ -242,8 +242,8 @@
         document.getElementById('compTemp').textContent = (tempOk ? tMin.toFixed(1) + ' do ' + tMax.toFixed(1) : '---') + '°C';
         document.getElementById('compHum').textContent = (humOk ? hMin.toFixed(0) + ' do ' + hMax.toFixed(0) : '---') + '%';
         document.getElementById('compStatus').innerHTML = compatible ?
-            '<span style="color:#70d070;">✓ KOMPATYBILNE</span>' :
-            '<span style="color:#e05050;">✗ KONFLIKT</span>';
+            '<span style="color:#8fbf8f;">✓ KOMPATYBILNE</span>' :
+            '<span style="color:#e0786b;">✗ KONFLIKT</span>';
         document.getElementById('compDesc').textContent = compatible ?
             'Oba gatunki mogą być hodowane razem w tych warunkach.' :
             'Zakresy warunków się nie pokrywają – rozważ osobne lęgi.';
@@ -291,11 +291,11 @@
         const mapY = (val) => pad.top + plotH - ((val - minVal) / (maxVal - minVal)) * plotH;
 
         // Tło
-        ctx.fillStyle = 'rgba(12,14,18,0.5)';
+        ctx.fillStyle = 'rgba(21,23,26,0.5)';
         ctx.fillRect(0, 0, w, h);
 
         // Grid
-        ctx.strokeStyle = 'rgba(26,30,36,0.3)';
+        ctx.strokeStyle = 'rgba(21,23,26,0.3)';
         ctx.lineWidth = 0.5;
         const step = metric === 'temp' ? 0.5 : 10;
         for (let i = minVal; i <= maxVal; i += step) {
@@ -307,7 +307,7 @@
         }
 
         // Osie
-        ctx.strokeStyle = '#2a3240';
+        ctx.strokeStyle = '#343942';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(pad.left, pad.top);
@@ -316,7 +316,7 @@
         ctx.stroke();
 
         // Etykiety osi Y
-        ctx.fillStyle = '#5a6a7a';
+        ctx.fillStyle = '#75706a';
         ctx.font = '8px monospace';
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
@@ -335,7 +335,7 @@
 
         // Rysuj profile
         const sims = [sim1, sim2];
-        const colors = ['rgba(57,170,255,', 'rgba(255,100,100,'];
+        const colors = ['rgba(127,166,196,', 'rgba(224,120,107,'];
 
         sims.forEach(function(sim, idx) {
             const profile = sim.profile;

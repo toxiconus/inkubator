@@ -111,7 +111,7 @@
             const rh = isLockdown ? 70 : 55;
             const turn = !isLockdown && d % 3 !== 0;
             const sens = d <= 3 || isLockdown ? 'CRITICAL' : (d <= 5 ? 'HIGH' : 'MEDIUM');
-            const sensColor = sens === 'CRITICAL' ? '#e05050' : (sens === 'HIGH' ? '#e8b830' : '#70d070');
+            const sensColor = sens === 'CRITICAL' ? '#e0786b' : (sens === 'HIGH' ? '#e3a04a' : '#8fbf8f');
 
             let rowClass = '';
             if (isActive) rowClass = 'active';
@@ -119,7 +119,7 @@
             if (sens === 'CRITICAL') rowClass += ' critical';
 
             const turnHtml = turn ? '<span class="turn-on">✓</span>' : '<span class="turn-off">✗</span>';
-            const lockHtml = isLockdown ? '<span class="lock-icon">🔒</span>' : '—';
+            const lockHtml = isLockdown ? '<span class="lock-icon"></span>' : '—';
             const activeMark = isActive ? '<span class="day-active">▶</span> ' : '';
 
             html += '<tr class="' + rowClass + '">';
@@ -128,7 +128,7 @@
             html += '<td>' + rh + '</td>';
             html += '<td>' + turnHtml + '</td>';
             html += '<td>' + lockHtml + '</td>';
-            html += '<td style="font-size:10px;color:#5a6a7a;">' + (sens === 'CRITICAL' ? '⚠ ' : '') + (isLockdown ? 'LOCKDOWN' : 'Normalny') + '</td>';
+            html += '<td style="font-size:10px;color:#75706a;">' + (sens === 'CRITICAL' ? '⚠ ' : '') + (isLockdown ? 'LOCKDOWN' : 'Normalny') + '</td>';
             html += '</tr>';
         }
 
