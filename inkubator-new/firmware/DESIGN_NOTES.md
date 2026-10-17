@@ -67,3 +67,33 @@ Stan obecny:
 
 Do dodania nowego gatunku: wpis w `species` z `day_by_day` dla wszystkich dni,
 `critical_phases`, `turning_frequency_per_day`, `candling_days`. Żadnych zmian w kodzie.
+
+## 7. Tace, komora i grupy wylęgu
+
+Stan obecny (sprawdzony w kodzie):
+- Regulator (`controller.cpp`) steruje grzałką i nawilżaniem według globalnych wartości
+  `target_temp` / `target_humidity` z konfiguracji. Profile dnia (`tray_controller`) liczą
+  cele dla każdej tacy, ale nikt ich nie odczytuje. Dopóki to nie zostanie połączone,
+  komora trzyma stałe nastawy, a nie warunki z profilu.
+- Temperatura celu z profilu to `air_temp_target` (powietrze), a nie `shell_temp` (skorupa).
+  Poprawione w `tray_controller.cpp`.
+- Jedna komora = jedna temperatura i jedna wilgotność dla wszystkich tac. Tace mogą się różnić
+  gatunkiem, dniem i obracaniem, ale nie klimatem.
+
+Zalecany model: **taca = grupa wylęgu**. Gatunki w jednej komorze wyrównujemy po dniu wylęgu,
+a nie po dniu startu (krótszy gatunek startuje później o różnicę dni inkubacji).
+Wyniki z profili (wyrównanie po wylęgu):
+- kura + kaczka: 0 dni rozjazdu obracania, max różnica wilgotności 8%
+- kura + przepiórka: 0 dni, 0%
+- kura + bażant: 0 dni, 5%
+- kaczka + przepiórka: 0 dni, 8%
+- kaczka + bażant: 0 dni, 3%
+- kura + perliczka, gęś + perliczka: 2–3 dni rozjazdu, nie zalecane w jednej komorze.
+
+Zasada dla wspólnej komory: temperatura 37,7 °C dla wszystkich; wilgotność celu = średnia
+z aktywnych tac, a w lockdown: najwyższa z nich. Gdy rozjazd obracania > 0, panel ostrzega.
+
+Wartości zweryfikowane z NCSU (Egg Temp Chart): temperatura 100 °F (37,8 °C) cały czas,
+wilgotność wylęgu 45–55%, lockdown 55–65%, stop obracania: kura 18, kaczka 25, perliczka 25,
+przepiórka 14 (dla Coturnix). Nasze profile: wilgotność lockdown 65–75% (z innych źródeł) –
+do decyzji, czy zejść do 55–65%.
