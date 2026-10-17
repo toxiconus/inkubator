@@ -62,7 +62,7 @@ void tray_init(unsigned long long base_start_millis) {
         st.incubation_profile = getSpeciesProfile(g_incubation_profiles, speciesId);
         if (st.incubation_profile) {
             st.current_day_data = getDayForSpecies(g_incubation_profiles, speciesId, st.current_day);
-            st.target_temp = st.current_day_data.shell_temp;
+            st.target_temp = st.current_day_data.air_temp_target;  // powietrze w komorze, nie skorupa
             st.target_humidity = st.current_day_data.humidity_set;
             st.target_humidity_min = st.current_day_data.humidity_min;
             st.target_humidity_max = st.current_day_data.humidity_max;
@@ -111,7 +111,7 @@ void tray_update_state(TrayState& st, unsigned long long now_millis) {
         String speciesKey = String(configMgr.cfg.trays[st.index].species);
         speciesKey.toLowerCase();
         st.current_day_data = getDayForSpecies(g_incubation_profiles, speciesKey, st.current_day);
-        st.target_temp = st.current_day_data.shell_temp;
+        st.target_temp = st.current_day_data.air_temp_target;  // powietrze w komorze, nie skorupa
         st.target_humidity = st.current_day_data.humidity_set;
         st.target_humidity_min = st.current_day_data.humidity_min;
         st.target_humidity_max = st.current_day_data.humidity_max;
@@ -267,7 +267,7 @@ static void tray_update_day_from_rtc(int tray_idx, unsigned long long now_unix) 
     String speciesKey = String(configMgr.cfg.trays[tray_idx].species);
     speciesKey.toLowerCase();
     st.current_day_data = getDayForSpecies(g_incubation_profiles, speciesKey, st.current_day);
-    st.target_temp = st.current_day_data.shell_temp;
+    st.target_temp = st.current_day_data.air_temp_target;  // powietrze w komorze, nie skorupa
     st.target_humidity = st.current_day_data.humidity_set;
     st.target_humidity_min = st.current_day_data.humidity_min;
     st.target_humidity_max = st.current_day_data.humidity_max;
