@@ -156,7 +156,7 @@
             }
 
             if (msg.startsWith('calibracaoUmidade:') || msg.startsWith('setHumidityCalibration:')) {
-                const val = msg.includes('calibracaoUmidade:') ? msg.substring(17) : msg.substring(22);
+                const val = msg.includes('calibracaoUmidade:') ? msg.substring(18) : msg.substring(22);
                 const parsed = parseFloat(val);
                 if (!isNaN(parsed)) {
                     calibrationEl.value = parsed;
@@ -174,7 +174,7 @@
             }
 
             if (msg.startsWith('intervaloVerificacaoAgua:') || msg.startsWith('setWaterCheckInterval:')) {
-                const val = msg.includes('intervaloVerificacaoAgua:') ? msg.substring(24) : msg.substring(22);
+                const val = msg.includes('intervaloVerificacaoAgua:') ? msg.substring(25) : msg.substring(22);
                 const parsed = parseInt(val, 10);
                 if (!isNaN(parsed)) {
                     waterIntervalEl.value = parsed;

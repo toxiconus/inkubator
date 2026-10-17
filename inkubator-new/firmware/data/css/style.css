@@ -1,6 +1,10 @@
 /* ============================================================
-   TOKENY (ta sama paleta co index.html – zmieniaj tylko tutaj)
+   INKUBATOR – wspólny system wizualny
+   Jedna paleta, jeden rytm odstępów, komponenty wielokrotnego użytku.
+   Strony mają tylko układ specyficzny dla siebie (lokalny <style>).
    ============================================================ */
+
+/* ---------- TOKENY (zmieniaj tylko tutaj) ---------- */
 :root {
     --bg: #0d0e10;
     --panel: #15171a;
@@ -11,117 +15,126 @@
     --text-2: #aaa499;
     --text-3: #75706a;
     --amber: #e3a04a;
+    --amber-hi: #f2c27e;
     --amber-soft: rgba(227, 160, 74, 0.14);
     --ok: #8fbf8f;
+    --ok-soft: rgba(143, 191, 143, 0.10);
     --err: #e0786b;
+    --err-soft: rgba(224, 120, 107, 0.10);
     --info: #7fa6c4;
+    --info-soft: rgba(127, 166, 196, 0.10);
     --radius: 10px;
+    --radius-sm: 7px;
+    --space: 12px;
     --ui: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --mono: ui-monospace, 'JetBrains Mono', Consolas, 'Courier New', monospace;
 }
 
-/* ============================================================
-   RESET I PODSTAWY
-   ============================================================ */
+/* ---------- PODSTAWY ---------- */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    user-select: none;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
 }
 
 body {
-    background: #0d0e10;
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    font-size: 16px;
-    color: #ebe6dc;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--ui);
+    font-size: 15px;
+    line-height: 1.5;
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 12px;
+    padding: 16px;
 }
 
+button,
+input,
+select {
+    font: inherit;
+    color: inherit;
+}
+
+/* ---------- KONTENER STRONY ---------- */
 .instrument {
     width: 100%;
-    max-width: 760px;
-    background: #15171a;
-    border: 1px solid #262a30;
-    border-radius: 8px;
-    padding: 18px 22px 16px;
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+    max-width: 720px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px 24px 18px;
 }
 
-/* ============================================================
-   NAGŁÓWEK
-   ============================================================ */
+/* ---------- NAGŁÓWEK ---------- */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #262a30;
-    margin-bottom: 16px;
+    gap: 8px 12px;
     flex-wrap: wrap;
-    gap: 8px;
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--line);
 }
 
 .header-title {
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: #ebe6dc;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
+    color: var(--text);
 }
 
 .header-title span {
-    color: #75706a;
+    color: var(--text-3);
+    font-weight: 500;
 }
 
 .header-status {
-    font-size: 12px;
-    color: #75706a;
     display: flex;
     align-items: center;
     gap: 8px;
+    font-size: 12px;
+    color: var(--text-3);
     cursor: pointer;
 }
 
 .header-status .dot {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    background: #343942;
-    transition: background 0.4s ease;
+    background: var(--line-strong);
+    transition: background 0.3s ease;
 }
 
 .header-status .dot.online {
-    background: #8fbf8f;
-    box-shadow: 0 0 10px rgba(143, 191, 143, 0.4);
+    background: var(--ok);
 }
 
 .header-status .dot.offline {
-    background: #e0786b;
-    box-shadow: 0 0 10px rgba(224, 120, 107, 0.4);
+    background: var(--err);
 }
 
 .header-status .dot.warn {
-    background: #e3a04a;
-    box-shadow: 0 0 10px rgba(227, 160, 74, 0.4);
+    background: var(--amber);
 }
 
-/* ============================================================
-   STATUS BAR (dolny pasek)
-   ============================================================ */
+/* ---------- PASEK STATUSU (dół strony) ---------- */
 .status-bar {
-    margin-top: 14px;
-    padding: 8px 12px;
-    border-radius: 4px;
+    margin-top: 16px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--line);
+    background: var(--panel-2);
     font-size: 12px;
-    color: #75706a;
-    background: rgba(21, 23, 26, 0.4);
-    border: 1px solid #262a30;
-    min-height: 34px;
+    color: var(--text-3);
+    min-height: 36px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -130,58 +143,65 @@ body {
 
 .status-bar .msg {
     flex: 1;
+    color: var(--text-2);
 }
 
-.status-bar .msg.ok {
-    color: #8fbf8f;
-}
-
-.status-bar .msg.err {
-    color: #e0786b;
-}
-
-.status-bar .msg.info {
-    color: #7fa6c4;
-}
+.status-bar .msg.ok { color: var(--ok); }
+.status-bar .msg.err { color: var(--err); }
+.status-bar .msg.info { color: var(--info); }
 
 .status-bar .ws-detail {
-    font-size: 10px;
-    color: #343942;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-3);
 }
 
-/* ============================================================
-   PRZYCISKI
-   ============================================================ */
+/* ---------- PRZYCISKI ---------- */
 .btn-group {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
     margin-top: 6px;
 }
 
 .btn {
-    padding: 8px 18px;
-    font-size: 12px;
+    -webkit-user-select: none;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 38px;
+    padding: 8px 16px;
+    font-size: 13px;
     font-weight: 600;
-    letter-spacing: 0.02em;
-    text-transform: none;
-    border: 1px solid #343942;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.04);
-    color: #aaa499;
+    letter-spacing: 0.01em;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--panel-2);
+    color: var(--text-2);
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: var(--ui);
-    flex: 1 1 auto;
-    min-width: 90px;
-    text-align: center;
     text-decoration: none;
+    text-align: center;
+    flex: 1 1 auto;
+    min-width: 110px;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #ebe6dc;
+    background: #22262b;
     border-color: #3f4550;
+    color: var(--text);
+}
+
+.btn:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 2px;
+}
+
+.btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
 }
 
 .btn-primary {
@@ -193,66 +213,154 @@ body {
 .btn-primary:hover {
     background: rgba(227, 160, 74, 0.22);
     border-color: var(--amber);
-    color: #f2c27e;
+    color: var(--amber-hi);
+}
+
+.btn-secondary {
+    color: var(--text-2);
 }
 
 .btn-danger {
     border-color: #5e3a36;
-    color: #e0786b;
+    background: var(--err-soft);
+    color: var(--err);
 }
 
 .btn-danger:hover {
-    background: rgba(224, 120, 107, 0.08);
-    border-color: #7a4a44;
-    color: #e0786b;
-}
-
-.btn-secondary {
-    border-color: #343942;
-    color: #8f8a82;
-}
-
-.btn-secondary:hover {
-    border-color: #75706a;
-    color: #aaa499;
+    background: rgba(224, 120, 107, 0.18);
+    border-color: var(--err);
+    color: var(--err);
 }
 
 .btn-back {
-    border-color: #262a30;
-    color: #75706a;
+    background: transparent;
+    border-color: var(--line);
+    color: var(--text-3);
 }
 
 .btn-back:hover {
-    border-color: #3f4550;
-    color: #8f8a82;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-2);
 }
 
 .btn-full {
     flex: 1 1 100%;
 }
 
-/* ============================================================
-   FORMULARZE
-   ============================================================ */
+/* ---------- ETYKIETY, BADGE, SEKCJE ---------- */
+.section-label,
+.section-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 8px;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--text-2);
+}
+
+.card {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+/* ---------- ODCZYTY (wartość bieżąca) ---------- */
+.current-value {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+
+.current-value .label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--text-2);
+}
+
+.current-value .value {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+.current-value .value.ok { color: var(--ok); }
+.current-value .value.warn { color: var(--amber); }
+.current-value .value.err { color: var(--err); }
+
+.current-value .unit {
+    font-family: var(--ui);
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-3);
+    margin-left: 3px;
+}
+
+/* Samodzielna wartość (np. w kartach) */
+.value {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+}
+
+.value .unit {
+    font-family: var(--ui);
+    color: var(--text-3);
+    font-size: 0.8em;
+}
+
+/* ---------- FORMULARZE ---------- */
 .form-group {
-    margin-bottom: 14px;
+    margin-bottom: 16px;
 }
 
 .form-group .label {
+    display: block;
     font-size: 12px;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #aaa499;
-    display: block;
-    margin-bottom: 4px;
+    letter-spacing: 0.02em;
+    color: var(--text-2);
+    margin-bottom: 6px;
 }
 
 .form-group .label .unit {
-    color: #75706a;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 400;
-    letter-spacing: 0.04em;
+    color: var(--text-3);
+    margin-left: 4px;
 }
 
 .form-row {
@@ -267,23 +375,30 @@ body {
 .form-row input[type="password"],
 .form-row select {
     flex: 1;
-    min-width: 90px;
-    background: #1b1e22;
-    border: 1px solid #343942;
-    border-radius: 4px;
-    color: #ebe6dc;
+    min-width: 96px;
+    height: 40px;
     padding: 8px 12px;
-    font-family: 'Courier New', monospace;
+    background: var(--panel-2);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: var(--mono);
     font-size: 14px;
+    font-variant-numeric: tabular-nums;
     outline: none;
-    transition: border-color 0.2s ease;
+    user-select: text;
+    -webkit-user-select: text;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.form-row input[type="number"]:focus,
-.form-row input[type="text"]:focus,
-.form-row input[type="password"]:focus,
+.form-row input::placeholder {
+    color: var(--text-3);
+}
+
+.form-row input:focus,
 .form-row select:focus {
-    border-color: #b07a3e;
+    border-color: var(--amber);
+    box-shadow: 0 0 0 3px rgba(227, 160, 74, 0.15);
 }
 
 .form-row input[type="number"] {
@@ -293,7 +408,6 @@ body {
 
 .form-row input[type="number"]::-webkit-inner-spin-button,
 .form-row input[type="number"]::-webkit-outer-spin-button {
-    appearance: none;
     -webkit-appearance: none;
     margin: 0;
 }
@@ -301,7 +415,8 @@ body {
 .form-row select {
     cursor: pointer;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234a525a'/%3E%3C/svg%3E");
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2375706a'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
     background-size: 10px 6px;
@@ -309,52 +424,90 @@ body {
 }
 
 .form-row .hint {
-    font-size: 11px;
-    color: #75706a;
-    letter-spacing: 0.04em;
+    font-size: 12px;
+    color: var(--text-3);
     white-space: nowrap;
-    font-weight: 400;
 }
 
 .form-divider {
     border: none;
-    border-top: 1px solid #262a30;
-    margin: 16px 0;
+    border-top: 1px solid var(--line);
+    margin: 18px 0;
 }
 
-/* ============================================================
-   RESPONSYWNOŚĆ
-   ============================================================ */
+/* Dwie kolumny pól (np. alarm min / max) */
+.temp-range {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 14px;
+}
+
+/* ---------- KARTY INFORMACYJNE ---------- */
+.info-card {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+}
+
+.info-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 8px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    padding: 4px 0;
+    font-size: 13px;
+    color: var(--text-2);
+    border-bottom: 1px solid var(--line);
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-value {
+    font-family: var(--mono);
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- RESPONSYWNOŚĆ ---------- */
 @media (max-width: 600px) {
-    .instrument {
-        padding: 12px 14px;
+    body {
+        padding: 10px;
+        align-items: flex-start;
     }
-    .header-title {
-        font-size: 14px;
+    .instrument {
+        padding: 16px 14px 14px;
+        border-radius: 12px;
+    }
+    .temp-range {
+        grid-template-columns: 1fr;
+    }
+    .current-value .value {
+        font-size: 18px;
     }
     .form-row input[type="number"],
     .form-row input[type="text"],
     .form-row input[type="password"],
     .form-row select {
-        font-size: 12px;
-        padding: 6px 10px;
-        min-width: 70px;
-    }
-    .btn {
-        font-size: 11px;
-        padding: 6px 14px;
-        min-width: 70px;
+        font-size: 14px;
     }
 }
 
 @media (max-width: 400px) {
-    .instrument {
-        padding: 8px 10px;
-    }
     .header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 4px;
     }
     .form-row {
         flex-direction: column;
@@ -368,5 +521,6 @@ body {
     }
     .btn {
         width: 100%;
+        min-width: 0;
     }
 }

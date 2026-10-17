@@ -27,15 +27,16 @@
     // ============================================================
     //  FUNKCJE POMOCNICZE
     // ============================================================
+    // Odczyt bez cichych zamian: puste/niepoprawne pole zostaje NaN i jest odrzucane w walidacji.
     function getConfig() {
         return {
-            setpoint: parseFloat(setpointEl.value) || 37.5,
-            hysteresis: parseFloat(hysteresisEl.value) || 0.5,
-            alarmMax: parseFloat(alarmMaxEl.value) || 40.0,
-            alarmMin: parseFloat(alarmMinEl.value) || 36.0,
-            calibration: parseFloat(calibrationEl.value) || 0.0,
-            controlMode: parseInt(controlModeEl.value) || 0,
-            fanDelay: parseInt(fanDelayEl.value) || 5
+            setpoint: parseFloat(setpointEl.value),
+            hysteresis: parseFloat(hysteresisEl.value),
+            alarmMax: parseFloat(alarmMaxEl.value),
+            alarmMin: parseFloat(alarmMinEl.value),
+            calibration: parseFloat(calibrationEl.value),
+            controlMode: parseInt(controlModeEl.value, 10),
+            fanDelay: parseInt(fanDelayEl.value, 10)
         };
     }
 
@@ -50,6 +51,17 @@
     }
 
     function validateConfig(cfg) {
+        const fields = [
+            ['Setpoint', cfg.setpoint], ['Histereza', cfg.hysteresis],
+            ['Alarm max', cfg.alarmMax], ['Alarm min', cfg.alarmMin],
+            ['Kalibracja', cfg.calibration], ['Opóźnienie wentylatora', cfg.fanDelay]
+        ];
+        for (const [name, value] of fields) {
+            if (!Number.isFinite(value)) {
+                ink.setStatus(name + ': wpisz liczbę', 'err');
+                return false;
+            }
+        }
         if (cfg.setpoint < 36 || cfg.setpoint > 39) {
             ink.setStatus('Setpoint poza zakresem 36–39°C', 'err');
             return false;
@@ -115,7 +127,7 @@
 
             // Parsowanie konfiguracji
             if (msg.startsWith('setTemp:') || msg.startsWith('setpoint:')) {
-                const val = msg.includes('setTemp:') ? msg.substring(7) : msg.substring(9);
+                const val = msg.includes('setTemp:') ? msg.substring(8) : msg.substring(9);
                 const parsed = parseFloat(val);
                 if (!isNaN(parsed)) {
                     setpointEl.value = parsed;
@@ -153,7 +165,7 @@
             }
 
             if (msg.startsWith('setTempCalibration:') || msg.startsWith('calibracao:')) {
-                const val = msg.includes('setTempCalibration:') ? msg.substring(18) : msg.substring(11);
+                const val = msg.includes('setTempCalibration:') ? msg.substring(19) : msg.substring(11);
                 const parsed = parseFloat(val);
                 if (!isNaN(parsed)) {
                     calibrationEl.value = parsed;
