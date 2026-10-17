@@ -16,7 +16,8 @@
 
 struct TrayConfig {
     bool active = true;
-    char species[12] = "CHICKEN";
+    // Najdłuższy klucz gatunku w JSON to "duck_indian_runner" (18 znaków).
+    char species[24] = "CHICKEN";
     int start_day_offset = 0;
     unsigned long long start_unix = 0;
     int pin = 16;

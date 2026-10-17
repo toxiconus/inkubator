@@ -178,7 +178,8 @@ void tray_stop(int tray_idx, unsigned long long now_millis) {
 
 void tray_set_species(int tray_idx, const char* species_id) {
     if (tray_idx < 0 || tray_idx >= MAX_TRAYS) return;
-    strcpy(configMgr.cfg.trays[tray_idx].species, species_id);
+    strncpy(configMgr.cfg.trays[tray_idx].species, species_id, sizeof(configMgr.cfg.trays[tray_idx].species) - 1);
+    configMgr.cfg.trays[tray_idx].species[sizeof(configMgr.cfg.trays[tray_idx].species) - 1] = '\0';
     String lookup = String(species_id);
     lookup.toLowerCase();
     tray_states[tray_idx].incubation_profile = getSpeciesProfile(g_incubation_profiles, lookup);

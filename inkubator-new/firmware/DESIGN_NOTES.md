@@ -50,3 +50,20 @@ Stan obecny:
 4. `index.html` ma swoje duplikaty tokenów; po ustaleniu układu można go podpiąć pod `style.css`.
 5. Kompilacja i test na sprzęcie: zmiany w `src/` nie były kompilowane w tej sesji (brak PlatformIO).
 6. Rozmiar `index.html` (~128 KB): sprawdzić, czy mieści się w partycji LittleFS.
+
+## 6. Gatunki i fazy (jedno źródło)
+
+- Jedyne źródło danych o gatunkach: `data/incubation_profiles.json`. Czyta je firmware
+  i panel (`index.html` buduje z niego tablicę `SPECIES` przy starcie).
+- Klucze gatunków są małymi literami (`chicken`, `duck_indian_runner`, `goose`, `quail`,
+  `guinea_fowl`, `pheasant`). Panel dopuszcza też `id` profilu (np. `gallus_gallus_domesticus`).
+- Faza: `critical_phases` – `early` (nie ruszać, drzwi zamknięte), `late` (ostrożnie,
+  ostatnie obroty), `lockdown` (obracanie wyłączone, wilgotność w górę, zamknięte drzwi).
+  Fazy nie mogą się nakładać – `late` kończy się dzień przed `lockdown`.
+- Obracanie: `turning_frequency_per_day` (4) i flaga `turning` dla każdego dnia.
+- Dni świec (candling): `candling_days` – na nich obracanie jest pomijane.
+- Kolory alarmów: tylko z palety (zielony = normalnie, bursztyn = uwaga, czerwony = krytycznie).
+- Pole gatunku w konfiguracji ma 24 znaki (klucz `duck_indian_runner` mieści się).
+
+Do dodania nowego gatunku: wpis w `species` z `day_by_day` dla wszystkich dni,
+`critical_phases`, `turning_frequency_per_day`, `candling_days`. Żadnych zmian w kodzie.
