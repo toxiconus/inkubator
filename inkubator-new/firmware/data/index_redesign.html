@@ -145,6 +145,16 @@
   .note { margin-top: 10px; font-size: 13px; color: var(--text-2); border-left: 2px solid var(--line-strong); padding-left: 10px; }
   .note.crit { border-left-color: var(--err); color: var(--text); }
 
+  /* HUD odchyleń */
+  .hud-grid { display: grid; gap: 12px; grid-template-columns: 1fr; }
+  @media (min-width: 900px) { .hud-grid { grid-template-columns: 1fr 1.4fr; } }
+  canvas.balance { width: 100%; height: 260px; display: block; background: var(--panel-2); border-radius: 10px; border: 1px solid var(--line); }
+  canvas.devc { width: 100%; height: 120px; display: block; background: var(--panel-2); border-radius: 10px; border: 1px solid var(--line); margin-top: 10px; }
+  .hud-read { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; font-family: var(--mono); font-size: 13px; }
+  .hud-read div { background: var(--panel-2); border-radius: 8px; padding: 8px 10px; color: var(--text-2); }
+  .hud-read b { display: block; font-size: 20px; color: var(--text); font-weight: 600; }
+  .testflag { color: var(--err); font-weight: 700; }
+
   /* heater / diffuser */
   .meter-row { display: grid; grid-template-columns: 56px 1fr 52px; align-items: center; gap: 10px; margin-top: 10px; }
   .meter-row .lbl { color: var(--text-2); font-size: 13px; }
@@ -261,6 +271,7 @@
 <header class="topbar">
   <div class="brand">Inkubator<small>panel sterowania</small></div>
   <div style="display:flex;gap:10px;align-items:center;">
+    <span class="badge err hidden" id="testBadge" title="Dane testowe, nie z czujników">TEST</span>
     <span class="conn" id="conn"><span class="dot"></span><span id="connText">łączenie…</span></span>
     <span class="clock" id="clock">--:--:--</span>
   </div>
@@ -277,6 +288,11 @@
 <div id="connBanner" class="banner err hidden" role="alert">
   <span class="ico">✗</span>
   <div><b>Brak połączenia ze sterownikiem.</b> <span id="connBannerDetail">Wartości poniżej są ostatnie odebrane i mogą być nieaktualne. Ponawiam co kilka sekund.</span></div>
+</div>
+
+<div id="testBanner" class="banner err hidden" role="status">
+  <span class="ico">▶</span>
+  <div><b class="testflag">TRYB TESTOWY.</b> Wartości są losowe i nie pochodzą z czujników ani sterownika. Wyłącz w zakładce System.</div>
 </div>
 
 <main>
@@ -321,6 +337,24 @@
         <div class="card-head"><span class="card-title" id="kpiD">Nawilżanie</span><span class="badge" id="dBadge">—</span></div>
         <div class="led-row"><span class="led" id="dLed" aria-hidden="true"></span><span id="dText">—</span></div>
         <div class="kpi-meta"><span class="small">dyfuzor (wyjście 0)</span></div>
+      </article>
+    </div>
+
+    <h2>Odchylenia od celu</h2>
+    <div class="hud-grid">
+      <article class="card" aria-labelledby="hudBal">
+        <div class="card-head"><span class="card-title" id="hudBal">Położenie względem celu</span><span class="small muted">oś X: °C · oś Y: %</span></div>
+        <canvas class="balance" id="balanceC" aria-label="Wykres położenia względem celu"></canvas>
+        <div class="hud-read">
+          <div>Δ temperatury<b class="num" id="hudDT">--</b></div>
+          <div>Δ wilgotności<b class="num" id="hudDH">--</b></div>
+        </div>
+        <p class="small muted" style="margin:10px 0 0">Środek to cel. Wewnętrzna elipsa: ostrzeżenie. Zewnętrzna: alarm.</p>
+      </article>
+      <article class="card" aria-labelledby="hudTr">
+        <div class="card-head"><span class="card-title" id="hudTr">Przebieg odchyleń</span><span class="small muted">ostatnie 60 min</span></div>
+        <canvas class="devc" id="devT" aria-label="Odchylenie temperatury w czasie"></canvas>
+        <canvas class="devc" id="devH" aria-label="Odchylenie wilgotności w czasie"></canvas>
       </article>
     </div>
 
@@ -427,6 +461,13 @@
       </article>
     </div>
 
+    <h2>Tryb testowy</h2>
+    <div class="card">
+      <div class="card-head"><span class="card-title">Losowe warunki (test)</span><span class="badge" id="testState">wył.</span></div>
+      <p class="small muted" style="margin:0 0 12px">Generuje losowe odczyty wokół celu, żeby sprawdzić wykresy i alarmy. Nie zmienia nic w sterowniku.</p>
+      <button class="btn" id="testBtn" aria-pressed="false">Włącz tryb testowy</button>
+    </div>
+
     <h2>Strony serwisowe</h2>
     <div class="card">
       <div class="links">
@@ -483,6 +524,9 @@
   let history = [];        // {t, temp, aq, rh, tSet, rhSet}
   let chartSpan = { temp: 1, rh: 1 };
   let prevAlarmKey = '';
+  let testMode = false;
+  let testDays = [1, 1];
+  let testStart = 0;
   const eventLog = [];
   const $ = (id) => document.getElementById(id);
   const fmt = (v, d) => (typeof v === 'number' && isFinite(v)) ? v.toFixed(d) : '--';
@@ -595,6 +639,11 @@
     } finally { clearTimeout(to); }
   }
   async function poll() {
+    if (testMode) {
+      status = genStatus(); trays = genTrays(); lastOk = Date.now(); lastErr = '';
+      render();
+      return;
+    }
     try {
       const [s, t] = await Promise.all([getJson('/api/status'), getJson('/api/trays')]);
       const wasOffline = !lastOk || (Date.now() - lastOk > STALE_MS);
@@ -724,7 +773,10 @@
 
     // połączenie
     const conn = $('conn'), cb = $('connBanner');
-    if (online) {
+    if (testMode) {
+      conn.className = 'conn bad'; $('connText').textContent = 'dane testowe';
+      cb.classList.add('hidden');
+    } else if (online) {
       conn.className = 'conn ok'; $('connText').textContent = 'połączony';
       cb.classList.add('hidden');
     } else {
@@ -860,6 +912,7 @@
     const x0 = Math.min(...xs), x1 = Math.max(...xs, x0 + 60000);
     let ys = [];
     for (const s of opt.series) for (const p of pts) if (typeof p[s.key] === 'number') ys.push(p[s.key]);
+    if (opt.bands) for (const b of opt.bands) ys.push(b.v);
     let y0 = Math.min(...ys, opt.minY), y1 = Math.max(...ys, opt.maxY);
     if (y1 - y0 < opt.minSpan) { const m = (y0 + y1) / 2; y0 = m - opt.minSpan / 2; y1 = m + opt.minSpan / 2; }
     const X = (t) => pad.l + (t - x0) / (x1 - x0) * (w - pad.l - pad.r);
@@ -869,7 +922,7 @@
     for (let i = 0; i <= 4; i++) {
       const v = y0 + (y1 - y0) * i / 4, y = Y(v);
       ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
-      ctx.fillText(v.toFixed(opt.dec), 6, y + 4);
+      ctx.fillText((Math.abs(v) < 1e-9 ? 0 : v).toFixed(opt.dec), 6, y + 4);
     }
     const spanMin = (x1 - x0) / 60000;
     ctx.fillText(spanMin >= 60 ? (spanMin / 60).toFixed(0) + ' h' : Math.round(spanMin) + ' min', pad.l, h - 6);
@@ -885,6 +938,11 @@
         if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
       }
       ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    if (opt.bands) for (const b of opt.bands) {
+      ctx.strokeStyle = css(b.color); ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(pad.l, Y(b.v)); ctx.lineTo(w - pad.r, Y(b.v)); ctx.stroke();
       ctx.setLineDash([]);
     }
   }
@@ -1022,8 +1080,137 @@
 
   function render() {
     renderOverview();
+    renderHud();
     if ($('view-wykresy').classList.contains('active')) renderCharts();
   }
+
+  // ------------------------------------------------------------------
+  //  HUD: położenie względem celu i przebieg odchyleń
+  // ------------------------------------------------------------------
+  function deviation(p) {
+    return {
+      t: p.t,
+      dT: (typeof p.temp === 'number' && typeof p.tSet === 'number') ? p.temp - p.tSet : null,
+      dH: (typeof p.rh === 'number' && typeof p.rhSet === 'number') ? p.rh - p.rhSet : null
+    };
+  }
+  function renderHud() {
+    const sp = setpoints();
+    const live = status ? [deviation({ t: Date.now(), temp: status.temp_chamber, rh: status.humidity, tSet: sp.t, rhSet: sp.rh })] : [];
+    const dev = history.map(deviation).concat(live);
+    const last = dev.length ? dev[dev.length - 1] : null;
+    $('hudDT').textContent = last && last.dT !== null ? sign(last.dT, 2) + ' °C' : '--';
+    $('hudDH').textContent = last && last.dH !== null ? sign(last.dH, 1) + ' %' : '--';
+    drawBalance($('balanceC'), dev.slice(-30));
+    const hour = Date.now() - 3600000;
+    const d1 = dev.filter(p => p.t >= hour);
+    drawSeries($('devT'), null, {
+      points: d1.map(p => ({ t: p.t, v: p.dT })), dec: 1, minY: -2, maxY: 2, minSpan: 2,
+      bands: [{ v: T_WARN, color: '--amber' }, { v: -T_WARN, color: '--amber' }, { v: T_ALARM, color: '--err' }, { v: -T_ALARM, color: '--err' }],
+      series: [{ key: 'v', color: '--amber', width: 2 }]
+    });
+    drawSeries($('devH'), null, {
+      points: d1.map(p => ({ t: p.t, v: p.dH })), dec: 0, minY: -10, maxY: 10, minSpan: 10,
+      bands: [{ v: RH_WARN, color: '--amber' }, { v: -RH_WARN, color: '--amber' }, { v: RH_ALARM, color: '--err' }, { v: -RH_ALARM, color: '--err' }],
+      series: [{ key: 'v', color: '--info', width: 2 }]
+    });
+  }
+  function drawBalance(canvas, pts) {
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return;
+    canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    const cs = getComputedStyle(document.documentElement);
+    const css = (v) => cs.getPropertyValue(v).trim();
+    const cx = w / 2, cy = h / 2;
+    const TX = 2.0, RY = 10;                       // zakres osi: ±2 °C, ±10 %
+    const sx = (w / 2 - 14) / TX, sy = (h / 2 - 14) / RY;
+    ctx.strokeStyle = css('--line'); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(14, cy); ctx.lineTo(w - 14, cy); ctx.moveTo(cx, 14); ctx.lineTo(cx, h - 14); ctx.stroke();
+    const ellipse = (rx, ry, color) => {
+      ctx.strokeStyle = css(color); ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.ellipse(cx, cy, rx * sx, ry * sy, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+    };
+    ellipse(T_ALARM, RH_ALARM, '--err');
+    ellipse(T_WARN, RH_WARN, '--amber');
+    ctx.fillStyle = css('--text-3'); ctx.font = '11px ' + css('--mono');
+    ctx.fillText('-2°C', 14, cy - 6); ctx.fillText('+2°C', w - 40, cy - 6);
+    ctx.fillText('+10%', cx + 6, 22); ctx.fillText('-10%', cx + 6, h - 8);
+    const valid = pts.filter(p => p.dT !== null && p.dH !== null);
+    valid.forEach((p, i) => {
+      const x = cx + Math.max(-TX, Math.min(TX, p.dT)) * sx;
+      const y = cy - Math.max(-RY, Math.min(RY, p.dH)) * sy;
+      ctx.fillStyle = css('--text-3');
+      ctx.globalAlpha = 0.25 + 0.75 * (i / Math.max(1, valid.length - 1));
+      ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+    });
+    if (valid.length) {
+      const p = valid[valid.length - 1];
+      const x = cx + Math.max(-TX, Math.min(TX, p.dT)) * sx;
+      const y = cy - Math.max(-RY, Math.min(RY, p.dH)) * sy;
+      ctx.fillStyle = css('--amber');
+      ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = css('--text-2'); ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // ------------------------------------------------------------------
+  //  Tryb testowy (losowe dane, wyraźnie oznaczone)
+  // ------------------------------------------------------------------
+  function gauss() { return (Math.random() + Math.random() + Math.random() - 1.5) * 0.8; }
+  function genStatus() {
+    const sp = setpoints();
+    const tSet = typeof sp.t === 'number' ? sp.t : 37.7;
+    const rhSet = typeof sp.rh === 'number' ? sp.rh : 60;
+    let tc = tSet + gauss() * 0.4;
+    if (Math.random() < 0.08) tc += (Math.random() < 0.5 ? -1 : 1) * (1.6 + Math.random());
+    let rh = rhSet + gauss() * 3;
+    if (Math.random() < 0.08) rh += (Math.random() < 0.5 ? -1 : 1) * (8 + Math.random() * 3);
+    const pwm = Math.round(Math.random() * 1023);
+    return {
+      temp_chamber: +tc.toFixed(2),
+      temp_aquarium: +(tc - 0.15 + gauss() * 0.1).toFixed(2),
+      humidity: +Math.max(0, Math.min(100, rh)).toFixed(1),
+      target_temp: tSet,
+      heater_pwm_ch0: pwm, heater_pwm_ch1: pwm,
+      diffuser_0_on: Math.random() < 0.3,
+      esp_internal_temp: +(40 + Math.random() * 8).toFixed(1),
+      uptime_ms: Date.now() - testStart,
+      test: true
+    };
+  }
+  function genTrays() {
+    const mk = (i) => {
+      const day = testDays[i];
+      return { index: i, active: true, current_day: day, total_days: 21, species_id: 'gallus_gallus_domesticus',
+               should_rotate: day < 18 && Math.random() < 0.7, in_lockdown: day >= 18 };
+    };
+    return { trays: [mk(0), mk(1)], test: true };
+  }
+  function setTestMode(on) {
+    testMode = on;
+    if (on) {
+      testDays = [1 + Math.floor(Math.random() * 21), 1 + Math.floor(Math.random() * 21)];
+      testStart = Date.now();
+    }
+    history = [];
+    prevAlarmKey = '';
+    $('testBanner').classList.toggle('hidden', !on);
+    $('testBadge').classList.toggle('hidden', !on);
+    $('testState').textContent = on ? 'WŁĄCZONY' : 'wył.';
+    $('testState').className = 'badge' + (on ? ' err' : '');
+    $('testBtn').textContent = on ? 'Wyłącz tryb testowy' : 'Włącz tryb testowy';
+    $('testBtn').setAttribute('aria-pressed', String(on));
+    logEvent(on ? 'warn' : 'ok', on ? 'Tryb testowy WŁĄCZONY: dane losowe.' : 'Tryb testowy wyłączony: wracam do odczytów.');
+    poll();
+    sample();
+  }
+  $('testBtn').addEventListener('click', () => setTestMode(!testMode));
 
   // ------------------------------------------------------------------
   //  Start
