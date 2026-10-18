@@ -287,7 +287,9 @@
 
 <div id="connBanner" class="banner err hidden" role="alert">
   <span class="ico">✗</span>
-  <div><b>Brak połączenia ze sterownikiem.</b> <span id="connBannerDetail">Wartości poniżej są ostatnie odebrane i mogą być nieaktualne. Ponawiam co kilka sekund.</span></div>
+  <div><b>Brak połączenia ze sterownikiem.</b> <span id="connBannerDetail">Wartości poniżej są ostatnie odebrane i mogą być nieaktualne. Ponawiam co kilka sekund.</span>
+    <div style="margin-top:10px"><button class="btn" id="connTest">Pokaż dane testowe (losowe)</button></div>
+  </div>
 </div>
 
 <div id="testBanner" class="banner err hidden" role="status">
@@ -1211,6 +1213,7 @@
     sample();
   }
   $('testBtn').addEventListener('click', () => setTestMode(!testMode));
+  $('connTest').addEventListener('click', () => { if (!testMode) setTestMode(true); });
 
   // ------------------------------------------------------------------
   //  Start
