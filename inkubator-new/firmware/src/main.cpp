@@ -733,6 +733,28 @@ void handleWebSocketMessage(uint8_t num, WStype_t type, uint8_t* payload, size_t
             webSocket.sendTXT(num, "err:setStartDate");
         }
     }
+    else if (msg.startsWith("setSpecies:")) {
+        // Format: setSpecies:<tray>:<species_id>. Odpowiada tylko po realnym zapisie.
+        int firstColon = msg.indexOf(':');
+        int secondColon = msg.indexOf(':', firstColon + 1);
+        if (firstColon > 0 && secondColon > firstColon) {
+            String trayText = msg.substring(firstColon + 1, secondColon);
+            String speciesText = msg.substring(secondColon + 1);
+            speciesText.trim();
+            speciesText.toLowerCase();
+            int tray;
+            if (parseIntValue(trayText, tray) && tray >= 0 && tray < MAX_TRAYS &&
+                speciesText.length() > 0 && speciesText.length() < 32 &&
+                getSpeciesProfile(g_incubation_profiles, speciesText) != nullptr) {
+                tray_set_species(tray, speciesText.c_str());
+                webSocket.sendTXT(num, "ok:setSpecies:" + String(tray));
+            } else {
+                webSocket.sendTXT(num, "err:setSpecies:invalid");
+            }
+        } else {
+            webSocket.sendTXT(num, "err:setSpecies:format");
+        }
+    }
     else if (msg.startsWith("resetDay:")) {
         int tray = msg.substring(9).toInt();
         tray_reset_day(tray);
