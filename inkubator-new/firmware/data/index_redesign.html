@@ -425,6 +425,25 @@
         </table>
       </div>
     </div>
+    <div class="card" style="margin-top:12px">
+      <div class="card-head"><span class="card-title">Sterowanie tacą</span><span class="badge" id="wsBadge">brak WS</span></div>
+      <div class="controls">
+        <label class="field">Taca
+          <select id="ctlTray"><option value="0">Taca 1</option><option value="1">Taca 2</option></select>
+        </label>
+        <label class="field">Gatunek
+          <select id="ctlSp"></select>
+        </label>
+        <label class="field">Dzień (1–60)
+          <input type="number" id="ctlDay" min="1" max="60" value="1">
+        </label>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+        <button class="btn primary" id="ctlApply" disabled>Zastosuj do tacy</button>
+        <button class="btn danger" id="ctlReset" disabled>Zacznij od dnia 1</button>
+      </div>
+      <p class="small muted" id="ctlNote" style="margin:10px 0 0"></p>
+    </div>
   </section>
 
   <!-- ================= DZIENNIK ================= -->
@@ -464,6 +483,25 @@
         <div class="kpi-value" style="font-size:28px"><span id="sLast">—</span></div>
         <div class="kpi-meta"><span class="small" id="sLastDetail">—</span></div>
       </article>
+    </div>
+
+    <h2>Kalibracja temperatury</h2>
+    <div class="card">
+      <div class="card-head"><span class="card-title">Korekta czujnika (jeden punkt)</span><span class="badge" id="calBadge">—</span></div>
+      <p class="small muted" style="margin:0 0 12px">Wpisz odczyt wzorcowego termometru obok czujnika. Sterownik zapisze korektę (zakres ±5 °C).</p>
+      <div class="kpi-meta"><span>obecna korekta: <b class="num" id="calCur">--</b> °C</span><span>odczyt czujnika: <b class="num" id="calRead">--</b> °C</span></div>
+      <div class="controls" style="margin-top:12px">
+        <label class="field">Wskazanie wzorca (°C)
+          <input type="text" inputmode="decimal" id="calRef" placeholder="np. 37,5">
+        </label>
+        <label class="field">Nowa korekta (°C)
+          <input type="text" id="calNew" readonly placeholder="—">
+        </label>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+        <button class="btn primary" id="calSave" disabled>Zapisz korektę</button>
+        <button class="btn" id="calZero" disabled>Wyzeruj korektę</button>
+      </div>
     </div>
 
     <h2>Tryb testowy</h2>
@@ -622,14 +660,22 @@
     }
   }
   function fillSpeciesSelect() {
-    const sel = $('spSel');
-    sel.innerHTML = '';
-    for (const info of Object.values(species)) {
-      const o = document.createElement('option');
-      o.value = info.key; o.textContent = info.name;
-      sel.append(o);
+    for (const id of ['spSel', 'ctlSp']) {
+      const sel = $(id);
+      sel.innerHTML = '';
+      for (const info of Object.values(species)) {
+        const o = document.createElement('option');
+        o.value = info.key; o.textContent = info.name;
+        sel.append(o);
+      }
     }
+    syncCtlSpecies();
   }
+  function syncCtlSpecies() {
+    const ti = trayInfo(Number($('ctlTray').value));
+    if (ti && ti.info && species[ti.info.key]) $('ctlSp').value = ti.info.key;
+  }
+  $('ctlTray').addEventListener('change', syncCtlSpecies);
 
   // ------------------------------------------------------------------
   //  Pobieranie danych
@@ -1086,6 +1132,7 @@
   function render() {
     renderOverview();
     renderHud();
+    updateCal();
     if ($('view-wykresy').classList.contains('active')) renderCharts();
   }
 
@@ -1212,6 +1259,7 @@
     $('testBtn').textContent = on ? 'Wyłącz tryb testowy' : 'Włącz tryb testowy';
     $('testBtn').setAttribute('aria-pressed', String(on));
     logEvent(on ? 'warn' : 'ok', on ? 'Tryb testowy WŁĄCZONY: dane losowe.' : 'Tryb testowy wyłączony: wracam do odczytów.');
+    updateControls();
     poll();
     sample();
   }
@@ -1238,6 +1286,106 @@
   $('connTest').addEventListener('click', () => { if (!testMode) setTestMode(true); });
 
   // ------------------------------------------------------------------
+  //  Sterowanie przez WebSocket (port 81, jak w ws-utils.js)
+  // ------------------------------------------------------------------
+  let ws = null, wsOpen = false, tempOffset = null;
+  function wsUrl() {
+    return (location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + (location.hostname || 'localhost') + ':81/';
+  }
+  function wsSend(cmd) {
+    if (testMode) { logEvent('warn', 'Nie wysłano „' + cmd + '”: tryb testowy.'); return false; }
+    if (!wsOpen) { logEvent('warn', 'Nie wysłano „' + cmd + '”: brak połączenia WebSocket.'); return false; }
+    ws.send(cmd);
+    logEvent('info', '→ ' + cmd);
+    return true;
+  }
+  function wsConnect() {
+    try { ws = new WebSocket(wsUrl()); }
+    catch (e) { logEvent('err', 'WebSocket: ' + e.message); return; }
+    ws.onopen = () => {
+      wsOpen = true; updateControls();
+      logEvent('ok', 'WebSocket połączony.');
+      wsSend('getTempConfig');
+    };
+    ws.onclose = () => {
+      if (wsOpen) logEvent('warn', 'WebSocket rozłączony. Ponawiam.');
+      wsOpen = false; updateControls();
+      setTimeout(wsConnect, 3000);
+    };
+    ws.onerror = () => {};
+    ws.onmessage = (ev) => onWsMessage(String(ev.data));
+  }
+  function onWsMessage(m) {
+    if (m.startsWith('setTemp:')) {
+      const kv = {};
+      m.split(',').forEach(part => { const i = part.indexOf(':'); if (i > 0) kv[part.slice(0, i)] = part.slice(i + 1); });
+      const v = parseFloat(kv.setTempCalibration);
+      if (isFinite(v)) { tempOffset = v; updateCal(); }
+      return;
+    }
+    if (m.startsWith('err:')) { logEvent('err', 'Sterownik odrzucił polecenie: ' + m); return; }
+    if (m.startsWith('ok:setTempCalibration')) {
+      logEvent('ok', 'Korekta temperatury zapisana.');
+      wsSend('getTempConfig');
+      return;
+    }
+    if (m.startsWith('ok:setSpecies') || m.startsWith('ok:setStartUnix') || m.startsWith('ok:resetDay')) {
+      logEvent('ok', 'Sterownik potwierdził: ' + m);
+      poll();
+    }
+  }
+  function updateControls() {
+    const online = wsOpen && !testMode;
+    ['ctlApply', 'ctlReset', 'calZero'].forEach(id => { $(id).disabled = !online; });
+    $('wsBadge').textContent = testMode ? 'tryb testowy' : (wsOpen ? 'połączony' : 'brak WS');
+    $('wsBadge').className = 'badge' + (online ? ' ok' : (testMode ? ' err' : ''));
+    $('ctlNote').textContent = testMode
+      ? 'Tryb testowy: polecenia do sterownika są wyłączone.'
+      : (wsOpen
+          ? 'Zmiana dotyczy tylko wskazanej tacy. Dzień liczony jest od podanej daty (czas z tej przeglądarki).'
+          : 'Brak połączenia WebSocket z ESP (port 81).');
+    $('calBadge').textContent = testMode ? 'tryb testowy' : (wsOpen ? 'połączony' : 'brak WS');
+    updateCal();
+  }
+  function updateCal() {
+    $('calCur').textContent = tempOffset === null ? '--' : fmt(tempOffset, 2);
+    const reading = status && typeof status.temp_chamber === 'number' ? status.temp_chamber : null;
+    $('calRead').textContent = reading === null ? '--' : fmt(reading, 2);
+    const ref = parseFloat(($('calRef').value || '').replace(',', '.'));
+    let nv = null;
+    if (isFinite(ref) && tempOffset !== null && reading !== null) nv = tempOffset + (ref - reading);
+    if (nv !== null && Math.abs(nv) > 5) { $('calNew').value = 'poza zakresem ±5 °C'; nv = null; }
+    else $('calNew').value = nv === null ? '' : nv.toFixed(2);
+    $('calSave').dataset.value = nv === null ? '' : nv.toFixed(2);
+    const online = wsOpen && !testMode;
+    $('calSave').disabled = !(online && nv !== null);
+    $('calZero').disabled = !online;
+  }
+  $('calRef').addEventListener('input', updateCal);
+  $('calSave').addEventListener('click', () => {
+    const v = $('calSave').dataset.value;
+    if (!v) return;
+    if (!confirm('Zapisać korektę czujnika ' + v + ' °C?')) return;
+    wsSend('setTempCalibration:' + v);
+  });
+  $('calZero').addEventListener('click', () => {
+    if (confirm('Wyzerować korektę czujnika (0 °C)?')) wsSend('setTempCalibration:0');
+  });
+  $('ctlApply').addEventListener('click', () => {
+    const tray = Number($('ctlTray').value);
+    const sp = $('ctlSp').value;
+    const day = Math.floor(Number($('ctlDay').value));
+    if (!sp || !(day >= 1 && day <= 60)) { logEvent('warn', 'Podaj gatunek i dzień 1–60.'); return; }
+    if (!confirm('Zapisać w tacy ' + (tray + 1) + ': ' + sp + ', dzień ' + day + '?')) return;
+    const start = Math.floor(Date.now() / 1000) - (day - 1) * 86400;
+    if (wsSend('setSpecies:' + tray + ':' + sp)) wsSend('setStartUnix:' + tray + ':' + start);
+  });
+  $('ctlReset').addEventListener('click', () => {
+    const tray = Number($('ctlTray').value);
+    if (confirm('Zacząć taca ' + (tray + 1) + ' od dnia 1?')) wsSend('resetDay:' + tray);
+  });
+
+  // ------------------------------------------------------------------
   //  Start
   // ------------------------------------------------------------------
   showView((location.hash || '#przeglad').slice(1));
@@ -1246,6 +1394,8 @@
   tick();
   setInterval(tick, 1000);
   loadProfiles();
+  wsConnect();
+  updateControls();
   poll();
   setInterval(poll, POLL_MS);
   setInterval(sample, SAMPLE_MS);
