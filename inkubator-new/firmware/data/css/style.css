@@ -1788,3 +1788,50 @@ body.alarm-critical {
 body.alarm-warning {
   background: #1a140a;
 }
+
+/* ============================================================
+   26. POLA FORMULARZY (ciemny motyw zamiast domyślnych kontrolek)
+   ============================================================ */
+:root {
+  color-scheme: dark;
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+select,
+textarea {
+  font: inherit;
+  font-size: 14px;
+  color: #e6eef6;
+  background: #0c0e12;
+  border: 1px solid #2a3240;
+  border-radius: 6px;
+  padding: 8px 10px;
+  min-height: 38px;
+  max-width: 100%;
+  user-select: text;
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):hover,
+select:hover,
+textarea:hover {
+  border-color: #3a4656;
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid #5fb08a;
+  outline-offset: 1px;
+}
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"] {
+  accent-color: #5fb08a;
+}
+input[type="number"] {
+  width: 7em;
+}
+@media (max-width: 600px) {
+  .btn {
+    min-height: 40px;
+  }
+}

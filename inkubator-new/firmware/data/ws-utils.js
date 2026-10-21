@@ -276,7 +276,14 @@
         getState: getConnectionState,
         subscribe: subscribe,
         emit: emit,
-        config: CONFIG
+        config: CONFIG,
+        // elementy używane przez js/common.js
+        getUrl: getWebSocketUrl,
+        resolveHost: getHost,
+        get _ws() { return ws; },
+        get _retryCount() { return retryCount; },
+        set _retryCount(value) { retryCount = value; },
+        get _reconnectTimer() { return reconnectTimer; }
     };
 
     if (CONFIG.debug) console.log('[WS] ws-utils.js załadowany');

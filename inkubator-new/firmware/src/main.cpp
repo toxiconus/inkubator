@@ -963,6 +963,19 @@ void broadcastStatus() {
 // ============================================================================
 //  WEB SERVER
 // ============================================================================
+// Typ MIME wg rozszerzenia: przeglądarka ignoruje CSS/JS podane jako text/html.
+static const char* contentTypeForPath(const String& path) {
+    if (path.endsWith(".html") || path.endsWith(".htm")) return "text/html; charset=utf-8";
+    if (path.endsWith(".css"))  return "text/css; charset=utf-8";
+    if (path.endsWith(".js"))   return "application/javascript; charset=utf-8";
+    if (path.endsWith(".json")) return "application/json; charset=utf-8";
+    if (path.endsWith(".svg"))  return "image/svg+xml";
+    if (path.endsWith(".csv"))  return "text/csv";
+    if (path.endsWith(".png"))  return "image/png";
+    if (path.endsWith(".ico"))  return "image/x-icon";
+    return "application/octet-stream";
+}
+
 void webserver_setup() {
     webServer.on("/api/status", HTTP_GET, []() {
         StaticJsonDocument<512> doc;
@@ -1054,7 +1067,7 @@ void webserver_setup() {
         }
         if (LittleFS.exists(uri)) {
             File f = LittleFS.open(uri, "r");
-            webServer.streamFile(f, "text/html");
+            webServer.streamFile(f, contentTypeForPath(uri));
             f.close();
             return;
         }
