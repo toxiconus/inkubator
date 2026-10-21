@@ -3847,7 +3847,7 @@
             // ============================================================
             //  ZASTOSOWANIE PROGRAMU DO TACY: tylko na urządzeniu (po potwierdzeniu) albo symulowane w trybie testowym
             // ============================================================
-            const FIRMWARE_SPECIES = { CHICKEN: 'chicken', GOOSE: 'goose', QUAIL: 'quail', GUINEA: 'guinea_fowl', PHEASANT: 'pheasant' };
+            const FIRMWARE_SPECIES = { CHICKEN: 'chicken', TURKEY: 'turkey', GOOSE: 'goose', QUAIL: 'quail', GUINEA: 'guinea_fowl', PHEASANT: 'pheasant' };
 
             async function postForm(url, fields) {
                 const resp = await fetch(url, {
@@ -3879,7 +3879,7 @@
                 }
                 const fw = FIRMWARE_SPECIES[key];
                 if (!fw) {
-                    notify('Ten program jest na razie tylko podglądem. Urządzenie obsługuje: kura, gęś, przepiórka, perliczka, bażant.', 'warn');
+                    notify('Ten program jest na razie tylko podglądem. Urządzenie obsługuje: kura, indyk, gęś, przepiórka, perliczka, bażant.', 'warn');
                     return;
                 }
                 if (!confirm('Zastosować do TACY ' + (tray + 1) + ':\n' + info.shortName + ', dzień ' + day + '?\n\nTo zmienia ustawienia urządzenia.')) return;
