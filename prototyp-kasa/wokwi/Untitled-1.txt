@@ -1,0 +1,95 @@
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include <DHT.h>
+
+// ========== Konfiguracja DS18B20 ==========
+#define ONE_WIRE_BUS 4
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
+int deviceCount = 0;
+
+// ========== Konfiguracja DHT22 ==========
+#define DHTPIN 15
+#define DHTTYPE DHT22
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("Inicjalizacja czujnikow...");
+
+  // Inicjalizacja DS18B20
+  sensors.begin();
+  deviceCount = sensors.getDeviceCount();
+  Serial.print("DS18B20: Znaleziono ");
+  Serial.print(deviceCount);
+  Serial.println(" czujnikow.");
+
+  // Wyświetl adresy wszystkich czujników DS18B20
+  for (int i = 0; i < deviceCount; i++) {
+    DeviceAddress address;
+    if (sensors.getAddress(address, i)) {
+      Serial.print("Adres czujnika ");
+      Serial.print(i);
+      Serial.print(": ");
+      printAddress(address);
+      Serial.println();
+    }
+  }
+
+  // Inicjalizacja DHT22
+  dht.begin();
+  Serial.println("DHT22: Gotowy.");
+  Serial.println("Rozpoczynam odczyt...\n");
+}
+
+void loop() {
+  // ========== Odczyt DS18B20 ==========
+  sensors.requestTemperatures();
+
+  Serial.println("--- Odczyt DS18B20 ---");
+  for (int i = 0; i < deviceCount; i++) {
+    float tempC = sensors.getTempCByIndex(i);
+    if (tempC != DEVICE_DISCONNECTED_C) {
+      // Pobierz adres czujnika o indeksie i
+      DeviceAddress address;
+      sensors.getAddress(address, i);
+      
+      // Wyświetl adres (w czytelnej formie) i temperaturę
+      Serial.print("Czujnik ");
+      printAddress(address);
+      Serial.print(" : ");
+      Serial.print(tempC, 2);
+      Serial.println(" *C");
+    } else {
+      Serial.print("Blad odczytu czujnika o indeksie ");
+      Serial.println(i);
+    }
+  }
+
+  // ========== Odczyt DHT22 ==========
+  Serial.println("\n--- Odczyt DHT22 ---");
+  float humidity = dht.readHumidity();
+  float temperature = dht.readTemperature();
+
+  if (isnan(humidity) || isnan(temperature)) {
+    Serial.println("Blad odczytu DHT22!");
+  } else {
+    Serial.print("Temperatura: ");
+    Serial.print(temperature, 2);
+    Serial.println(" *C");
+    Serial.print("Wilgotnosc: ");
+    Serial.print(humidity, 2);
+    Serial.println(" %");
+  }
+
+  Serial.println("\n-----------------------");
+  delay(1000);
+}
+
+// Funkcja pomocnicza do wyświetlania 64-bitowego adresu w formacie szesnastkowym
+void printAddress(DeviceAddress deviceAddress) {
+  for (uint8_t i = 0; i < 8; i++) {
+    if (deviceAddress[i] < 16) Serial.print("0");
+    Serial.print(deviceAddress[i], HEX);
+  }
+}

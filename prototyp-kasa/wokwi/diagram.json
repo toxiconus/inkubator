@@ -1,0 +1,272 @@
+{
+  "version": 1,
+  "author": "Projekt Inkubatora",
+  "title": "Inkubator ESP32 - Schemat",
+  "breadboardHtml": "<h2>🐣 Inkubator - Schemat Podłączeń</h2>",
+  "parts": [
+    {
+      "type": "wokwi-esp32-devkit-v1",
+      "id": "esp32",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_heater",
+      "top": 0,
+      "left": 250,
+      "attrs": {
+        "color": "red",
+        "label": "GRZAŁKA"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_fan1",
+      "top": 50,
+      "left": 250,
+      "attrs": {
+        "color": "blue",
+        "label": "FAN1"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_fan2",
+      "top": 100,
+      "left": 250,
+      "attrs": {
+        "color": "blue",
+        "label": "FAN2"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_fan3",
+      "top": 150,
+      "left": 250,
+      "attrs": {
+        "color": "blue",
+        "label": "FAN3"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_humidifier",
+      "top": 200,
+      "left": 250,
+      "attrs": {
+        "color": "cyan",
+        "label": "NAWILŻACZ"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_tray",
+      "top": 250,
+      "left": 250,
+      "attrs": {
+        "color": "yellow",
+        "label": "TACA"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_light",
+      "top": 300,
+      "left": 250,
+      "attrs": {
+        "color": "orange",
+        "label": "ŚWIATŁO"
+      }
+    },
+    {
+      "type": "wokwi-ds18b20",
+      "id": "temp1",
+      "top": 0,
+      "left": 500,
+      "attrs": {
+        "label": "DS18B20 #1"
+      }
+    },
+    {
+      "type": "wokwi-ds18b20",
+      "id": "temp2",
+      "top": 80,
+      "left": 500,
+      "attrs": {
+        "label": "DS18B20 #2"
+      }
+    },
+    {
+      "type": "wokwi-ds18b20",
+      "id": "temp3",
+      "top": 160,
+      "left": 500,
+      "attrs": {
+        "label": "DS18B20 #3"
+      }
+    },
+    {
+      "type": "wokwi-dht22",
+      "id": "dht",
+      "top": 240,
+      "left": 500,
+      "attrs": {
+        "label": "DHT22"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 30,
+      "left": 450,
+      "attrs": {
+        "value": "4700"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "esp32:GND.1",
+      "led_heater:GND",
+      "black"
+    ],
+    [
+      "esp32:D2",
+      "led_heater:A",
+      "red"
+    ],
+    [
+      "esp32:GND.2",
+      "led_fan1:GND",
+      "black"
+    ],
+    [
+      "esp32:D19",
+      "led_fan1:A",
+      "blue"
+    ],
+    [
+      "esp32:GND.3",
+      "led_fan2:GND",
+      "black"
+    ],
+    [
+      "esp32:D18",
+      "led_fan2:A",
+      "blue"
+    ],
+    [
+      "esp32:GND.4",
+      "led_fan3:GND",
+      "black"
+    ],
+    [
+      "esp32:D5",
+      "led_fan3:A",
+      "blue"
+    ],
+    [
+      "esp32:GND.5",
+      "led_humidifier:GND",
+      "black"
+    ],
+    [
+      "esp32:D12",
+      "led_humidifier:A",
+      "cyan"
+    ],
+    [
+      "esp32:GND.6",
+      "led_tray:GND",
+      "black"
+    ],
+    [
+      "esp32:D14",
+      "led_tray:A",
+      "yellow"
+    ],
+    [
+      "esp32:GND.7",
+      "led_light:GND",
+      "black"
+    ],
+    [
+      "esp32:D13",
+      "led_light:A",
+      "orange"
+    ],
+    [
+      "esp32:D4",
+      "temp1:DQ",
+      "green"
+    ],
+    [
+      "esp32:3V3",
+      "r1:A",
+      "red"
+    ],
+    [
+      "r1:B",
+      "temp1:DQ",
+      "green"
+    ],
+    [
+      "r1:B",
+      "temp2:DQ",
+      "green"
+    ],
+    [
+      "r1:B",
+      "temp3:DQ",
+      "green"
+    ],
+    [
+      "esp32:GND.8",
+      "temp1:GND",
+      "black"
+    ],
+    [
+      "esp32:GND.9",
+      "temp2:GND",
+      "black"
+    ],
+    [
+      "esp32:GND.10",
+      "temp3:GND",
+      "black"
+    ],
+    [
+      "esp32:3V3",
+      "temp1:VCC",
+      "red"
+    ],
+    [
+      "esp32:3V3",
+      "temp2:VCC",
+      "red"
+    ],
+    [
+      "esp32:3V3",
+      "temp3:VCC",
+      "red"
+    ],
+    [
+      "esp32:D15",
+      "dht:DAT",
+      "green"
+    ],
+    [
+      "esp32:3V3",
+      "dht:VCC",
+      "red"
+    ],
+    [
+      "esp32:GND.11",
+      "dht:GND",
+      "black"
+    ]
+  ]
+}

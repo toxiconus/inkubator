@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "author": "Inkubator ESP32",
+  "title": "Inkubator na ESP32 - Symulacja Wokwi",
+  "description": "Pełna symulacja automatycznego inkubatora z rzeczywistymi sensorami",
+  "files": [
+    {
+      "name": "sketch.ino"
+    }
+  ],
+  "sketch": "sketch.ino",
+  "diagram": "diagram.json"
+}

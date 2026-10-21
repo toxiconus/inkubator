@@ -1,0 +1,147 @@
+PORADNIK ROUTING PCB DLA POCZATKUJACEGO (KiCad)
+Projekt: inkubator (ESP32 + czujniki + MOSFET)
+
+============================================================
+1) CEL: CO CHCESZ OSIAGNAC
+============================================================
+- Stabilne zasilanie
+- Brak zaklocen od sekcji mocy
+- Czytelna plytka, latwa do serwisu
+- DRC bez bledow
+
+Zasada nr 1:
+Najpierw zasilanie i masa, potem sygnaly.
+
+============================================================
+2) USTAWIENIA PRZED ROUTINGIEM
+============================================================
+Warstwy:
+- 2-layer: Top + Bottom
+
+Przykladowe szerokosci/sciezki (startowe):
+- LOGIC (GPIO, UART, sygnaly): 0.25 mm
+- I2C / DS / DHT: 0.25-0.30 mm
+- 3V3 / 5V (krotkie odcinki): 0.6-1.0 mm
+- 12V i wyjscia mocy: 1.5-2.5 mm
+- Dla duzego pradu grzalki: nawet 3.0 mm na glownych odcinkach
+
+Clearance (odstep):
+- Start: 0.20-0.25 mm
+- W sekcji mocy lepiej wiecej, jesli miejsce pozwala
+
+Vias:
+- Standard start: drill ok. 0.3 mm, outer 0.6 mm
+- Dla zasilania daj kilka via rownolegle (stitching / current sharing)
+
+============================================================
+3) KOLEJNOSC PROWADZENIA SCIEZEK
+============================================================
+1. Wejscie 12V -> bezpiecznik -> rozdzial sekcji mocy
+2. Trasy mocy do obciazen (grzalki, wentylator, itp.)
+3. Zasilanie 5V i 3V3 od przetwornic
+4. Masa i poligony GND (obie warstwy)
+5. Sterowanie MOSFET (gate, pull-down)
+6. Sygaly czujnikow (I2C, DS18B20, DHT)
+7. UART / debug i testpointy
+
+Dlaczego taka kolejnosc:
+- Najgrubsze i najtrudniejsze trasy kladziesz najpierw.
+- Delikatne sygnaly dopasowujesz na koncu tam, gdzie zostalo miejsce.
+
+============================================================
+4) PODZIAL PLYTKI NA STREFY
+============================================================
+Podziel mentalnie PCB na 3 obszary:
+- POWER: wejscie 12V, MOSFET, zlacza obciazen
+- REGULATORY: przetwornice 12->5, 5->3V3 + kondensatory
+- LOGIC/SENSORS: ESP32, I2C, DS, DHT, UART
+
+Wazne:
+- Nie mieszaj tras sygnalowych z trasami mocy, jesli nie musisz.
+- Trzymaj przewidywalny przeplyw energii (wejscie -> zabezpieczenie -> obciazenie).
+
+============================================================
+5) MASA (GND): NAJWAZNIEJSZA CZESC
+============================================================
+- Zrob polygon GND na Top i Bottom.
+- Dodaj stitching vias co ok. 10-20 mm.
+- Daj gestsze vias przy MOSFET i przy przetwornicach.
+- Unikaj "waskich szyjek" w poligonie masy.
+
+Pro tip:
+Jesli polygon nie laczy sie jak trzeba:
+- sprawdz net strefy (czy to na pewno GND),
+- sprawdz priorytety stref,
+- zrob refill zones.
+
+============================================================
+6) MOSFET I OBCIAZENIA: DOBRE PRAKTYKI
+============================================================
+- Rezystor bramki (np. 100R) blisko bramki tranzystora.
+- Pull-down (np. 100k) tez blisko MOSFET, nie przy MCU.
+- Krotkie petle pradowe dla sekcji mocy.
+- Dioda flyback blisko obciazenia indukcyjnego lub tranzystora (zaleznie od topologii).
+
+Typowy blad poczatkujacych:
+Dlugie, cienkie sciezki mocy + sygnaly obok nich.
+Skutek: grzanie, szumy, niestabilna praca.
+
+============================================================
+7) CZUJNIKI I SYGNALY NISKOPRADOWE
+============================================================
+- Trzymaj je daleko od przelaczania mocy.
+- Nie prowadz rownolegle przez dlugi odcinek z trasami 12V i obciazeniami.
+- I2C: SDA i SCL trzymaj blisko siebie, raczej podobna dlugosc.
+- DS18B20: pull-up blisko punktu logicznego (lub centralnie magistrali, zalezy od topologii).
+
+============================================================
+8) KONDENSATORY I ODSPRZEGANIE
+============================================================
+- Kazde zasilanie ukladu logicznego: min. 100nF blisko pinu zasilania.
+- Dodatkowy kondensator "bulk" (np. 10uF/47uF/100uF) na galezi.
+- Przy przetwornicach trzymaj sie zalecen producenta modulu.
+
+============================================================
+9) DRC, ERC I FINALNA KONTROLA
+============================================================
+Po kazdej wiekszej partii routingu:
+- odpal DRC,
+- popraw bledy od razu,
+- nie zostawiaj "na pozniej".
+
+Przed finalem:
+- Czy wszystkie nety sa polaczone?
+- Czy sa miejsca bardzo blisko krawedzi PCB?
+- Czy zlacza maja sensowny dostep mechaniczny?
+- Czy opisy elementow sa czytelne?
+
+============================================================
+10) SZTUCZKI PRAKTYCZNE (KI CAD)
+============================================================
+- Route -> Interactive Router: uzywaj push-and-shove, ale kontroluj efekt.
+- Place via szybko podczas routingu, gdy robi sie tlok.
+- Trzymaj routing ortogonalny (45 stopni), chyba ze to nie ma sensu.
+- Grupuj nety funkcjonalnie (zasilanie razem, I2C razem).
+- Uzywaj testpointow dla 12V, 5V, 3V3, GND i kluczowych sygnalow.
+- Czesto zapisuj kolejne wersje: v1, v2, v3.
+
+============================================================
+11) MINIMALNY PLAN DLA TWOJEGO PROJEKTU
+============================================================
+1. Poprowadz NET_12V i return GND dla sekcji mocy.
+2. Poprowadz NET_5V i NET_3V3 do MCU/czujnikow.
+3. Dodaj i zoptymalizuj polygon GND (Top + Bottom).
+4. Poprowadz gate MOSFET i sygnaly czujnikow.
+5. DRC + poprawki + testpointy + finalny przeglad.
+
+============================================================
+12) KIEDY WARTO ZROBIC REFAKTOR LAYOUTU
+============================================================
+Jesli widzisz 2 z 3 rzeczy:
+- zbyt wiele crossingow,
+- waskie gardla masy,
+- sygnaly logiczne przecinaja sekcje mocy,
+to szybciej i lepiej jest przestawic elementy i reroutowac fragment,
+zamiast "ratowac" pojedynczymi via.
+
+KONIEC
