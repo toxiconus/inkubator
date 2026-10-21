@@ -27,7 +27,7 @@
 //  KONFIGURACJA
 // ============================================================================
 #define WIFI_SSID "v2"
-#define WIFI_PASSWORD "5654test"
+#define WIFI_PASSWORD "00000000"  // WPA2 wymaga min. 8 znaków (krótsze hasło wyłącza AP)
 #define WS_PORT 81
 #define CSV_LOG_INTERVAL_MS 60000  // 1 minuta
 
