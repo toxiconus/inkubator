@@ -1372,6 +1372,32 @@
             .sensor-hud .hud-row.set:not(.avg) { display: none; }
         }
 
+        /* ===== DYFUZORY: animacja pary ===== */
+        .diffuser-led { gap: 10px; }
+        .diffuser-unit { position: relative; display: inline-flex; align-items: flex-end; gap: 6px; }
+        .steam { position: relative; display: inline-block; width: 18px; height: 24px; }
+        .steam i {
+            position: absolute;
+            bottom: 2px;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: rgba(170, 215, 240, 0.9);
+            opacity: 0;
+        }
+        .steam i:nth-child(1) { left: 1px; }
+        .steam i:nth-child(2) { left: 7px; animation-delay: 0.8s !important; }
+        .steam i:nth-child(3) { left: 13px; animation-delay: 1.6s !important; }
+        .diffuser-unit.on .steam i { animation: steamRise 2.4s ease-out infinite; }
+        @keyframes steamRise {
+            0%   { transform: translateY(0) scale(0.6); opacity: 0; }
+            20%  { opacity: 0.85; }
+            100% { transform: translateY(-22px) scale(2); opacity: 0; }
+        }
+
+        /* zakresy dopuszczalne pod wartością idealną w tabeli programu */
+        .schedule-table .rng { display: block; font-size: 11px; font-weight: 400; color: var(--text-dim); }
+
         /* ===== OSTRZEŻENIA DLA DNIA ===== */
         .day-alerts { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
         .day-alert {
@@ -1533,9 +1559,16 @@
                         <div class="ind-bar"><div class="ind-fill heater" id="heaterFill1" style="width:0%"></div></div>
                         <span class="ind-value" id="heaterVal1">0</span>
                     </div>
-                    <div class="diffuser-led">
-                        <span class="led-label">Dyfuzor</span>
-                        <span class="led" id="diffuserLed"></span>
+                    <div class="diffuser-led" title="Dyfuzory: para pokazuje, który jest włączony">
+                        <span class="led-label">Dyfuzory</span>
+                        <span class="diffuser-unit" id="diffuserUnit0">
+                            <span class="steam"><i></i><i></i><i></i></span>
+                            <span class="led" id="diffuserLed"></span>
+                        </span>
+                        <span class="diffuser-unit" id="diffuserUnit1" style="display:none">
+                            <span class="steam"><i></i><i></i><i></i></span>
+                            <span class="led" id="diffuserLed1"></span>
+                        </span>
                     </div>
                 </div>
 
@@ -1846,30 +1879,35 @@
             // ------------------------------------------------------------
             function bird(c) {
                 const lockStart = c.stopAfter + 1;
+                const tol = 0.3;   // wahania poniżej ½ °F (ok. 0,3 °C) są tolerowane (MSU Extension)
+                const tmin = +(c.temp - tol).toFixed(1);
+                const tmax = +(c.temp + tol).toFixed(1);
                 return {
-                    name: c.name, category: 'ptaki', days: c.days, daysRange: c.range || null,
+                    name: c.name + ' (' + c.latin + ')', shortName: c.name, latin: c.latin,
+                    category: 'ptaki', days: c.days, daysRange: c.range || null,
                     lockdown: lockStart, stopAfter: c.stopAfter, ventDay: c.ventDay, noRotate: [],
                     candle: c.candle || [Math.round(c.days / 3), Math.round(c.days * 2 / 3)],
                     rhHatch: c.rhHatch,
-                    source: 'Mississippi State Univ. Extension (tabela gatunków); RH przeliczona z termometru mokrego',
+                    source: 'Mississippi State Univ. Extension (tabela gatunków). Wilgotność przeliczona z termometru mokrego; ' +
+                            'zakres temperatury to tolerancja ±0,3 °C; górna granica wilgotności klucia orientacyjna',
                     phases: [
-                        { start: 1, end: c.stopAfter, temp: c.temp, rh: c.rh, turn: true, notes: 'Obracaj min. 4–6 razy dziennie' },
-                        { start: lockStart, end: c.days, temp: c.temp, rh: c.rhHatch, turn: false, notes: LOCK }
+                        { start: 1, end: c.stopAfter, temp: c.temp, tmin: tmin, tmax: tmax, rh: c.rh, rhmin: c.rhLo, rhmax: c.rhHi, turn: true, notes: 'Obracaj min. 4–6 razy dziennie' },
+                        { start: lockStart, end: c.days, temp: c.temp, tmin: tmin, tmax: tmax, rh: c.rhHatch, rhmin: 65, rhmax: 75, turn: false, notes: LOCK }
                     ],
                     sensitivity: sens(rng(1, 3).concat(rng(lockStart, c.days)), rng(4, 5).concat(rng(c.stopAfter - 2, c.stopAfter)))
                 };
             }
 
             Object.assign(SPECIES, {
-                CHICKEN:  bird({ name: 'Kura',               days: 21, temp: 37.8, rh: 57, stopAfter: 18, rhHatch: 68, ventDay: 18, candle: [7, 14, 18] }),
-                TURKEY:   bird({ name: 'Indyk',              days: 28, temp: 37.2, rh: 57, stopAfter: 25, rhHatch: 70, ventDay: 25 }),
-                DUCK:     bird({ name: 'Kaczka',             days: 28, temp: 37.8, rh: 56, stopAfter: 25, rhHatch: 68, ventDay: 25 }),
-                MUSCOVY:  bird({ name: 'Kaczka piżmowa',     days: 35, temp: 37.8, rh: 56, stopAfter: 31, rhHatch: 68, ventDay: 30, range: '35–37' }),
-                GOOSE:    bird({ name: 'Gęś',                days: 30, temp: 37.2, rh: 62, stopAfter: 25, rhHatch: 70, ventDay: 25, range: '28–34' }),
-                GUINEA:   bird({ name: 'Perliczka',          days: 28, temp: 37.8, rh: 57, stopAfter: 25, rhHatch: 68, ventDay: 24 }),
-                PHEASANT: bird({ name: 'Bażant',             days: 24, temp: 37.8, rh: 60, stopAfter: 21, rhHatch: 74, ventDay: 20, range: '23–28' }),
-                PIGEON:   bird({ name: 'Gołąb',              days: 17, temp: 37.8, rh: 57, stopAfter: 15, rhHatch: 68, ventDay: 14, range: '17–18' }),
-                QUAIL:    bird({ name: 'Przepiórka japońska', days: 17, temp: 37.8, rh: 56, stopAfter: 15, rhHatch: 68, ventDay: 14 })
+                CHICKEN:  bird({ name: 'Kura domowa',        latin: 'Gallus gallus domesticus',        days: 21, temp: 37.8, rh: 57, rhLo: 54, rhHi: 59, stopAfter: 18, rhHatch: 68, ventDay: 18, candle: [7, 14, 18] }),
+                TURKEY:   bird({ name: 'Indyk',              latin: 'Meleagris gallopavo',             days: 28, temp: 37.2, rh: 57, rhLo: 54, rhHi: 59, stopAfter: 25, rhHatch: 70, ventDay: 25 }),
+                DUCK:     bird({ name: 'Kaczka domowa',      latin: 'Anas platyrhynchos domesticus',   days: 28, temp: 37.8, rh: 56, rhLo: 54, rhHi: 57, stopAfter: 25, rhHatch: 68, ventDay: 25 }),
+                MUSCOVY:  bird({ name: 'Kaczka piżmowa',     latin: 'Cairina moschata',                days: 35, temp: 37.8, rh: 56, rhLo: 54, rhHi: 57, stopAfter: 31, rhHatch: 68, ventDay: 30, range: '35–37' }),
+                GOOSE:    bird({ name: 'Gęś domowa',         latin: 'Anser anser domesticus',          days: 30, temp: 37.2, rh: 62, rhLo: 59, rhHi: 65, stopAfter: 25, rhHatch: 70, ventDay: 25, range: '28–34' }),
+                GUINEA:   bird({ name: 'Perliczka',          latin: 'Numida meleagris',                days: 28, temp: 37.8, rh: 57, rhLo: 54, rhHi: 59, stopAfter: 25, rhHatch: 68, ventDay: 24 }),
+                PHEASANT: bird({ name: 'Bażant',             latin: 'Phasianus colchicus',             days: 24, temp: 37.8, rh: 60, rhLo: 57, rhHi: 62, stopAfter: 21, rhHatch: 74, ventDay: 20, range: '23–28' }),
+                PIGEON:   bird({ name: 'Gołąb domowy',       latin: 'Columba livia domestica',         days: 17, temp: 37.8, rh: 57, rhLo: 54, rhHi: 59, stopAfter: 15, rhHatch: 68, ventDay: 14, range: '17–18' }),
+                QUAIL:    bird({ name: 'Przepiórka japońska', latin: 'Coturnix japonica',               days: 17, temp: 37.8, rh: 56, rhLo: 54, rhHi: 57, stopAfter: 15, rhHatch: 68, ventDay: 14 })
             });
 
             // ------------------------------------------------------------
@@ -1887,7 +1925,7 @@
 
             Object.assign(SPECIES, {
                 LETTUCE: {
-                    name: 'Sałata', category: 'nasiona', days: 5, duration: '2–5 dni', source: SEED_SRC,
+                    name: 'Sałata (Lactuca sativa)', shortName: 'Sałata', category: 'nasiona', days: 5, duration: '2–5 dni', source: SEED_SRC,
                     phases: [
                         { start: 1, end: 2, temp: 20, rh: 90, light: 12, notes: 'Zakres 4–27 °C, optimum ok. 24 °C. Powyżej 27 °C kiełkowanie słabnie, ok. 35 °C ustaje.' },
                         { start: 3, end: 5, temp: 20, rh: 80, light: 14, notes: 'Wschody po 2–3 dniach w 20–25 °C.' }
@@ -1895,7 +1933,7 @@
                     sensitivity: sens(rng(1, 2), rng(3, 4)), alerts: seedAlerts(1, 5)
                 },
                 TOMATO: {
-                    name: 'Pomidor', category: 'nasiona', days: 8, duration: '6–8 dni', source: SEED_SRC,
+                    name: 'Pomidor (Solanum lycopersicum)', shortName: 'Pomidor', category: 'nasiona', days: 8, duration: '6–8 dni', source: SEED_SRC,
                     phases: [
                         { start: 1, end: 5, temp: 27, rh: 90, light: 0, notes: 'Zakres 16–29 °C, optimum ok. 29 °C. Wschody po ok. 6 dniach w 25–30 °C, po 14 dniach w 15 °C.' },
                         { start: 6, end: 8, temp: 24, rh: 75, light: 14, notes: 'Po wschodach światło i mniejsza wilgotność.' }
@@ -1903,7 +1941,7 @@
                     sensitivity: sens(rng(1, 3), rng(4, 6)), alerts: seedAlerts(6, 8)
                 },
                 PEPPER: {
-                    name: 'Papryka i chili', category: 'nasiona', days: 10, duration: '8–10 dni', source: SEED_SRC,
+                    name: 'Papryka i chili (Capsicum annuum)', shortName: 'Papryka', category: 'nasiona', days: 10, duration: '8–10 dni', source: SEED_SRC,
                     phases: [
                         { start: 1, end: 7, temp: 28, rh: 90, light: 0, notes: 'Zakres 18–35 °C, optimum ok. 29 °C. Wschody po ok. 8 dniach w 25–30 °C, po 25 dniach w 15 °C.' },
                         { start: 8, end: 10, temp: 25, rh: 75, light: 14, notes: 'Po wschodach światło i mniejsza wilgotność.' }
@@ -1911,7 +1949,7 @@
                     sensitivity: sens(rng(1, 4), rng(5, 8)), alerts: seedAlerts(8, 10)
                 },
                 CUCUMBER: {
-                    name: 'Ogórek', category: 'nasiona', days: 5, duration: '3–5 dni', source: SEED_SRC,
+                    name: 'Ogórek (Cucumis sativus)', shortName: 'Ogórek', category: 'nasiona', days: 5, duration: '3–5 dni', source: SEED_SRC,
                     phases: [
                         { start: 1, end: 3, temp: 28, rh: 90, light: 0, notes: 'Zakres 16–35 °C. Wschody po 3–4 dniach w 25–35 °C, po 13 dniach w 15 °C.' },
                         { start: 4, end: 5, temp: 24, rh: 75, light: 14, notes: 'Po wschodach światło.' }
@@ -1919,7 +1957,7 @@
                     sensitivity: sens(rng(1, 3), rng(4, 5)), alerts: seedAlerts(4, 5)
                 },
                 BASIL: {
-                    name: 'Bazylia', category: 'nasiona', days: 8, duration: '5–10 dni',
+                    name: 'Bazylia (Ocimum basilicum)', shortName: 'Bazylia', category: 'nasiona', days: 8, duration: '5–10 dni',
                     source: 'Orientacyjnie: bazylii nie ma w tabelach uniwersyteckich',
                     phases: [
                         { start: 1, end: 5, temp: 24, rh: 90, light: 0, notes: 'Zakres ok. 18–30 °C. Zwilżone nasiona stają się śliskie, to normalne.' },
@@ -1928,7 +1966,7 @@
                     sensitivity: sens(rng(1, 3), rng(4, 6)), alerts: seedAlerts(6, 8)
                 },
                 MICROGREENS: {
-                    name: 'Mikroliście (rzodkiewka)', category: 'nasiona', days: 6, duration: '5–8 dni', source: SEED_SRC,
+                    name: 'Mikroliście: rzodkiewka (Raphanus sativus)', shortName: 'Mikroliście', category: 'nasiona', days: 6, duration: '5–8 dni', source: SEED_SRC,
                     phases: [
                         { start: 1, end: 3, temp: 21, rh: 85, light: 0, notes: 'Rzodkiewka: wschody po ok. 4 dniach w 20 °C i po 3 dniach w 25–30 °C. Zaciemnij i lekko dociśnij nasiona.' },
                         { start: 4, end: 6, temp: 21, rh: 65, light: 12, notes: 'Odkryj, daj światło i przewiew. Zbiór, gdy rozwiną się liście.' }
@@ -1936,7 +1974,7 @@
                     sensitivity: sens(rng(1, 3), rng(4, 5)), alerts: seedAlerts(4, 6)
                 },
                 SPROUTS: {
-                    name: 'Kiełki jadalne (lucerna, brokuł)', category: 'nasiona', days: 5, duration: '3–5 dni',
+                    name: 'Kiełki jadalne: lucerna (Medicago sativa), brokuł (Brassica oleracea)', shortName: 'Kiełki', category: 'nasiona', days: 5, duration: '3–5 dni',
                     source: 'Orientacyjnie (praktyka); brak w tabelach uniwersyteckich',
                     phases: [{ start: 1, end: 5, temp: 21, rh: 95, light: 0, notes: 'Płucz 2–3 razy dziennie i dobrze odsączaj.' }],
                     sensitivity: sens(rng(1, 5), []),
@@ -1981,8 +2019,28 @@
                 }
             });
 
+            // Zakresy dopuszczalne temperatury (nie szkodzą, ale nie są idealne).
+            // Nasiona: "optimum range" z tabeli Oregon State Univ. Extension (°F przeliczone na °C).
+            // Fermentacja i kiełki jadalne: orientacyjnie. Wilgotność nasion: ideał -10 / +5 punktów, orientacyjnie.
+            const TEMP_RANGES = {
+                LETTUCE: [4, 27], TOMATO: [16, 29], PEPPER: [18, 35], CUCUMBER: [16, 35], BASIL: [18, 30],
+                MICROGREENS: [7, 32], SPROUTS: [15, 25],
+                YOGURT: [40, 45], TEMPEH: [28, 32], DOUGH: [26, 30], SOURDOUGH: [24, 28]
+            };
+            Object.keys(TEMP_RANGES).forEach(function (k) {
+                SPECIES[k].phases.forEach(function (p) {
+                    p.tmin = TEMP_RANGES[k][0];
+                    p.tmax = TEMP_RANGES[k][1];
+                    if (p.rh != null) {
+                        p.rhmin = Math.max(0, p.rh - 10);
+                        p.rhmax = Math.min(100, p.rh + 5);
+                    }
+                });
+            });
+
             Object.keys(SPECIES).forEach(function (k) {
                 const s = SPECIES[k];
+                s.shortName = s.shortName || s.name.split(' (')[0];
                 s.noRotate = s.noRotate || [];
                 s.sensitivity = s.sensitivity || sens([], []);
             });
@@ -2549,7 +2607,7 @@
                     const currentDay = tray.current_day || 0;
                     const totalDays = tray.total_days || getSpeciesInfo(speciesId).days;
                     const info = getSpeciesInfo(speciesId);
-                    document.getElementById('tray' + (i + 1) + 'Species').textContent = info.name;
+                    document.getElementById('tray' + (i + 1) + 'Species').textContent = info.shortName || info.name;
                     document.getElementById('dayInfo' + (i + 1)).textContent = 'Dzień ' + currentDay + ' / ' + totalDays;
                     buildRuler('rulerTrack' + (i + 1), 'rulerMarker' + (i + 1), 'noRotate' + (i + 1), speciesId,
                     currentDay);
@@ -2616,8 +2674,14 @@
                 document.getElementById('heaterVal0').textContent = Math.round(pct0) + '%';
                 document.getElementById('heaterVal1').textContent = Math.round(pct1) + '%';
 
-                const diffOn = statusData.diffuser_0_on || statusData.diffuser_on || false;
-                document.getElementById('diffuserLed').className = 'led' + (diffOn ? ' on' : '');
+                const diffCount = statusData.diffuser_count ?? 1;
+                const diff0 = !!(statusData.diffuser_0_on ?? statusData.diffuser_on);
+                const diff1 = !!statusData.diffuser_1_on;
+                document.getElementById('diffuserLed').className = 'led' + (diff0 ? ' on' : '');
+                document.getElementById('diffuserLed1').className = 'led' + (diff1 ? ' on' : '');
+                document.getElementById('diffuserUnit0').classList.toggle('on', diff0);
+                document.getElementById('diffuserUnit1').classList.toggle('on', diff1);
+                document.getElementById('diffuserUnit1').style.display = diffCount >= 2 ? '' : 'none';
             }
 
             // ============================================================
@@ -2739,12 +2803,34 @@
                 const alerts = [];
                 const t = statusData.temp_chamber,
                     tgt = statusData.target_temp;
-                if (isFinite(t) && isFinite(tgt) && Math.abs(t - tgt) >= 1.5) alerts.push(
-                    'Temperatura odbiega od celu ≥ 1.5°C');
-                if (isFinite(t) && t >= 40.5) alerts.push('Ryzyko przegrzania (≥ 40.5°C)');
                 const rh = statusData.humidity,
                     hMin = statusData.humidity_target_min || 45;
-                if (isFinite(rh) && rh < hMin - 5) alerts.push('Niska wilgotność (poniżej minimum)');
+
+                // Zakresy dopuszczalne z programów aktywnych tac (idealne wartości są w tabeli programu)
+                let usedRanges = false;
+                if (trayData && trayData.trays) {
+                    trayData.trays.slice(0, 2).forEach(function (tray, i) {
+                        if (!tray || tray.active === false) return;
+                        const phase = getPhaseForDay(tray.species_id, tray.current_day || 1);
+                        if (!phase || phase.tmin == null) return;
+                        usedRanges = true;
+                        const label = 'Taca ' + (i + 1) + ': ';
+                        if (isFinite(t) && (t < phase.tmin || t > phase.tmax)) {
+                            alerts.push(label + 'temperatura ' + t.toFixed(1) + ' °C poza zakresem dopuszczalnym ' +
+                                phase.tmin.toFixed(1) + '–' + phase.tmax.toFixed(1) + ' °C');
+                        }
+                        if (isFinite(rh) && phase.rhmin != null && (rh < phase.rhmin || rh > phase.rhmax)) {
+                            alerts.push(label + 'wilgotność ' + rh.toFixed(0) + ' % poza zakresem dopuszczalnym ' +
+                                phase.rhmin.toFixed(0) + '–' + phase.rhmax.toFixed(0) + ' %');
+                        }
+                    });
+                }
+                if (!usedRanges) {
+                    if (isFinite(t) && isFinite(tgt) && Math.abs(t - tgt) >= 1.5) alerts.push(
+                        'Temperatura odbiega od celu ≥ 1.5°C');
+                    if (isFinite(rh) && rh < hMin - 5) alerts.push('Niska wilgotność (poniżej minimum)');
+                }
+                if (isFinite(t) && t >= 40.5) alerts.push('Ryzyko przegrzania (≥ 40.5°C)');
                 if (alerts.length) { box.innerHTML = alerts.map(a => '<div style="color:#e05050;">• ' + a + '</div>').join(
                     ''); } else { box.textContent = 'Brak aktywnych alarmów.';
                     box.style.color = '#5a6a7a'; }
@@ -2895,10 +2981,12 @@
                     else if (top === 2) tr.style.background = 'rgba(255,136,68,0.07)';
                     const icon = top === 3 ? LEVEL_ICON.critical : (top === 2 ? LEVEL_ICON.warn : (top === 1 ? LEVEL_ICON.info : ''));
                     const note = alerts.length ? alerts.map(function (a) { return a.title; }).join(' · ') : (phase.notes || '');
+                    const tRange = phase.tmin != null ? '<span class="rng">' + phase.tmin.toFixed(1) + '–' + phase.tmax.toFixed(1) + '</span>' : '';
+                    const rhRange = (phase.rh != null && phase.rhmin != null) ? '<span class="rng">' + phase.rhmin.toFixed(0) + '–' + phase.rhmax.toFixed(0) + '</span>' : '';
                     const cells = [
                         '<td>' + (d === day ? '▶ ' : '') + d + '</td>',
-                        '<td style="color:' + sensColor + ';font-weight:' + (sensKey === 'CRITICAL' ? '700' : '400') + '">' + phase.temp.toFixed(1) + '</td>',
-                        '<td>' + (phase.rh == null ? '—' : phase.rh.toFixed(0)) + '</td>'
+                        '<td style="color:' + sensColor + ';font-weight:' + (sensKey === 'CRITICAL' ? '700' : '400') + '">' + phase.temp.toFixed(1) + tRange + '</td>',
+                        '<td>' + (phase.rh == null ? '—' : phase.rh.toFixed(0) + rhRange) + '</td>'
                     ];
                     if (cat === 'ptaki') {
                         cells.push('<td>' + (phase.turn ? '✓' : '<span class="no-rotate">✕</span>') + '</td>');
@@ -2950,9 +3038,11 @@
                 const rows = [
                     row(info.category === 'ptaki' ? 'Gatunek' : 'Program', escapeHtml(info.name)),
                     row('Dzień', day + ' / ' + info.days + (info.daysRange ? ' (spotykane: ' + info.daysRange + ')' : '')),
-                    row('Temp. zadana', phase.temp.toFixed(1) + ' °C', sensColor),
-                    row('Wilgotność', phase.rh == null ? 'bez regulacji' : phase.rh.toFixed(0) + ' %', '#70d070')
+                    row('Temp. idealna', phase.temp.toFixed(1) + ' °C', sensColor)
                 ];
+                if (phase.tmin != null) rows.push(row('Temp. dopuszczalna', phase.tmin.toFixed(1) + '–' + phase.tmax.toFixed(1) + ' °C'));
+                rows.push(row('Wilgotność idealna', phase.rh == null ? 'bez regulacji' : phase.rh.toFixed(0) + ' %', '#70d070'));
+                if (phase.rh != null && phase.rhmin != null) rows.push(row('Wilgotność dopuszczalna', phase.rhmin.toFixed(0) + '–' + phase.rhmax.toFixed(0) + ' %'));
                 if (info.category === 'ptaki') {
                     rows.push(row('Obrót', phase.turn ? '✓ tak, min. 4–6 razy dziennie' : '✕ nie, bez obrotów', phase.turn ? '#70d070' : '#a070d0'));
                 } else if (info.category === 'nasiona') {
@@ -2976,7 +3066,7 @@
                     const info = getSpeciesInfo(tray.species_id);
                     const day = tray.current_day || 1;
                     const alerts = dayAlerts(info, day).sort(function (a, b) { return (LEVEL_RANK[b.level] || 0) - (LEVEL_RANK[a.level] || 0); });
-                    let html = '<div class="advice-head">Taca ' + (i + 1) + ' · ' + escapeHtml(info.name) + ' · dzień ' + day + '/' + (tray.total_days || info.days) + '</div>';
+                    let html = '<div class="advice-head">Taca ' + (i + 1) + ' · ' + escapeHtml(info.shortName || info.name) + ' · dzień ' + day + '/' + (tray.total_days || info.days) + '</div>';
                     if (!alerts.length) html += '<div class="day-alert lvl-ok"><div class="t">✓ Bez szczególnych ostrzeżeń</div></div>';
                     else html += alerts.map(function (a) {
                         return '<div class="day-alert lvl-' + a.level + '"><div class="t">' + LEVEL_ICON[a.level] + ' ' + escapeHtml(a.title) +

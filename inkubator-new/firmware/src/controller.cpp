@@ -48,27 +48,6 @@ static void heaters_control_simple(const SensorData& data) {
     }
 }
 
-static void diffusers_control_simple(const SensorData& data) {
-    if (configMgr.cfg.diffusers.count == 0) return;
-    int pin = configMgr.cfg.diffusers.pins[0];
-    if (pin < 0) return;
-    if (diffuser_manual_mode) {
-        digitalWrite(pin, diffuser_manual_on[0] ? LOW : HIGH);
-        diffuser_on = diffuser_manual_on[0];
-        return;
-    }
-    float hum = data.humidity;
-    if (hum < 0) return;
-    float target = configMgr.cfg.system.target_humidity;
-    float hyst = configMgr.cfg.system.humidity_hysteresis;
-    if (hum < target - hyst) {
-        diffuser_on = true;
-    } else if (hum > target + hyst) {
-        diffuser_on = false;
-    }
-    digitalWrite(pin, diffuser_on ? LOW : HIGH);
-}
-
 bool set_heater_profile(const String& mode) {
     if (mode == "balanced" || mode == "fast" || mode == "eco") {
         heater_profile_name = mode;
@@ -98,7 +77,6 @@ String learning_profile = "";
 
 static unsigned long diffuser_change_ms = 0;
 static int diffuser_next_idx = 0;
-static bool diffuser_both_active = false;
 
 #define TEMP_LEARN_SAMPLES 180
 #define TEMP_LEARN_STABLE_SAMPLES 120
@@ -108,8 +86,8 @@ static bool diffuser_both_active = false;
 #define HUM_LEARN_SAMPLES 36
 #define HUM_LEARN_STDDEV_THRESHOLD 0.8f
 #define HUM_LEARN_ERROR_THRESHOLD 1.0f
-#define HUM_LEARN_MIN_CYCLE_MS 3000
-#define HUM_LEARN_MAX_CYCLE_MS 60000
+#define HUM_LEARN_MIN_CYCLE_MS 1000
+#define HUM_LEARN_MAX_CYCLE_MS 1800000   // naturalne cykle dyfuzora trwają minuty
 
 struct TempSample { float temp; int pwm_raw; float target; };
 static TempSample temp_history[TEMP_LEARN_SAMPLES] = {};
@@ -531,7 +509,20 @@ static void heaters_control_pi(const SensorData& data) {
     }
 }
 
-static void diffusers_control_adaptive(const SensorData& data) {
+// ============================================================================
+//  DYFUZORY: STEROWANIE ZAKRESOWE (oszczędza styki włączników)
+//  - w zakresie dopuszczalnym [cel - histereza, cel + histereza] nic nie robimy,
+//  - poniżej dolnej granicy włączamy, a wyłączamy w połowie drogi między wartością idealną
+//    (cel) a górną granicą: kompromis między dokładnością a liczbą przełączeń,
+//  - minimalny czas pracy i przerwy (diffusers.on_time_sec / off_time_sec) chroni styki,
+//  - dyfuzory włączamy na przemian, a oba naraz tylko przy dużym niedoborze wilgotności.
+//  Działa tak samo we wszystkich trybach regulatora. Uczenie tylko obserwuje naturalne
+//  cykle i nigdy nie wymusza przełączania.
+// ============================================================================
+unsigned long diffuser_switch_count = 0;
+static bool diffuser_state_known = false;
+
+static void diffusers_band_control(const SensorData& data) {
     DiffuserConfig& dc = configMgr.cfg.diffusers;
     if (dc.count == 0) return;
 
@@ -540,146 +531,75 @@ static void diffusers_control_adaptive(const SensorData& data) {
         int manual_on_count = 0;
         for (int i = 0; i < dc.count && i < MAX_DIFFUSERS; i++) {
             if (dc.pins[i] < 0) continue;
-            bool on_this = !!diffuser_manual_on[i];
+            const bool on_this = !!diffuser_manual_on[i];
             diffuser_write_pin(dc.pins[i], on_this);
             if (on_this) manual_on_count++;
         }
         diffuser_on = (manual_on_count > 0);
         diffuser_active_idx = -1;
-        diffuser_both_active = (manual_on_count >= 2);
         return;
     }
 
-    // Zakres wilgotności z konfiguracji (jak w trybie 0)
-    const float hum_min = configMgr.cfg.system.target_humidity - configMgr.cfg.system.humidity_hysteresis;
-    const float hum_max = configMgr.cfg.system.target_humidity + configMgr.cfg.system.humidity_hysteresis;
-    const float target = hum_max;
-    if (data.humidity < 0.0f) return;
+    if (data.humidity < 0.0f) return;   // brak odczytu: stan bez zmian
 
-    if (learning_mode != learning_mode_previous) {
-        reset_learning_state();
-        learning_mode_previous = learning_mode;
-    }
+    const float ideal = configMgr.cfg.system.target_humidity;
+    const float hyst = max(0.5f, configMgr.cfg.system.humidity_hysteresis);
+    const float rh_min = ideal - hyst;                       // dolna granica dopuszczalna
+    const unsigned long now = millis();
+    const unsigned long min_on = max(1UL, (unsigned long)dc.on_time_sec) * 1000UL;
+    const unsigned long min_off = max(1UL, (unsigned long)dc.off_time_sec) * 1000UL;
 
-    bool force_both = false;
-    unsigned long current_ms = millis();
-    unsigned long elapsed = current_ms - diffuser_change_ms;
-    bool prev_on = diffuser_on;
-    const bool fast_mode = strcmp(dc.profile, "fast") == 0;
+    bool want_on = diffuser_on;
+    if (!diffuser_on && data.humidity <= rh_min) want_on = true;
+    else if (diffuser_on && data.humidity >= ideal + 0.5f * hyst) want_on = false;
 
-    if (hum_last_diffuser_change_ms == 0) {
-        hum_last_diffuser_change_ms = current_ms;
-        hum_last_diffuser_on = diffuser_on;
-    }
+    const unsigned long since = now - diffuser_change_ms;
+    const bool may_change = !diffuser_state_known || since >= (diffuser_on ? min_on : min_off);
 
-    if (learning_mode) {
-        record_hum_sample(data.humidity, target);
-        if (!isnan(hum_last_target) && fabs(target - hum_last_target) > 0.1f) {
-            hum_learned_valid = false;
-            hum_stable = false;
-        }
-        hum_last_target = target;
-
-        if (hum_history_stable(target) && hum_duration_count >= 4) {
-            calculate_learned_hum_cycle();
-            if (hum_learned_on_ms > 0 && hum_learned_off_ms > 0) {
-                bool was_hum_valid = hum_learned_valid;
-                hum_learned_valid = true;
-                hum_learned_target = target;
-                if (!was_hum_valid || configMgr.learning_state.diffuser_on_ms != hum_learned_on_ms ||
-                    configMgr.learning_state.diffuser_off_ms != hum_learned_off_ms ||
-                    fabs(configMgr.learning_state.learned_target_humidity - target) > 0.1f) {
+    if (want_on != diffuser_on && may_change) {
+        if (learning_mode) {
+            record_hum_cycle(diffuser_on, now - hum_last_diffuser_change_ms);
+            if (hum_duration_count >= 4) {
+                calculate_learned_hum_cycle();
+                if (hum_learned_on_ms > 0 && hum_learned_off_ms > 0 &&
+                    (configMgr.learning_state.diffuser_on_ms != hum_learned_on_ms ||
+                     configMgr.learning_state.diffuser_off_ms != hum_learned_off_ms)) {
                     configMgr.learning_state.has_value = true;
                     configMgr.learning_state.diffuser_on_ms = hum_learned_on_ms;
                     configMgr.learning_state.diffuser_off_ms = hum_learned_off_ms;
-                    configMgr.learning_state.learned_target_humidity = target;
-                    configMgr.learning_state.sample_count = max(temp_history_count, hum_history_count);
-                    configMgr.learning_state.last_updated_ms = millis();
+                    configMgr.learning_state.learned_target_humidity = ideal;
+                    configMgr.learning_state.last_updated_ms = now;
                     configMgr.save_learning_data();
                 }
             }
         }
+        diffuser_on = want_on;
+        diffuser_change_ms = now;
+        hum_last_diffuser_change_ms = now;
+        diffuser_state_known = true;
+        diffuser_switch_count++;
 
-        const bool learned_here = hum_learned_valid && fabs(hum_learned_target - target) < 0.1f;
-        unsigned long learning_on_ms = (learned_here && hum_learned_on_ms > 0) ? hum_learned_on_ms : 3000UL;
-        unsigned long learning_off_ms = (learned_here && hum_learned_off_ms > 0) ? hum_learned_off_ms : 7000UL;
-
-        if (diffuser_on && elapsed >= learning_on_ms) {
-            record_hum_cycle(true, current_ms - hum_last_diffuser_change_ms);
-            diffuser_on = false;
-            diffuser_change_ms = current_ms;
-            hum_last_diffuser_change_ms = current_ms;
-            force_both = true;
-        } else if (!diffuser_on && elapsed >= learning_off_ms) {
-            record_hum_cycle(false, current_ms - hum_last_diffuser_change_ms);
-            diffuser_on = true;
-            diffuser_change_ms = current_ms;
-            hum_last_diffuser_change_ms = current_ms;
-            force_both = true;
-        }
-        if (diffuser_on) force_both = true;
-    }
-
-    if (fast_mode) {
-        if (!diffuser_on && data.humidity <= hum_min) {
-            diffuser_on = true;
-            diffuser_change_ms = millis();
-        }
         if (diffuser_on) {
-            force_both = true;
-            if (data.humidity >= hum_max) {
-                diffuser_on = false;
-                diffuser_change_ms = millis();
+            const int cnt = min(dc.count, MAX_DIFFUSERS);
+            const bool far_below = data.humidity <= rh_min - 0.5f * hyst;
+            if (far_below || cnt < 2) {
+                diffuser_active_idx = -1;                    // wszystkie naraz
+            } else {
+                diffuser_active_idx = diffuser_next_idx % cnt;   // na przemian
+                diffuser_next_idx = (diffuser_active_idx + 1) % cnt;
             }
-        }
-        if (!diffuser_on && data.humidity <= hum_min) {
-            diffuser_on = true;
-            diffuser_change_ms = millis();
-            force_both = true;
-        }
-    } else {
-        if (data.humidity <= hum_min) {
-            force_both = true;
-            if (!diffuser_on) {
-                diffuser_on = true;
-                diffuser_change_ms = millis();
-            }
-        } else if (data.humidity >= hum_max) {
-            if (diffuser_on) {
-                diffuser_on = false;
-                diffuser_change_ms = millis();
-            }
-        } else if (diffuser_on) {
-            // Między progami zachowujemy aktualny stan, żeby wilgotność rosła od minimum do maksimum.
-            force_both = true;
-        }
-    }
-
-    if (diffuser_on && diffuser_change_ms == 0) diffuser_change_ms = millis();
-
-    if (force_both) {
-        diffuser_active_idx = -1;
-    } else if (diffuser_on && !prev_on) {
-        int cnt = min(dc.count, MAX_DIFFUSERS);
-        if (cnt > 0) {
-            diffuser_active_idx = diffuser_next_idx % cnt;
-            diffuser_next_idx = (diffuser_active_idx + 1) % cnt;
         } else {
-            diffuser_active_idx = 0;
+            diffuser_active_idx = -1;
         }
-    } else if (!diffuser_on) {
-        diffuser_active_idx = -1;
     }
 
-    int on_count = 0;
     for (int i = 0; i < dc.count && i < MAX_DIFFUSERS; i++) {
         if (dc.pins[i] < 0) continue;
-        bool on_this = force_both ? diffuser_on : (diffuser_on && (i == diffuser_active_idx));
+        const bool on_this = diffuser_on && (diffuser_active_idx < 0 || i == diffuser_active_idx);
         diffuser_write_pin(dc.pins[i], on_this);
-        if (on_this) on_count++;
     }
-    diffuser_both_active = force_both || (on_count >= 2);
 }
+
 
 // Wybór regulatora: 0 = prosty z histerezą (domyślny), 1 = adaptacyjny z uczeniem, 2 = PI.
 void heaters_control(const SensorData& data) {
@@ -691,8 +611,7 @@ void heaters_control(const SensorData& data) {
 }
 
 void diffusers_control(const SensorData& data) {
-    if (configMgr.cfg.system.control_mode == 1) diffusers_control_adaptive(data);
-    else diffusers_control_simple(data);
+    diffusers_band_control(data);   // te same zasady we wszystkich trybach regulatora
 }
 
 // ============================================================================

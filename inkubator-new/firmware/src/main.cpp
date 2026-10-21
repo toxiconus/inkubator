@@ -936,7 +936,10 @@ void broadcastStatus() {
     doc["pwm_max"] = HEATER_PWM_MAX;
     doc["heater_pwm_ch0"] = (int)round(heater_pwm_pct * HEATER_PWM_MAX / 100.0f);
     doc["heater_pwm_ch1"] = (int)round(heater_pwm_pct * HEATER_PWM_MAX / 100.0f);
-    doc["diffuser_0_on"] = diffuser_on;
+    doc["diffuser_switches"] = diffuser_switch_count;
+    doc["diffuser_count"] = configMgr.cfg.diffusers.count;
+    doc["diffuser_0_on"] = diffuser_on && (diffuser_active_idx < 0 || diffuser_active_idx == 0);
+    doc["diffuser_1_on"] = diffuser_on && configMgr.cfg.diffusers.count > 1 && (diffuser_active_idx < 0 || diffuser_active_idx == 1);
     doc["esp_internal_temp"] = temperatureRead();
 
     bool alarmTempHigh = false;
@@ -996,7 +999,10 @@ void webserver_setup() {
         doc["heater_pwm_ch0"] = (int)round(heater_pwm_pct * HEATER_PWM_MAX / 100.0f);
         doc["heater_pwm_ch1"] = (int)round(heater_pwm_pct * HEATER_PWM_MAX / 100.0f);
         doc["control_mode"] = configMgr.cfg.system.control_mode;
-        doc["diffuser_0_on"] = diffuser_on;
+        doc["diffuser_switches"] = diffuser_switch_count;
+        doc["diffuser_count"] = configMgr.cfg.diffusers.count;
+        doc["diffuser_0_on"] = diffuser_on && (diffuser_active_idx < 0 || diffuser_active_idx == 0);
+        doc["diffuser_1_on"] = diffuser_on && configMgr.cfg.diffusers.count > 1 && (diffuser_active_idx < 0 || diffuser_active_idx == 1);
         doc["esp_internal_temp"] = temperatureRead();
         doc["uptime_ms"] = millis();
         String json;

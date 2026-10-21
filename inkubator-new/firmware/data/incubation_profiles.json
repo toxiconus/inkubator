@@ -8,7 +8,7 @@
   "species": {
     "chicken": {
       "id": "gallus_gallus_domesticus",
-      "common_name": "Kura",
+      "common_name": "Kura domowa (Gallus gallus domesticus)",
       "incubation_days": 21,
       "description": "Standardowy cykl inkubacji kurzej – 21 dni",
       "reference": "Poultry Hub Australia, Petersime",
@@ -44,7 +44,7 @@
     },
     "duck_indian_runner": {
       "id": "anas_platyrhynchos_domesticus_runner",
-      "common_name": "Kaczka Biegus",
+      "common_name": "Kaczka biegus (Anas platyrhynchos domesticus)",
       "incubation_days": 28,
       "description": "Cykl inkubacji kaczki biegus (Indian Runner) – 28 dni",
       "reference": "Vet Verified, ECE Homestead",
@@ -87,7 +87,7 @@
     },
     "goose": {
       "id": "anser_anser_domesticus",
-      "common_name": "Gęś",
+      "common_name": "Gęś domowa (Anser anser domesticus)",
       "incubation_days": 30,
       "description": "Cykl inkubacji gęsi – 30 dni",
       "reference": "Dane szacunkowe na podstawie literatury",
@@ -132,7 +132,7 @@
     },
     "quail": {
       "id": "coturnix_japonica",
-      "common_name": "Przepiórka",
+      "common_name": "Przepiórka japońska (Coturnix japonica)",
       "incubation_days": 17,
       "description": "Cykl inkubacji przepiórki – 17 dni",
       "reference": "Dane szacunkowe",
@@ -164,7 +164,7 @@
     },
     "guinea_fowl": {
       "id": "numida_meleagris",
-      "common_name": "Perliczka",
+      "common_name": "Perliczka (Numida meleagris)",
       "incubation_days": 26,
       "description": "Cykl inkubacji perliczki – 26 dni",
       "reference": "Dane szacunkowe",
@@ -205,7 +205,7 @@
     },
     "pheasant": {
       "id": "phasianus_colchicus",
-      "common_name": "Bażant",
+      "common_name": "Bażant (Phasianus colchicus)",
       "incubation_days": 24,
       "description": "Cykl inkubacji bażanta – 24 dni",
       "reference": "Dane szacunkowe",
