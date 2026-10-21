@@ -16,7 +16,7 @@
 
         body {
             background: #0a0c0e;
-            font-family: 'Courier New', 'IBM Plex Mono', monospace;
+            font-family: var(--font-ui);
             font-size: 16px;
             line-height: 1.5;
             overflow: hidden;
@@ -105,7 +105,7 @@
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s ease;
-            font-family: 'Courier New', monospace;
+            font-family: var(--font-ui);
             white-space: nowrap;
         }
         .tab:hover {
@@ -687,7 +687,7 @@
         }
         .clock-panel .time {
             color: #8a9aa8;
-            font-family: 'Courier New', monospace;
+            font-family: var(--font-ui);
             font-weight: 400;
         }
 
@@ -721,7 +721,7 @@
             color: #e6eef8;
             padding: 6px 12px;
             border-radius: 3px;
-            font-family: 'Courier New', monospace;
+            font-family: var(--font-ui);
             font-size: 14px;
             min-width: 110px;
         }
@@ -737,7 +737,7 @@
             color: #c0d3e0;
             cursor: pointer;
             transition: all 0.2s ease;
-            font-family: 'Courier New', monospace;
+            font-family: var(--font-ui);
         }
         .hatch-controls .btn:hover {
             background: rgba(255, 255, 255, 0.08);
@@ -808,7 +808,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 13px;
-            font-family: 'Courier New', monospace;
+            font-family: var(--font-ui);
         }
         .schedule-table th {
             text-align: left;
@@ -905,7 +905,7 @@
             color: #8a9aa8;
             cursor: pointer;
             transition: all 0.2s ease;
-            font-family: 'Courier New', monospace;
+            font-family: var(--font-ui);
         }
         .learn-card .btn-group .btn:hover {
             background: rgba(255, 255, 255, 0.08);
@@ -1076,7 +1076,7 @@
             color: #8a9aa8;
             cursor: pointer;
             transition: all 0.2s ease;
-            font-family: 'Courier New', monospace;
+            font-family: var(--font-ui);
         }
         .btn:hover {
             background: rgba(255, 255, 255, 0.08);
@@ -1157,7 +1157,7 @@
         }
         html { -webkit-text-size-adjust: 100%; }
         body {
-            font-family: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, 'Liberation Mono', 'Courier New', monospace;
+            font-family: var(--font-ui);
             font-variant-numeric: tabular-nums;
             padding: 0;
             min-height: 100vh;
@@ -1285,6 +1285,117 @@
             .sliders-panel { gap: 10px 16px; }
         }
 
+        /* ===== TYPOGRAFIA: czytelny krój systemowy zamiast Courier New ===== */
+        :root {
+            --font-ui: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+            --text: #e8eff6;
+            --text-dim: #9db0c2;
+            --accent: #5fb08a;
+        }
+        body { font-size: 15px; line-height: 1.45; }
+        button, input, select, textarea { font-family: var(--font-ui); }
+
+        .toolbar-logo { font-size: 17px; font-weight: 700; letter-spacing: 0.02em; }
+        .toolbar-logo span { color: var(--accent); font-weight: 600; }
+        .tab {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            text-transform: none;
+            padding: 8px 14px;
+        }
+        .card-title,
+        .schedule-card .card-header .title,
+        .learn-title {
+            font-size: 15px;
+            font-weight: 650;
+            letter-spacing: 0.01em;
+            text-transform: none;
+            color: var(--text);
+        }
+        .hatch-controls .label {
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            color: var(--text-dim);
+        }
+        .hatch-controls .btn,
+        .btn {
+            text-transform: none;
+            letter-spacing: 0.01em;
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: 6px;
+        }
+        .hatch-controls select,
+        .hatch-controls input[type="number"] { border-radius: 6px; padding: 8px 12px; }
+        .schedule-table { font-size: 14px; }
+        .schedule-table th {
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+        }
+        .schedule-table td { padding-top: 5px; padding-bottom: 5px; }
+        .sensor-hud { font-size: 16px; }
+        .sensor-hud .hud-label { font-size: 12px; color: var(--text-dim); letter-spacing: 0.04em; }
+        .sensor-hud .hud-value { font-size: 19px; font-weight: 650; }
+        .sensor-hud .hud-row.ds .hud-value { font-size: 16px; }
+        .sensor-hud .hud-row.set .hud-value { font-size: 15px; }
+        .sensor-hud .hud-value .unit { font-size: 11px; color: var(--text-dim); }
+        .tray-ruler .tray-header .name { font-size: 15px; letter-spacing: 0.02em; }
+        .tray-ruler .tray-header .day-info { font-size: 14px; }
+        .ruler-tick .tick-label { font-size: 12px; }
+        .indicator-group .ind-label { font-size: 14px; }
+        .indicator-group .ind-value { font-size: 15px; }
+        .tb-indicator .val { font-size: 15px; font-weight: 650; }
+        .tb-clock { font-size: 16px; }
+        .trend-label, .diffuser-led .led-label { font-size: 12px; letter-spacing: 0.03em; }
+        .badge { font-size: 12px; font-weight: 600; }
+
+        /* wąski ekran: karty harmonogramu jedna pod drugą, z własnym przewijaniem tabeli */
+        @media (max-width: 900px) {
+            .schedule-grid {
+                grid-template-columns: minmax(0, 1fr);
+                flex: none;
+                overflow: visible;
+            }
+            .schedule-card { min-height: 220px; }
+            .schedule-table-wrap { max-height: 340px; }
+            .hatch-controls { gap: 10px 12px; }
+            .hatch-controls .control-group { flex: 1 1 140px; }
+            .hatch-controls select,
+            .hatch-controls input[type="number"] { min-width: 0; width: 100%; }
+            .learn-section { grid-template-columns: minmax(0, 1fr); }
+        }
+
+        /* niski ekran: pokaż tylko średnie nastawy, żeby odczyty nie nachodziły na wykres */
+        @media (max-height: 880px) and (min-width: 761px) {
+            .sensor-hud .hud-row.set:not(.avg) { display: none; }
+        }
+
+        /* ===== OSTRZEŻENIA DLA DNIA ===== */
+        .day-alerts { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+        .day-alert {
+            border: 1px solid var(--line);
+            border-left-width: 4px;
+            border-radius: 8px;
+            padding: 10px 14px;
+            background: rgba(14, 17, 21, 0.9);
+        }
+        .day-alert .t { font-weight: 650; font-size: 15px; color: var(--text); }
+        .day-alert .x { margin-top: 2px; font-size: 14px; color: var(--text-dim); line-height: 1.45; }
+        .day-alert.lvl-critical { border-left-color: #e05050; background: rgba(224, 80, 80, 0.10); }
+        .day-alert.lvl-critical .t { color: #ff8a8a; }
+        .day-alert.lvl-warn { border-left-color: #e8a030; background: rgba(232, 160, 48, 0.09); }
+        .day-alert.lvl-warn .t { color: #f0b860; }
+        .day-alert.lvl-info { border-left-color: #5a9ad0; background: rgba(90, 154, 208, 0.08); }
+        .day-alert.lvl-ok { border-left-color: #30c060; background: rgba(48, 192, 96, 0.06); }
+        .day-alert.lvl-ok .t { color: #7fdc9a; font-weight: 600; }
+        .advice-head { font-size: 13px; font-weight: 650; color: var(--text-dim); letter-spacing: 0.03em; margin: 6px 0 4px; }
+        .tray-advice { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--text-dim); }
+        .schedule-table td.note { font-size: 13px; color: var(--text-dim); }
+        .schedule-table td.pk { font-size: 13px; color: var(--text-dim); padding: 6px 8px; border-bottom: 1px solid rgba(26, 30, 36, 0.5); width: 38%; }
+        .schedule-table td.pv { font-size: 14px; color: var(--text); text-align: right; padding: 6px 8px; border-bottom: 1px solid rgba(26, 30, 36, 0.5); }
+
         @media (prefers-reduced-motion: reduce) {
             * { transition: none !important; animation: none !important; }
         }
@@ -1300,15 +1411,15 @@
                 <span class="toolbar-logo">INKUBATOR <span>v2.0</span></span>
                 <span class="toolbar-sep"></span>
                 <nav class="tabs">
-                    <button class="tab active" data-tab="status" onclick="showTab('status')">STATUS</button>
-                    <button class="tab" data-tab="hatch" onclick="showTab('hatch')">LĘG</button>
-                    <button class="tab" data-tab="charts" onclick="showTab('charts')">WYKRESY</button>
-                    <button class="tab" data-tab="schedule" onclick="showTab('schedule')">HARMONOGRAM</button>
-                    <button class="tab" data-tab="journal" onclick="showTab('journal')">DZIENNIK</button>
+                    <button class="tab active" data-tab="status" onclick="showTab('status')">Status</button>
+                    <button class="tab" data-tab="hatch" onclick="showTab('hatch')">Programy</button>
+                    <button class="tab" data-tab="charts" onclick="showTab('charts')">Wykresy</button>
+                    <button class="tab" data-tab="schedule" onclick="showTab('schedule')">Harmonogram</button>
+                    <button class="tab" data-tab="journal" onclick="showTab('journal')">Dziennik</button>
                     <button class="tab" data-tab="esp" onclick="showTab('esp')">ESP</button>
-                    <button class="tab" data-tab="logs" onclick="showTab('logs')">LOGI</button>
-                    <button class="tab" data-tab="calibrate" onclick="showTab('calibrate')">KALIBRACJA</button>
-                    <button class="tab" data-tab="settings" onclick="showTab('settings')">USTAWIENIA</button>
+                    <button class="tab" data-tab="logs" onclick="showTab('logs')">Logi</button>
+                    <button class="tab" data-tab="calibrate" onclick="showTab('calibrate')">Kalibracja</button>
+                    <button class="tab" data-tab="settings" onclick="showTab('settings')">Ustawienia</button>
                 </nav>
             </div>
 
@@ -1459,13 +1570,19 @@
                     <div class="card-header"><span class="card-title">Alarmy</span></div>
                     <div id="alerts-box" style="font-size:13px;color:#5a6a7a;min-height:34px;">Brak aktywnych alarmów.</div>
                 </div>
+
+                <!-- Wskazówki dla tac -->
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Wskazówki dla tac</span></div>
+                    <div id="tray-advice" class="tray-advice">Brak danych o tacach.</div>
+                </div>
             </div>
 
             <!-- ===== ZAKŁADKA LĘG ===== -->
             <div id="view-hatch" class="view">
                 <div class="hatch-controls">
                     <div class="control-group">
-                        <span class="label">Gatunek</span>
+                        <span class="label">Program</span>
                         <select id="speciesSelect">
                             <option value="CHICKEN">Kura</option>
                             <option value="DUCK">Kaczka</option>
@@ -1490,6 +1607,8 @@
                     <button class="btn" onclick="applyToTray()">Zastosuj</button>
                     <button class="btn danger" onclick="resetTray()">Resetuj</button>
                 </div>
+
+                <div id="dayAlerts" class="day-alerts"></div>
 
                 <div class="schedule-grid">
                     <div class="schedule-card">
@@ -1709,100 +1828,227 @@
             // ============================================================
             //  KONFIGURACJA GATUNKÓW – ROZSZERZONA (z profile)
             // ============================================================
-            const SPECIES = {
-                CHICKEN: {
-                    name: 'Kura',
-                    days: 21,
-                    lockdown: 19,
-                    noRotate: [10, 15, 18],
+            const CANVAS_FONT = '"Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif';
+
+
+            const SPECIES = {};
+            const rng = (a, b) => Array.from({ length: Math.max(0, b - a + 1) }, (_, i) => a + i);
+            const sens = (critical, high) => ({ critical: critical, high: high, medium: [] });
+            const LOCK = '🔴 Bez obrotów, nie otwieraj inkubatora';
+
+            // ------------------------------------------------------------
+            //  PTAKI. Źródło: Mississippi State University Extension,
+            //  "Important Incubation Factors" (tabela gatunków, inkubator z nawiewem).
+            //  Temperatura: °F przeliczone na °C. Wilgotność: odczyt termometru
+            //  mokrego przeliczony na wilgotność względną (RH). Zakres tabeli:
+            //  58–60% RH przed kluciem i co najmniej 65% w ostatnich 3 dniach.
+            //  stopAfter = ostatni dzień obracania, ventDay = dzień szerszej wentylacji.
+            // ------------------------------------------------------------
+            function bird(c) {
+                const lockStart = c.stopAfter + 1;
+                return {
+                    name: c.name, category: 'ptaki', days: c.days, daysRange: c.range || null,
+                    lockdown: lockStart, stopAfter: c.stopAfter, ventDay: c.ventDay, noRotate: [],
+                    candle: c.candle || [Math.round(c.days / 3), Math.round(c.days * 2 / 3)],
+                    rhHatch: c.rhHatch,
+                    source: 'Mississippi State Univ. Extension (tabela gatunków); RH przeliczona z termometru mokrego',
                     phases: [
-                        { start: 1, end: 18, temp: 37.8, rh: 55, turn: true, notes: 'Normalna inkubacja' },
-                        { start: 19, end: 21, temp: 37.2, rh: 70, turn: false, notes: '🔴 LOCKDOWN – bez obrotów' }
+                        { start: 1, end: c.stopAfter, temp: c.temp, rh: c.rh, turn: true, notes: 'Obracaj min. 4–6 razy dziennie' },
+                        { start: lockStart, end: c.days, temp: c.temp, rh: c.rhHatch, turn: false, notes: LOCK }
                     ],
-                    sensitivity: {
-                        critical: [1, 2, 3, 16, 17, 18],
-                        high: [4, 5, 15, 19, 20],
-                        medium: [6, 7, 8, 9, 10, 11, 12, 13, 14]
-                    }
+                    sensitivity: sens(rng(1, 3).concat(rng(lockStart, c.days)), rng(4, 5).concat(rng(c.stopAfter - 2, c.stopAfter)))
+                };
+            }
+
+            Object.assign(SPECIES, {
+                CHICKEN:  bird({ name: 'Kura',               days: 21, temp: 37.8, rh: 57, stopAfter: 18, rhHatch: 68, ventDay: 18, candle: [7, 14, 18] }),
+                TURKEY:   bird({ name: 'Indyk',              days: 28, temp: 37.2, rh: 57, stopAfter: 25, rhHatch: 70, ventDay: 25 }),
+                DUCK:     bird({ name: 'Kaczka',             days: 28, temp: 37.8, rh: 56, stopAfter: 25, rhHatch: 68, ventDay: 25 }),
+                MUSCOVY:  bird({ name: 'Kaczka piżmowa',     days: 35, temp: 37.8, rh: 56, stopAfter: 31, rhHatch: 68, ventDay: 30, range: '35–37' }),
+                GOOSE:    bird({ name: 'Gęś',                days: 30, temp: 37.2, rh: 62, stopAfter: 25, rhHatch: 70, ventDay: 25, range: '28–34' }),
+                GUINEA:   bird({ name: 'Perliczka',          days: 28, temp: 37.8, rh: 57, stopAfter: 25, rhHatch: 68, ventDay: 24 }),
+                PHEASANT: bird({ name: 'Bażant',             days: 24, temp: 37.8, rh: 60, stopAfter: 21, rhHatch: 74, ventDay: 20, range: '23–28' }),
+                PIGEON:   bird({ name: 'Gołąb',              days: 17, temp: 37.8, rh: 57, stopAfter: 15, rhHatch: 68, ventDay: 14, range: '17–18' }),
+                QUAIL:    bird({ name: 'Przepiórka japońska', days: 17, temp: 37.8, rh: 56, stopAfter: 15, rhHatch: 68, ventDay: 14 })
+            });
+
+            // ------------------------------------------------------------
+            //  NASIONA. Źródło temperatur: Oregon State University Extension
+            //  (Harrington; temperatura gleby, °F przeliczone na °C).
+            //  Wilgotność powietrza i światło: wartości praktyczne, bo tabele
+            //  uniwersyteckie podają temperaturę, a nie wilgotność powietrza.
+            // ------------------------------------------------------------
+            const SEED_SRC = 'Oregon State Univ. Extension (temperatury); wilgotność i światło orientacyjnie';
+            const seedAlerts = (lightFrom, last) => [
+                { from: 1, to: lightFrom - 1, level: 'warn', title: 'Nie przelewaj', text: 'Podłoże ma być wilgotne, ale nie mokre. Nadmiar wody powoduje gnicie nasion.' },
+                { from: lightFrom, to: lightFrom, level: 'info', title: 'Włącz światło', text: 'Po wschodach siewki potrzebują światła (12–16 godzin dziennie). Bez niego wyciągają się i bledną.' },
+                { from: Math.min(2, last), to: last, level: 'warn', title: 'Wietrz codziennie', text: 'Wysoka wilgotność bez ruchu powietrza sprzyja pleśni i zgorzeli siewek. Otwórz pokrywę na kilka minut lub włącz wentylator.' }
+            ];
+
+            Object.assign(SPECIES, {
+                LETTUCE: {
+                    name: 'Sałata', category: 'nasiona', days: 5, duration: '2–5 dni', source: SEED_SRC,
+                    phases: [
+                        { start: 1, end: 2, temp: 20, rh: 90, light: 12, notes: 'Zakres 4–27 °C, optimum ok. 24 °C. Powyżej 27 °C kiełkowanie słabnie, ok. 35 °C ustaje.' },
+                        { start: 3, end: 5, temp: 20, rh: 80, light: 14, notes: 'Wschody po 2–3 dniach w 20–25 °C.' }
+                    ],
+                    sensitivity: sens(rng(1, 2), rng(3, 4)), alerts: seedAlerts(1, 5)
                 },
-                DUCK: {
-                    name: 'Kaczka',
-                    days: 28,
-                    lockdown: 25,
-                    noRotate: [14, 21, 25],
+                TOMATO: {
+                    name: 'Pomidor', category: 'nasiona', days: 8, duration: '6–8 dni', source: SEED_SRC,
                     phases: [
-                        { start: 1, end: 24, temp: 37.8, rh: 60, turn: true, notes: 'Normalna inkubacja' },
-                        { start: 25, end: 28, temp: 37.2, rh: 75, turn: false, notes: '🔴 LOCKDOWN – bez obrotów' }
+                        { start: 1, end: 5, temp: 27, rh: 90, light: 0, notes: 'Zakres 16–29 °C, optimum ok. 29 °C. Wschody po ok. 6 dniach w 25–30 °C, po 14 dniach w 15 °C.' },
+                        { start: 6, end: 8, temp: 24, rh: 75, light: 14, notes: 'Po wschodach światło i mniejsza wilgotność.' }
                     ],
-                    sensitivity: {
-                        critical: [1, 2, 3, 21, 22, 23, 24],
-                        high: [4, 5, 17, 18, 19, 20, 25, 26, 27],
-                        medium: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-                    }
+                    sensitivity: sens(rng(1, 3), rng(4, 6)), alerts: seedAlerts(6, 8)
                 },
-                GOOSE: {
-                    name: 'Gęś',
-                    days: 30,
-                    lockdown: 27,
-                    noRotate: [14, 21, 27],
+                PEPPER: {
+                    name: 'Papryka i chili', category: 'nasiona', days: 10, duration: '8–10 dni', source: SEED_SRC,
                     phases: [
-                        { start: 1, end: 26, temp: 37.6, rh: 60, turn: true, notes: 'Normalna inkubacja' },
-                        { start: 27, end: 30, temp: 37.2, rh: 75, turn: false, notes: '🔴 LOCKDOWN – bez obrotów' }
+                        { start: 1, end: 7, temp: 28, rh: 90, light: 0, notes: 'Zakres 18–35 °C, optimum ok. 29 °C. Wschody po ok. 8 dniach w 25–30 °C, po 25 dniach w 15 °C.' },
+                        { start: 8, end: 10, temp: 25, rh: 75, light: 14, notes: 'Po wschodach światło i mniejsza wilgotność.' }
                     ],
-                    sensitivity: {
-                        critical: [1, 2, 3, 23, 24, 25, 26],
-                        high: [4, 5, 18, 19, 20, 21, 22, 27, 28, 29],
-                        medium: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
-                    }
+                    sensitivity: sens(rng(1, 4), rng(5, 8)), alerts: seedAlerts(8, 10)
                 },
-                QUAIL: {
-                    name: 'Przepiórka',
-                    days: 17,
-                    lockdown: 15,
-                    noRotate: [8, 12, 15],
+                CUCUMBER: {
+                    name: 'Ogórek', category: 'nasiona', days: 5, duration: '3–5 dni', source: SEED_SRC,
                     phases: [
-                        { start: 1, end: 14, temp: 37.8, rh: 50, turn: true, notes: 'Normalna inkubacja' },
-                        { start: 15, end: 17, temp: 37.3, rh: 70, turn: false, notes: '🔴 LOCKDOWN – bez obrotów' }
+                        { start: 1, end: 3, temp: 28, rh: 90, light: 0, notes: 'Zakres 16–35 °C. Wschody po 3–4 dniach w 25–35 °C, po 13 dniach w 15 °C.' },
+                        { start: 4, end: 5, temp: 24, rh: 75, light: 14, notes: 'Po wschodach światło.' }
                     ],
-                    sensitivity: {
-                        critical: [1, 2, 3, 14, 15],
-                        high: [4, 5, 12, 13, 16, 17],
-                        medium: [6, 7, 8, 9, 10, 11]
-                    }
+                    sensitivity: sens(rng(1, 3), rng(4, 5)), alerts: seedAlerts(4, 5)
                 },
-                GUINEA: {
-                    name: 'Perliczka',
-                    days: 26,
-                    lockdown: 23,
-                    noRotate: [12, 18, 23],
+                BASIL: {
+                    name: 'Bazylia', category: 'nasiona', days: 8, duration: '5–10 dni',
+                    source: 'Orientacyjnie: bazylii nie ma w tabelach uniwersyteckich',
                     phases: [
-                        { start: 1, end: 22, temp: 37.7, rh: 55, turn: true, notes: 'Normalna inkubacja' },
-                        { start: 23, end: 26, temp: 37.2, rh: 70, turn: false, notes: '🔴 LOCKDOWN – bez obrotów' }
+                        { start: 1, end: 5, temp: 24, rh: 90, light: 0, notes: 'Zakres ok. 18–30 °C. Zwilżone nasiona stają się śliskie, to normalne.' },
+                        { start: 6, end: 8, temp: 23, rh: 75, light: 14, notes: 'Po wschodach światło i przewiew.' }
                     ],
-                    sensitivity: {
-                        critical: [1, 2, 3, 20, 21, 22, 23],
-                        high: [4, 5, 15, 16, 17, 18, 19, 24, 25, 26],
-                        medium: [6, 7, 8, 9, 10, 11, 12, 13, 14]
-                    }
+                    sensitivity: sens(rng(1, 3), rng(4, 6)), alerts: seedAlerts(6, 8)
                 },
-                PHEASANT: {
-                    name: 'Bażant',
-                    days: 24,
-                    lockdown: 21,
-                    noRotate: [10, 16, 21],
+                MICROGREENS: {
+                    name: 'Mikroliście (rzodkiewka)', category: 'nasiona', days: 6, duration: '5–8 dni', source: SEED_SRC,
                     phases: [
-                        { start: 1, end: 20, temp: 37.8, rh: 55, turn: true, notes: 'Normalna inkubacja' },
-                        { start: 21, end: 24, temp: 37.2, rh: 70, turn: false, notes: '🔴 LOCKDOWN – bez obrotów' }
+                        { start: 1, end: 3, temp: 21, rh: 85, light: 0, notes: 'Rzodkiewka: wschody po ok. 4 dniach w 20 °C i po 3 dniach w 25–30 °C. Zaciemnij i lekko dociśnij nasiona.' },
+                        { start: 4, end: 6, temp: 21, rh: 65, light: 12, notes: 'Odkryj, daj światło i przewiew. Zbiór, gdy rozwiną się liście.' }
                     ],
-                    sensitivity: {
-                        critical: [1, 2, 3, 18, 19, 20, 21],
-                        high: [4, 5, 14, 15, 16, 17, 22, 23, 24],
-                        medium: [6, 7, 8, 9, 10, 11, 12, 13]
-                    }
+                    sensitivity: sens(rng(1, 3), rng(4, 5)), alerts: seedAlerts(4, 6)
+                },
+                SPROUTS: {
+                    name: 'Kiełki jadalne (lucerna, brokuł)', category: 'nasiona', days: 5, duration: '3–5 dni',
+                    source: 'Orientacyjnie (praktyka); brak w tabelach uniwersyteckich',
+                    phases: [{ start: 1, end: 5, temp: 21, rh: 95, light: 0, notes: 'Płucz 2–3 razy dziennie i dobrze odsączaj.' }],
+                    sensitivity: sens(rng(1, 5), []),
+                    alerts: [
+                        { from: 1, to: 5, level: 'critical', title: 'Higiena kiełków', text: 'Kiełki rosną w cieple i wilgoci, gdzie łatwo namnażają się bakterie. Używaj nasion przeznaczonych do kiełkowania, czystych naczyń i czystej wody.' },
+                        { from: 1, to: 5, level: 'warn', title: 'Płucz i odsączaj', text: 'Płucz 2–3 razy dziennie. Stojąca woda powoduje gnicie.' }
+                    ]
                 }
+            });
+
+            // ------------------------------------------------------------
+            //  FERMENTACJA I GAROWANIE. Wartości orientacyjne (praktyka).
+            // ------------------------------------------------------------
+            const FERM_SRC = 'Orientacyjnie (praktyka); dopasuj do przepisu lub kultury';
+            Object.assign(SPECIES, {
+                YOGURT: {
+                    name: 'Jogurt', category: 'fermentacja', days: 1, duration: '6–10 godzin', source: FERM_SRC,
+                    phases: [{ start: 1, end: 1, temp: 43, rh: null, notes: 'Mleko schłodź do ok. 43 °C przed dodaniem kultury.' }],
+                    sensitivity: sens([], []),
+                    alerts: [{ from: 1, to: 1, level: 'warn', title: 'Nie mieszaj i nie przesuwaj', text: 'Ruszane naczynie daje rzadki jogurt. Temperatura powyżej ok. 46 °C zabija kulturę bakterii.' }]
+                },
+                TEMPEH: {
+                    name: 'Tempeh', category: 'fermentacja', days: 2, duration: '24–48 godzin', source: FERM_SRC,
+                    phases: [
+                        { start: 1, end: 1, temp: 31, rh: null, notes: 'Pojemniki z otworami na powietrze.' },
+                        { start: 2, end: 2, temp: 30, rh: null, notes: 'Gotowe, gdy ziarna zrosną się białą grzybnią.' }
+                    ],
+                    sensitivity: sens([], []),
+                    alerts: [{ from: 1, to: 2, level: 'critical', title: 'Pilnuj temperatury', text: 'Po 12–18 godzinach grzybnia sama wytwarza ciepło i może przegrzać partię. Obniż zadaną temperaturę i zapewnij przewiew.' }]
+                },
+                DOUGH: {
+                    name: 'Garowanie ciasta', category: 'fermentacja', days: 1, duration: '1–2 godziny', source: FERM_SRC,
+                    phases: [{ start: 1, end: 1, temp: 28, rh: 75, notes: 'Przykryj ciasto wilgotną ściereczką lub folią.' }],
+                    sensitivity: sens([], []),
+                    alerts: [{ from: 1, to: 1, level: 'info', title: 'Sprawdzaj ciasto, nie zegar', text: 'Gotowe, gdy ciasto zwiększy objętość i po lekkim naciśnięciu powoli wraca.' }]
+                },
+                SOURDOUGH: {
+                    name: 'Zakwas chlebowy', category: 'fermentacja', days: 5, duration: '5–7 dni', source: FERM_SRC,
+                    phases: [{ start: 1, end: 5, temp: 26, rh: null, notes: 'Dokarmiaj co 12–24 godziny.' }],
+                    sensitivity: sens([], []),
+                    alerts: [{ from: 1, to: 5, level: 'info', title: 'Dokarmianie', text: 'Zakwas jest gotowy, gdy w kilka godzin po karmieniu podwaja objętość.' }]
+                }
+            });
+
+            Object.keys(SPECIES).forEach(function (k) {
+                const s = SPECIES[k];
+                s.noRotate = s.noRotate || [];
+                s.sensitivity = s.sensitivity || sens([], []);
+            });
+
+            const CATEGORY_LABELS = {
+                ptaki: 'Lęg ptaków',
+                nasiona: 'Kiełkowanie nasion',
+                fermentacja: 'Fermentacja i garowanie'
             };
 
-            function getSpeciesInfo(id) { return SPECIES[id] || SPECIES.CHICKEN; }
+            function buildSpeciesOptions() {
+                const sel = document.getElementById('speciesSelect');
+                if (!sel) return;
+                const current = sel.value;
+                sel.innerHTML = '';
+                Object.keys(CATEGORY_LABELS).forEach(function (cat) {
+                    const group = document.createElement('optgroup');
+                    group.label = CATEGORY_LABELS[cat];
+                    Object.keys(SPECIES).filter(function (k) { return SPECIES[k].category === cat; }).forEach(function (k) {
+                        const o = document.createElement('option');
+                        o.value = k;
+                        o.textContent = SPECIES[k].name;
+                        group.appendChild(o);
+                    });
+                    if (group.children.length) sel.appendChild(group);
+                });
+                if (SPECIES[current]) sel.value = current;
+            }
+
+            // Firmware wysyła identyfikator profilu (np. gallus_gallus_domesticus), panel używa kluczy CHICKEN itd.
+            const SPECIES_ALIASES = {
+                gallus_gallus_domesticus: 'CHICKEN', chicken: 'CHICKEN',
+                anas_platyrhynchos_domesticus_runner: 'DUCK', duck_indian_runner: 'DUCK', duck: 'DUCK',
+                anser_anser_domesticus: 'GOOSE', goose: 'GOOSE',
+                coturnix_japonica: 'QUAIL', quail: 'QUAIL',
+                numida_meleagris: 'GUINEA', guinea_fowl: 'GUINEA', guinea: 'GUINEA',
+                phasianus_colchicus: 'PHEASANT', pheasant: 'PHEASANT',
+                meleagris_gallopavo: 'TURKEY', turkey: 'TURKEY',
+                cairina_moschata: 'MUSCOVY', muscovy: 'MUSCOVY',
+                columba_livia_domestica: 'PIGEON', pigeon: 'PIGEON'
+            };
+
+            function getSpeciesInfo(id) {
+                const raw = String(id == null ? '' : id);
+                const key = SPECIES[raw] ? raw : (SPECIES[raw.toUpperCase()] ? raw.toUpperCase() : (SPECIES_ALIASES[raw] || SPECIES_ALIASES[raw.toLowerCase()]));
+                return SPECIES[key] || SPECIES.CHICKEN;
+            }
+
+            // ------------------------------------------------------------
+            //  OSTRZEŻENIA DLA DANEGO DNIA (delikatność obsługi)
+            // ------------------------------------------------------------
+            function dayAlerts(info, day) {
+                const out = [];
+                if (info.category === 'ptaki') {
+                    const stop = info.stopAfter;
+                    if (day <= 3) out.push({ level: 'warn', title: 'Wczesny rozwój zarodka', text: 'Utrzymuj stałą temperaturę. Nie otwieraj inkubatora bez potrzeby i nie zmieniaj nastaw.' });
+                    if (info.candle.indexOf(day) !== -1) out.push({ level: 'info', title: 'Prześwietlanie jaj', text: 'Zrób je szybko i usuń jaja bez zarodka. Oceń też komorę powietrzną: jej wielkość pokazuje, czy wilgotność jest właściwa.' });
+                    if (day === stop) out.push({ level: 'critical', title: 'Ostatni dzień obracania', text: 'Od jutra jaja leżą nieruchomo do końca klucia.' });
+                    if (day === info.ventDay) out.push({ level: 'warn', title: 'Więcej powietrza', text: 'Otwórz otwory wentylacyjne szerzej: zarodek zużywa więcej tlenu.' });
+                    if (day > stop) out.push({ level: 'critical', title: 'Faza krytyczna: nie otwieraj inkubatora', text: 'Otwarcie obniża wilgotność. Przy zbyt suchym powietrzu pisklę trudniej przebija błony i może przykleić się do skorupy. Utrzymuj ok. ' + info.rhHatch + '% wilgotności i nie obracaj jaj.' });
+                    if (day >= info.days) out.push({ level: 'info', title: 'Klucie', text: 'Nie pomagaj pisklętom. Poczekaj, aż obeschną, zanim wyjmiesz je z inkubatora.' });
+                } else {
+                    (info.alerts || []).forEach(function (a) { if (day >= a.from && day <= a.to) out.push(a); });
+                }
+                return out;
+            }
 
             function getPhaseForDay(speciesId, day) {
                 const info = getSpeciesInfo(speciesId);
@@ -1968,7 +2214,7 @@
 
                 // Podziałki
                 ctx.fillStyle = '#5a6270';
-                ctx.font = '8px Courier New, monospace';
+                ctx.font = '600 10px ' + CANVAS_FONT;
                 for (let v = -tempRange; v <= tempRange; v += 0.2) {
                     const x = cx + (v / tempRange) * rx;
                     const isMajor = Math.abs((v * 10) % 5) < 0.1;
@@ -2048,7 +2294,7 @@
                 ctx.stroke();
 
                 // Etykiety osi
-                ctx.font = '7px Courier New, monospace';
+                ctx.font = '600 9px ' + CANVAS_FONT;
                 ctx.fillStyle = '#3a4250';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'bottom';
@@ -2072,7 +2318,7 @@
                 const data = trendHistory.slice(-TREND_LEN);
                 if (data.length < 3) {
                     tctx.fillStyle = '#2a3240';
-                    tctx.font = '8px Courier New, monospace';
+                    tctx.font = '600 10px ' + CANVAS_FONT;
                     tctx.textAlign = 'center';
                     tctx.fillText('oczekiwanie na dane...', tW / 2, tH / 2 + 3);
                     return;
@@ -2182,7 +2428,7 @@
 
                 // Etykiety osi
                 tctx.fillStyle = '#3a424a';
-                tctx.font = '6px Courier New, monospace';
+                tctx.font = '600 8px ' + CANVAS_FONT;
                 tctx.textAlign = 'right';
                 tctx.textBaseline = 'middle';
                 const tLabels = [Math.round(tLo * 10) / 10, 0, Math.round(tHi * 10) / 10];
@@ -2253,7 +2499,7 @@
 
                 const info = getSpeciesInfo(speciesId);
                 const totalDays = info.days;
-                const lockdownDay = info.lockdown || totalDays;
+                const lockdownDay = info.category === 'ptaki' ? (info.lockdown || totalDays) : Infinity;
                 const noRotateDays = info.noRotate || [];
 
                 const isLockdown = currentDay >= lockdownDay;
@@ -2308,6 +2554,7 @@
                     buildRuler('rulerTrack' + (i + 1), 'rulerMarker' + (i + 1), 'noRotate' + (i + 1), speciesId,
                     currentDay);
                 }
+                renderTrayAdvice();
             }
 
             // ============================================================
@@ -2529,7 +2776,7 @@
                 const data = store.slice(-50);
                 if (data.length < 2) {
                     ctx2.fillStyle = '#3a424a';
-                    ctx2.font = '10px monospace';
+                    ctx2.font = '12px ' + CANVAS_FONT;
                     ctx2.textAlign = 'center';
                     ctx2.fillText('oczekiwanie na dane...', w / 2, h / 2);
                     return;
@@ -2579,7 +2826,7 @@
 
                 // Etykiety osi
                 ctx2.fillStyle = '#3a424a';
-                ctx2.font = '7px monospace';
+                ctx2.font = '9px ' + CANVAS_FONT;
                 ctx2.textAlign = 'right';
                 ctx2.textBaseline = 'middle';
                 const labels = [lo, (lo + hi) / 2, hi];
@@ -2600,79 +2847,143 @@
             // ============================================================
             //  ZAKŁADKA LĘG – harmonogram z kolorami wrażliwości
             // ============================================================
+            const SCHEDULE_HEADS = {
+                ptaki: ['Dzień', 'Temp [°C]', 'RH [%]', 'Obrót', 'Lockdown', 'Uwagi'],
+                nasiona: ['Dzień', 'Temp [°C]', 'RH [%]', 'Światło', 'Uwagi'],
+                fermentacja: ['Etap', 'Temp [°C]', 'RH [%]', 'Uwagi']
+            };
+            const LEVEL_ICON = { critical: '🔴', warn: '🟠', info: 'ℹ️' };
+            const LEVEL_RANK = { critical: 3, warn: 2, info: 1 };
+            const SENS_LABEL = { CRITICAL: 'krytyczna', HIGH: 'podwyższona', MEDIUM: 'normalna' };
+
+            function phaseForDay(info, d) {
+                return info.phases.find(function (p) { return d >= p.start && d <= p.end; }) || null;
+            }
+
+            function escapeHtml(s) {
+                return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+                    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+                });
+            }
+
             function renderSchedule(speciesId, day) {
                 const info = getSpeciesInfo(speciesId);
+                const cat = info.category;
                 document.getElementById('scheduleTitle').textContent = 'Harmonogram · ' + info.name;
                 document.getElementById('scheduleBadge').textContent = 'Dzień ' + day + '/' + info.days;
+                const heads = SCHEDULE_HEADS[cat] || SCHEDULE_HEADS.ptaki;
+                document.querySelector('#scheduleTable thead').innerHTML =
+                    '<tr>' + heads.map(function (h) { return '<th>' + h + '</th>'; }).join('') + '</tr>';
 
                 const tbody = document.getElementById('scheduleBody');
                 tbody.innerHTML = '';
                 for (let d = 1; d <= info.days; d++) {
-                    let phase = null;
-                    for (const p of info.phases) { if (d >= p.start && d <= p.end) { phase = p; break; } }
+                    const phase = phaseForDay(info, d);
                     if (!phase) continue;
-                    const isActive = d === day;
-                    const isLockdown = d >= info.lockdown;
-                    const noRotate = info.noRotate.includes(d);
-                    const sens = getSensitivity(speciesId, d);
-                    const sensColor = getSensitivityColor(sens);
+                    const alerts = dayAlerts(info, d);
+                    const top = alerts.reduce(function (m, a) { return Math.max(m, LEVEL_RANK[a.level] || 0); }, 0);
+                    const sensKey = getSensitivity(speciesId, d);
+                    const sensColor = getSensitivityColor(sensKey);
+                    const lock = cat === 'ptaki' && d > info.stopAfter;
                     const tr = document.createElement('tr');
-                    if (isActive) tr.className = 'active';
-                    if (isLockdown) tr.className = 'lockdown';
-                    if (sens === 'CRITICAL') tr.style.background = 'rgba(255,68,68,0.08)';
-                    else if (sens === 'HIGH') tr.style.background = 'rgba(255,136,68,0.06)';
-                    let turnHtml = phase.turn ? '✓' : '✗';
-                    if (noRotate && isLockdown) turnHtml = '<span class="no-rotate">✕</span>';
-                    const sensLabel = sens === 'CRITICAL' ? '🔴' : (sens === 'HIGH' ? '🟠' : '🟢');
-                    tr.innerHTML =
-                        `<td>${isActive ? '▶ ' : ''}${d}</td><td style="color:${sensColor};font-weight:${sens === 'CRITICAL' ? 'bold' : 'normal'}">${phase.temp.toFixed(1)}</td><td>${phase.rh.toFixed(0)}</td><td>${turnHtml}</td><td>${isLockdown ? '<span class="lock">LOCK</span>' : '—'}</td><td style="font-size:9px;color:#5a6a7a;">${sensLabel} ${phase.notes || ''}</td>`;
+                    if (d === day) tr.className = 'active';
+                    else if (lock) tr.className = 'lockdown';
+                    if (top === 3) tr.style.background = 'rgba(255,68,68,0.10)';
+                    else if (top === 2) tr.style.background = 'rgba(255,136,68,0.07)';
+                    const icon = top === 3 ? LEVEL_ICON.critical : (top === 2 ? LEVEL_ICON.warn : (top === 1 ? LEVEL_ICON.info : ''));
+                    const note = alerts.length ? alerts.map(function (a) { return a.title; }).join(' · ') : (phase.notes || '');
+                    const cells = [
+                        '<td>' + (d === day ? '▶ ' : '') + d + '</td>',
+                        '<td style="color:' + sensColor + ';font-weight:' + (sensKey === 'CRITICAL' ? '700' : '400') + '">' + phase.temp.toFixed(1) + '</td>',
+                        '<td>' + (phase.rh == null ? '—' : phase.rh.toFixed(0)) + '</td>'
+                    ];
+                    if (cat === 'ptaki') {
+                        cells.push('<td>' + (phase.turn ? '✓' : '<span class="no-rotate">✕</span>') + '</td>');
+                        cells.push('<td>' + (lock ? '<span class="lock">LOCK</span>' : '—') + '</td>');
+                    } else if (cat === 'nasiona') {
+                        cells.push('<td>' + (phase.light ? phase.light + ' h' : 'ciemno') + '</td>');
+                    }
+                    cells.push('<td class="note">' + (icon ? icon + ' ' : '') + escapeHtml(note) + '</td>');
+                    tr.innerHTML = cells.join('');
                     tbody.appendChild(tr);
                 }
 
-                // Przewiń do aktywnego dnia
                 const wrap = tbody.closest('.schedule-table-wrap');
                 if (wrap) {
                     const activeRow = tbody.querySelector('tr.active');
-                    if (activeRow) {
-                        const rowTop = activeRow.offsetTop;
-                        wrap.scrollTop = Math.max(0, rowTop - 60);
-                    }
+                    if (activeRow) wrap.scrollTop = Math.max(0, activeRow.offsetTop - 60);
                 }
-
                 updatePreview(speciesId, day);
+            }
+
+            function renderDayAlerts(info, day) {
+                const box = document.getElementById('dayAlerts');
+                if (!box) return;
+                const alerts = dayAlerts(info, day).sort(function (a, b) { return (LEVEL_RANK[b.level] || 0) - (LEVEL_RANK[a.level] || 0); });
+                if (!alerts.length) {
+                    box.innerHTML = '<div class="day-alert lvl-ok"><div class="t">✓ Dzień ' + day + ': bez szczególnych ostrzeżeń</div></div>';
+                    return;
+                }
+                box.innerHTML = alerts.map(function (a) {
+                    return '<div class="day-alert lvl-' + a.level + '"><div class="t">' + LEVEL_ICON[a.level] + ' ' + escapeHtml(a.title) +
+                        '</div><div class="x">' + escapeHtml(a.text) + '</div></div>';
+                }).join('');
             }
 
             function updatePreview(speciesId, day) {
                 const info = getSpeciesInfo(speciesId);
-                let phase = null;
-                for (const p of info.phases) { if (day >= p.start && day <= p.end) { phase = p; break; } }
                 const tbody = document.getElementById('previewBody');
+                renderDayAlerts(info, day);
+                const phase = phaseForDay(info, day);
                 if (!phase) {
-                    tbody.innerHTML =
-                        '<tr><td style="color:#5a6a7a;font-size:11px;">Brak danych dla tego dnia</td></tr>';
+                    tbody.innerHTML = '<tr><td class="pk">Brak danych dla tego dnia</td></tr>';
                     return;
                 }
-                const isLockdown = day >= (info.lockdown || info.days);
-                const noRotate = (info.noRotate || []).includes(day);
-                const sens = getSensitivity(speciesId, day);
-                const sensColor = getSensitivityColor(sens);
-                tbody.innerHTML = `
-                    <tr><td style="color:#5a6a7a;font-size:11px;padding:2px 4px;border-bottom:1px solid rgba(26,30,36,0.3);">Gatunek</td>
-                        <td style="text-align:right;color:#b0c8d8;font-size:12px;">${info.name}</td></tr>
-                    <tr><td style="color:#5a6a7a;font-size:11px;padding:2px 4px;border-bottom:1px solid rgba(26,30,36,0.3);">Dzień</td>
-                        <td style="text-align:right;color:#b0c8d8;font-size:12px;">${day} / ${info.days}</td></tr>
-                    <tr><td style="color:#5a6a7a;font-size:11px;padding:2px 4px;border-bottom:1px solid rgba(26,30,36,0.3);">Temp. zadana</td>
-                        <td style="text-align:right;color:${sensColor};font-size:12px;font-weight:${sens === 'CRITICAL' ? 'bold' : 'normal'}">${phase.temp.toFixed(1)} °C</td></tr>
-                    <tr><td style="color:#5a6a7a;font-size:11px;padding:2px 4px;border-bottom:1px solid rgba(26,30,36,0.3);">Wilgotność</td>
-                        <td style="text-align:right;color:#70d070;font-size:12px;">${phase.rh.toFixed(0)} %</td></tr>
-                    <tr><td style="color:#5a6a7a;font-size:11px;padding:2px 4px;border-bottom:1px solid rgba(26,30,36,0.3);">Obrót</td>
-                        <td style="text-align:right;color:${noRotate ? '#884444' : (phase.turn ? '#70d070' : '#a070d0')};font-size:12px;">${noRotate ? '✕ BRAK' : (phase.turn ? '✓ TAK' : '✗ NIE')}</td></tr>
-                    <tr><td style="color:#5a6a7a;font-size:11px;padding:2px 4px;border-bottom:1px solid rgba(26,30,36,0.3);">Faza</td>
-                        <td style="text-align:right;color:${sensColor};font-size:12px;font-weight:${sens === 'CRITICAL' ? 'bold' : 'normal'}">${sens} ${isLockdown ? '🔒' : ''}</td></tr>
-                    <tr><td style="color:#5a6a7a;font-size:11px;padding:2px 4px;">Uwagi</td>
-                        <td style="text-align:right;color:#6a7a8a;font-size:11px;">${phase.notes || ''}</td></tr>
-                `;
+                const sensKey = getSensitivity(speciesId, day);
+                const sensColor = getSensitivityColor(sensKey);
+                const row = function (k, v, color) {
+                    return '<tr><td class="pk">' + k + '</td><td class="pv"' + (color ? ' style="color:' + color + '"' : '') + '>' + v + '</td></tr>';
+                };
+                const rows = [
+                    row(info.category === 'ptaki' ? 'Gatunek' : 'Program', escapeHtml(info.name)),
+                    row('Dzień', day + ' / ' + info.days + (info.daysRange ? ' (spotykane: ' + info.daysRange + ')' : '')),
+                    row('Temp. zadana', phase.temp.toFixed(1) + ' °C', sensColor),
+                    row('Wilgotność', phase.rh == null ? 'bez regulacji' : phase.rh.toFixed(0) + ' %', '#70d070')
+                ];
+                if (info.category === 'ptaki') {
+                    rows.push(row('Obrót', phase.turn ? '✓ tak, min. 4–6 razy dziennie' : '✕ nie, bez obrotów', phase.turn ? '#70d070' : '#a070d0'));
+                } else if (info.category === 'nasiona') {
+                    rows.push(row('Światło', phase.light ? phase.light + ' godz. dziennie' : 'ciemno', phase.light ? '#e8d660' : '#a070d0'));
+                }
+                if (info.duration) rows.push(row('Czas trwania', escapeHtml(info.duration)));
+                rows.push(row('Wrażliwość', SENS_LABEL[sensKey] || sensKey, sensColor));
+                if (phase.notes) rows.push(row('Uwagi', escapeHtml(phase.notes)));
+                if (info.source) rows.push(row('Źródło', escapeHtml(info.source)));
+                tbody.innerHTML = rows.join('');
             }
+
+            function renderTrayAdvice() {
+                const box = document.getElementById('tray-advice');
+                if (!box) return;
+                if (!trayData || !trayData.trays) { box.textContent = 'Brak danych o tacach.'; return; }
+                const parts = [];
+                for (let i = 0; i < 2; i++) {
+                    const tray = trayData.trays[i];
+                    if (!tray || tray.active === false) continue;
+                    const info = getSpeciesInfo(tray.species_id);
+                    const day = tray.current_day || 1;
+                    const alerts = dayAlerts(info, day).sort(function (a, b) { return (LEVEL_RANK[b.level] || 0) - (LEVEL_RANK[a.level] || 0); });
+                    let html = '<div class="advice-head">Taca ' + (i + 1) + ' · ' + escapeHtml(info.name) + ' · dzień ' + day + '/' + (tray.total_days || info.days) + '</div>';
+                    if (!alerts.length) html += '<div class="day-alert lvl-ok"><div class="t">✓ Bez szczególnych ostrzeżeń</div></div>';
+                    else html += alerts.map(function (a) {
+                        return '<div class="day-alert lvl-' + a.level + '"><div class="t">' + LEVEL_ICON[a.level] + ' ' + escapeHtml(a.title) +
+                            '</div><div class="x">' + escapeHtml(a.text) + '</div></div>';
+                    }).join('');
+                    parts.push(html);
+                }
+                box.innerHTML = parts.length ? parts.join('') : 'Brak aktywnych tac.';
+            }
+
 
             window.updateSchedule = function() {
                 const species = document.getElementById('speciesSelect').value;
@@ -2965,6 +3276,7 @@
                 resizeTrend();
                 fetchData();
                 updateClock();
+                buildSpeciesOptions();
                 renderSchedule('CHICKEN', 12);
                 renderJournal();
                 renderLogs();
