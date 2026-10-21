@@ -1,0 +1,13 @@
+{
+    "specstory.cloudSync.enabled": "always",
+    "C_Cpp.IntelliSenseEngine": "default",
+    "C_Cpp.intelliSenseEngineFallback": "disabled",
+    "C_Cpp.default.compilerPath": "C:/Users/toxic/.platformio/packages/toolchain-xtensa-esp32s3/bin/xtensa-esp32s3-elf-gcc.exe",
+    "C_Cpp.default.intelliSenseMode": "gcc-x64",
+    "C_Cpp.default.cStandard": "gnu99",
+    "C_Cpp.default.cppStandard": "gnu++11",
+    "C_Cpp.codeAnalysis.exclude": {
+        "**": true
+    },
+    "python.linting.enabled": false
+}

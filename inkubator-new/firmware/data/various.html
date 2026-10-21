@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ustawienia · Różne</title>
-    <link rel="stylesheet" href="/css/style.css" />
+
+    
+    <meta name="description" content="Panel sterowania inkubatorem: konfiguracja, diagnostyka i monitoring." />
+    <meta name="theme-color" content="#101317" />
+<title>Ustawienia · Różne</title>
+    <link rel="stylesheet" href="css/style.css" />
     <style>
         /* ===== STYLE SPECYFICZNE DLA RÓŻNYCH ===== */
         .section {
@@ -107,7 +111,10 @@
 </head>
 <body>
 
-    <div class="instrument">
+    <noscript><div class="noscript-banner">Do poprawnego dzialania panelu wymagany jest JavaScript.</div></noscript>
+    <div id="offlineBanner" class="offline-banner" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <main class="instrument" id="mainContent" role="main">
 
         <!-- ===== NAGŁÓWEK ===== -->
         <div class="header">
@@ -121,7 +128,7 @@
         </div>
 
         <!-- ===== FORMULARZ ===== -->
-        <form id="configForm">
+        <form id="configForm" autocomplete="off">
 
             <!-- ===== ZEGAR / NTP ===== -->
             <div class="section">
@@ -140,9 +147,9 @@
             <div class="section">
                 <div class="section-title">🌐 Język</div>
                 <div class="form-group">
-                    <span class="label">Wybierz język interfejsu</span>
+                    <label class="label" for="langSelect">Wybierz język interfejsu</label>
                     <div class="form-row">
-                        <select id="langSelect">
+                        <select id="langSelect" aria-label="Wybór języka interfejsu">
                             <option value="pl">Polski</option>
                             <option value="en">English</option>
                             <option value="pt">Português</option>
@@ -159,9 +166,9 @@
             <div class="section">
                 <div class="section-title">📦 Aktualizacja firmware (OTA)</div>
                 <div class="form-group">
-                    <span class="label">Wybierz plik .bin</span>
+                    <label class="label" for="otaFile">Wybierz plik .bin</label>
                     <div class="ota-row">
-                        <input type="file" id="otaFile" accept=".bin" />
+                        <input type="file" id="otaFile" accept=".bin" aria-label="Plik firmware do aktualizacji OTA" />
                         <button type="button" class="btn btn-primary" id="otaBtn">Wyślij i aktualizuj</button>
                     </div>
                 </div>
@@ -193,16 +200,21 @@
         </form>
 
         <!-- ===== STATUS BAR ===== -->
-        <div class="status-bar">
+        <div class="status-bar" role="status" aria-live="polite" aria-atomic="true">
             <span class="msg" id="statusMsg">Gotowy</span>
             <span class="ws-detail" id="wsDetail"></span>
         </div>
 
-    </div>
+    </main>
 
     <!-- ===== SKRYPTY ===== -->
-    <script src="/js/common.js"></script>
-    <script src="/js/pages/various.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/pages/various.js"></script>
 
 </body>
 </html>
+
+
+
+
+

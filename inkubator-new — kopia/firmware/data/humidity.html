@@ -1,0 +1,197 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    
+    <meta name="description" content="Panel sterowania inkubatorem: konfiguracja, diagnostyka i monitoring." />
+    <meta name="theme-color" content="#101317" />
+<title>Ustawienia · Wilgotność</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+        /* ===== STYLE SPECYFICZNE DLA WILGOTNOŚCI ===== */
+        .current-value {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(20, 24, 32, 0.4);
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+
+        .current-value .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #5a6a7a;
+            font-weight: 600;
+        }
+
+        .current-value .value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #f0f6fc;
+        }
+
+        .current-value .value.ok {
+            color: #70d070;
+        }
+
+        .current-value .value.warn {
+            color: #e8b830;
+        }
+
+        .current-value .value.err {
+            color: #e05050;
+        }
+
+        .current-value .unit {
+            font-size: 12px;
+            color: #5a6a7a;
+            font-weight: 400;
+            margin-left: 2px;
+        }
+
+        .hum-range {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .hum-range {
+                grid-template-columns: 1fr;
+            }
+            .current-value .value {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <noscript><div class="noscript-banner">Do poprawnego dzialania panelu wymagany jest JavaScript.</div></noscript>
+    <div id="offlineBanner" class="offline-banner" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <main class="instrument" id="mainContent" role="main">
+
+        <!-- ===== NAGŁÓWEK ===== -->
+        <div class="header">
+            <div class="header-title">
+                <span>⚙</span> Ustawienia · <span id="pageTitle">Wilgotność</span>
+            </div>
+            <div class="header-status">
+                <span class="dot" id="wsDot"></span>
+                <span id="wsStatus">Łączenie...</span>
+            </div>
+        </div>
+
+        <!-- ===== AKTUALNA WARTOŚĆ ===== -->
+        <div class="current-value">
+            <span class="label">💧 Aktualna wilgotność</span>
+            <span class="value" id="currentHumidity">-- <span class="unit">%</span></span>
+        </div>
+
+        <!-- ===== FORMULARZ ===== -->
+        <form id="configForm" autocomplete="off">
+
+            <!-- Setpoint -->
+            <div class="form-group">
+                <label class="label" for="setpoint">Setpoint <span class="unit">(30 – 80 %)</span></label>
+                <div class="form-row">
+                    <input type="number" id="setpoint" min="30" max="80" step="1" value="55" inputmode="numeric" aria-label="Setpoint wilgotności" />
+                    <span class="hint">%</span>
+                </div>
+            </div>
+
+            <!-- Histereza -->
+            <div class="form-group">
+                <label class="label" for="hysteresis">Histereza <span class="unit">(1 – 20 %)</span></label>
+                <div class="form-row">
+                    <input type="number" id="hysteresis" min="1" max="20" step="1" value="5" inputmode="numeric" aria-label="Histereza wilgotności" />
+                    <span class="hint">%</span>
+                </div>
+            </div>
+
+            <!-- Alarmy -->
+            <div class="hum-range">
+                <div class="form-group">
+                    <label class="label" for="alarmMax">Alarm max <span class="unit">(60 – 90 %)</span></label>
+                    <div class="form-row">
+                        <input type="number" id="alarmMax" min="60" max="90" step="1" value="75" inputmode="numeric" aria-label="Próg alarmu wilgotności maksymalnej" />
+                        <span class="hint">%</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="alarmMin">Alarm min <span class="unit">(10 – 40 %)</span></label>
+                    <div class="form-row">
+                        <input type="number" id="alarmMin" min="10" max="40" step="1" value="30" inputmode="numeric" aria-label="Próg alarmu wilgotności minimalnej" />
+                        <span class="hint">%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kalibracja -->
+            <div class="form-group">
+                <label class="label" for="calibration">Kalibracja czujnika <span class="unit">(offset -10.0 – +10.0 %)</span></label>
+                <div class="form-row">
+                    <input type="number" id="calibration" min="-10.0" max="10.0" step="0.1" value="0.0" inputmode="decimal" aria-label="Kalibracja czujnika wilgotności" />
+                    <span class="hint">%</span>
+                </div>
+            </div>
+
+            <!-- Czas pracy pompy -->
+            <div class="form-group">
+                <label class="label" for="pumpTime">Czas pracy pompy <span class="unit">(0 = wył., 5 – 60 s)</span></label>
+                <div class="form-row">
+                    <input type="number" id="pumpTime" min="0" max="60" step="1" value="30" inputmode="numeric" aria-label="Czas pracy pompy" />
+                    <span class="hint">sekund</span>
+                </div>
+            </div>
+
+            <!-- Interwał sprawdzania wody -->
+            <div class="form-group">
+                <label class="label" for="waterInterval">Interwał sprawdzania wody <span class="unit">(1 – 24 h)</span></label>
+                <div class="form-row">
+                    <input type="number" id="waterInterval" min="1" max="24" step="1" value="12" inputmode="numeric" aria-label="Interwał sprawdzania wody" />
+                    <span class="hint">godzin</span>
+                </div>
+            </div>
+
+            <hr class="form-divider" />
+
+            <!-- ===== PRZYCISKI ===== -->
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" id="saveBtn">Zapisz</button>
+                <button type="button" class="btn btn-danger" id="resetBtn">Przywróć domyślne</button>
+            </div>
+
+            <div class="btn-group" style="margin-top:6px;">
+                <button type="button" class="btn btn-back btn-full" id="backBtn">← Wróć do panelu</button>
+            </div>
+
+        </form>
+
+        <!-- ===== STATUS BAR ===== -->
+        <div class="status-bar" role="status" aria-live="polite" aria-atomic="true">
+            <span class="msg" id="statusMsg">Gotowy</span>
+            <span class="ws-detail" id="wsDetail"></span>
+        </div>
+
+    </main>
+
+    <!-- ===== SKRYPTY ===== -->
+    <script src="js/common.js"></script>
+    <script src="js/pages/humidity.js"></script>
+
+</body>
+</html>
+
+
+
+
+

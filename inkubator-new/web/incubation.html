@@ -1,0 +1,741 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ustawienia · Inkubacja</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            background: #0a0c0e;
+            font-family: 'Courier New', 'IBM Plex Mono', monospace;
+            font-size: 16px;
+            color: #f0f6fc;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px;
+        }
+        .instrument {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(12, 14, 18, 0.96);
+            border: 1px solid #1c2028;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 0 36px rgba(0, 0, 0, 0.45);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 18px;
+            border-bottom: 1px solid #19202a;
+            padding-bottom: 10px;
+        }
+        .header-title {
+            font-size: 15px;
+            letter-spacing: 0.12em;
+            color: #d3e1ee;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-title .material-icons {
+            font-size: 18px;
+            color: #7aa2cf;
+        }
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #9bb1c8;
+            font-size: 13px;
+        }
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #25313f;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+            transition: background 0.25s ease, box-shadow 0.25s ease;
+        }
+        .dot.online {
+            background: #4fd37d;
+            box-shadow: 0 0 10px rgba(79, 211, 125, 0.4);
+        }
+        .dot.offline {
+            background: #f0666c;
+            box-shadow: 0 0 10px rgba(240, 102, 108, 0.35);
+        }
+        .tray-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+        .tray-card {
+            background: rgba(26, 30, 38, 0.92);
+            border: 1px solid #1d232d;
+            border-radius: 10px;
+            padding: 14px;
+        }
+        .tray-title {
+            font-size: 12px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #8ca1b8;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tray-title .material-icons {
+            font-size: 16px;
+            color: #7aa2cf;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 5px;
+            color: #8d9eb6;
+        }
+        .form-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .form-row select,
+        .form-row input[type="number"] {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #23303f;
+            background: #0f1520;
+            color: #f6f9ff;
+            padding: 10px 12px;
+            font-size: 14px;
+            outline: none;
+        }
+        .hint {
+            font-size: 12px;
+            color: #6b7e97;
+        }
+        .tray-info {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            font-size: 13px;
+            color: #b8c7db;
+            margin-top: 8px;
+        }
+        .schedule-table-wrap {
+            background: rgba(24, 29, 37, 0.95);
+            border-radius: 10px;
+            border: 1px solid #1f2633;
+            overflow: hidden;
+            max-height: 400px;
+        }
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 100%;
+        }
+        .schedule-table th,
+        .schedule-table td {
+            padding: 10px 10px;
+            text-align: left;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #d5e1ef;
+        }
+        .schedule-table th {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: #8ea1b7;
+        }
+        .schedule-table tr.active {
+            background: rgba(66, 98, 176, 0.15);
+        }
+        .schedule-table tr.lockdown {
+            background: rgba(222, 72, 72, 0.08);
+        }
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+            align-items: center;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            border: none;
+            background: #3f6ce0;
+            color: #fff;
+            padding: 11px 18px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+        .btn:hover {
+            background: #5386f1;
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: #21334a;
+            color: #c4d0e6;
+        }
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #9ab3cc;
+            margin-top: 16px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .msg {
+            min-width: 200px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: rgba(33, 40, 52, 0.8);
+        }
+        .msg.ok {
+            background: rgba(59, 140, 92, 0.18);
+            color: #b6e6b1;
+        }
+        .msg.err {
+            background: rgba(220, 80, 80, 0.16);
+            color: #f7c8c8;
+        }
+        .msg.info {
+            background: rgba(78, 111, 182, 0.18);
+            color: #c8dcff;
+        }
+        @media (max-width: 820px) {
+            .tray-grid {
+                grid-template-columns: 1fr;
+            }
+            .schedule-table th,
+            .schedule-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="instrument">
+        <div class="header">
+            <div class="header-title">
+                <span class="material-icons">egg</span>
+                Ustawienia · Inkubacja
+            </div>
+            <div class="header-status" title="Kliknij, aby ponowi poczenie">
+                <span class="dot offline" id="wsDot"></span>
+                <span id="wsStatus">czenie...</span>
+                <span id="wsDetail">WebSocket</span>
+            </div>
+        </div>
+
+        <form id="configForm">
+            <div class="tray-grid">
+                <div class="tray-card">
+                    <div class="tray-title"><span class="material-icons">grass</span> Taca 1</div>
+                    <div class="form-group">
+                        <label class="label" for="species1">Gatunek</label>
+                        <div class="form-row">
+                            <select id="species1">
+                                <option value="">adowanie profili...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="label" for="day1">Dzień inkubacji <span class="hint">(1–35)</span></label>
+                        <div class="form-row">
+                            <input type="number" id="day1" min="1" max="35" value="1" />
+                            <span class="hint">z <strong id="totalDays1">21</strong></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="label" for="startDate1">Data rozpoczęcia</label>
+                        <div class="form-row">
+                            <input type="date" id="startDate1" />
+                        </div>
+                        <div class="form-row" style="margin-top:8px;">
+                            <button type="button" class="btn btn-secondary" id="setStart1">Ustaw start</button>
+                            <button type="button" class="btn btn-secondary" id="resetDay1">Resetuj dzień</button>
+                        </div>
+                    </div>
+                    <div class="tray-info">
+                        <span>Dzień: <strong id="currentDay1">1</strong></span>
+                        <span>Pozostało: <strong id="remaining1">20</strong> d</span>
+                    </div>
+                </div>
+
+                <div class="tray-card">
+                    <div class="tray-title"><span class="material-icons">park</span> Taca 2</div>
+                    <div class="form-group">
+                        <label class="label" for="species2">Gatunek</label>
+                        <div class="form-row">
+                            <select id="species2">
+                                <option value="">adowanie profili...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="label" for="day2">Dzień inkubacji <span class="hint">(1–35)</span></label>
+                        <div class="form-row">
+                            <input type="number" id="day2" min="1" max="35" value="1" />
+                            <span class="hint">z <strong id="totalDays2">21</strong></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="label" for="startDate2">Data rozpoczęcia</label>
+                        <div class="form-row">
+                            <input type="date" id="startDate2" />
+                        </div>
+                        <div class="form-row" style="margin-top:8px;">
+                            <button type="button" class="btn btn-secondary" id="setStart2">Ustaw start</button>
+                            <button type="button" class="btn btn-secondary" id="resetDay2">Resetuj dzień</button>
+                        </div>
+                    </div>
+                    <div class="tray-info">
+                        <span>Dzień: <strong id="currentDay2">1</strong></span>
+                        <span>Pozostało: <strong id="remaining2">20</strong> d</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="schedule-table-wrap">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Dzie</th>
+                            <th>Temp</th>
+                            <th>Wilg.</th>
+                            <th>Obr.</th>
+                            <th>Stan</th>
+                            <th>Notatki</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleBody">
+                        <tr><td colspan="6" style="color:#7a8ca1;">adowanie harmonogramu...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="button-row">
+                <button type="button" class="btn" id="applyBtn"><span class="material-icons">done</span>&nbsp;Zastosuj do tacy</button>
+                <button type="button" class="btn btn-secondary" id="previewBtn"><span class="material-icons">visibility</span>&nbsp;Podgld</button>
+                <button type="button" class="btn btn-secondary" id="backBtn"><span class="material-icons">arrow_back</span>&nbsp;Powrót</button>
+            </div>
+
+            <div class="status-bar">
+                <span class="msg" id="statusMsg">Gotowy</span>
+                <span id="statusInfo" style="font-size: 11px; color: #7a8ca1;">WebSocket OK</span>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            const WS_URL = 'ws://' + location.hostname + ':81/';
+            let ws = null;
+            let wsConnected = false;
+            let reconnectTimer = null;
+            let reconnectAttempts = 0;
+            const MAX_RECONNECT_ATTEMPTS = 10;
+
+            const DEFAULT_SPECIES = {};
+            let SPECIES = DEFAULT_SPECIES;
+            let colorScheme = {};
+
+            const species1 = document.getElementById('species1');
+            const day1 = document.getElementById('day1');
+            const species2 = document.getElementById('species2');
+            const day2 = document.getElementById('day2');
+            const totalDays1 = document.getElementById('totalDays1');
+            const totalDays2 = document.getElementById('totalDays2');
+            const currentDay1 = document.getElementById('currentDay1');
+            const currentDay2 = document.getElementById('currentDay2');
+            const remaining1 = document.getElementById('remaining1');
+            const remaining2 = document.getElementById('remaining2');
+            const scheduleBody = document.getElementById('scheduleBody');
+            const statusMsg = document.getElementById('statusMsg');
+            const wsDot = document.getElementById('wsDot');
+            const wsStatus = document.getElementById('wsStatus');
+            const wsDetail = document.getElementById('wsDetail');
+            const statusInfo = document.getElementById('statusInfo');
+
+            function setStatus(text, type) {
+                statusMsg.textContent = text;
+                statusMsg.className = 'msg' + (type ? ' ' + type : '');
+            }
+
+            function setWebSocketStatus(connected) {
+                wsConnected = connected;
+                wsDot.className = 'dot' + (connected ? ' online' : ' offline');
+                wsStatus.textContent = connected ? 'Poczono' : 'Rozczono';
+                statusInfo.textContent = connected ? 'WebSocket OK' : 'Próba ' + reconnectAttempts;
+            }
+
+            function getSensitivityColor(sensitivity) {
+                const value = colorScheme[sensitivity];
+                if (!value) return '#70d070';
+                if (typeof value === 'string') return value;
+                return value.code || '#70d070';
+            }
+
+            function getSpeciesInfo(id) {
+                return SPECIES[id] || {
+                    name: 'Nieznany',
+                    days: 21,
+                    phases: [{ start: 1, end: 21, temp: 37.7, rh: 60, turn: true, notes: 'Brak danych' }],
+                    lockdown: 21,
+                    noRotate: []
+                };
+            }
+
+            function getPhaseForDay(id, day) {
+                const info = getSpeciesInfo(id);
+                for (const phase of info.phases) {
+                    if (day >= phase.start && day <= phase.end) return phase;
+                }
+                return info.phases[info.phases.length - 1] || { temp: 37.7, rh: 60, turn: true, notes: '' };
+            }
+
+            function setStartDate(tray) {
+                const dateInput = tray === 0 ? document.getElementById('startDate1') : document.getElementById('startDate2');
+                const dateValue = dateInput.value;
+                if (!dateValue) {
+                    setStatus('Wybierz datę startu', 'err');
+                    return;
+                }
+                const date = new Date(dateValue + 'T00:00:00');
+                if (Number.isNaN(date.getTime())) {
+                    setStatus('Nieprawidłowa data', 'err');
+                    return;
+                }
+                const unix = Math.floor(date.getTime() / 1000);
+                wsSend('setStartDate:' + tray + ':' + unix);
+                setStatus('Wysyłam datę startu...', 'info');
+            }
+
+            function resetDay(tray) {
+                if (!confirm('Resetować dzień inkubacji dla tacy ' + (tray + 1) + '?')) return;
+                wsSend('resetDay:' + tray);
+                setStatus('Reset dnia wysłany', 'info');
+            }
+
+            function updateStartDateInputs() {
+                if (!window.lastStatusData) return;
+                for (let i = 0; i < 2; i++) {
+                    const unix = window.lastStatusData['tray' + i + '_start_unix'];
+                    const input = i === 0 ? document.getElementById('startDate1') : document.getElementById('startDate2');
+                    if (typeof unix === 'number' && unix > 0) {
+                        const date = new Date(unix * 1000);
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        input.value = date.getFullYear() + '-' + month + '-' + day;
+                    } else {
+                        input.value = '';
+                    }
+                }
+            }
+
+            async function loadProfiles() {
+                try {
+                    setStatus('Pobieram profile inkubacji...', 'info');
+                    const res = await fetch('/api/profiles');
+                    if (!res.ok) throw new Error('Bd pobierania profili');
+                    const data = await res.json();
+                    colorScheme = data.sensitivity_colors || {};
+                    SPECIES = {};
+                    for (const key in data.species) {
+                        const item = data.species[key];
+                        const noRotateDays = (item.day_by_day || [])
+                            .filter(d => d.turning === false)
+                            .map(d => d.day);
+                        const lockdownStart = item.critical_phases?.lockdown?.length
+                            ? Math.min(...item.critical_phases.lockdown)
+                            : item.incubation_days;
+                        SPECIES[key.toUpperCase()] = {
+                            name: item.common_name || key,
+                            days: item.incubation_days || 21,
+                            description: item.description || '',
+                            reference: item.reference || '',
+                            turning_frequency_per_day: item.turning_frequency_per_day || 0,
+                            critical_phases: item.critical_phases || {},
+                            lockdown: lockdownStart,
+                            noRotate: noRotateDays,
+                            phases: (item.day_by_day || []).map(d => ({
+                                start: d.day,
+                                end: d.day,
+                                temp: d.shell_temp || 0,
+                                rh: d.humidity_set || 0,
+                                turn: d.turning !== false,
+                                notes: d.notes || '',
+                                sensitivity: d.sensitivity || 'MEDIUM',
+                                status_color: d.status_color || getSensitivityColor(d.sensitivity),
+                                humidity_min: d.humidity_range ? d.humidity_range[0] : 0,
+                                humidity_max: d.humidity_range ? d.humidity_range[1] : 100
+                            }))
+                        };
+                    }
+                    populateSpeciesSelects();
+                    if (!species1.value) species1.value = Object.keys(SPECIES)[0] || '';
+                    if (!species2.value) species2.value = Object.keys(SPECIES)[1] || Object.keys(SPECIES)[0] || '';
+                    updateAll();
+                    setStatus('Profile zaadowane', 'ok');
+                } catch (err) {
+                    console.warn('Nie udao si pobra profili:', err);
+                    species1.innerHTML = '<option value="">Brak profili</option>';
+                    species2.innerHTML = '<option value="">Brak profili</option>';
+                    renderScheduleForTray(0);
+                    setStatus('Brak profili inkubacji', 'err');
+                }
+            }
+
+            function populateSpeciesSelects() {
+                const options = Object.keys(SPECIES).map(id => {
+                    const info = SPECIES[id];
+                    return `<option value="${id}">${info.name}</option>`;
+                }).join('');
+                species1.innerHTML = options || '<option value="">Brak profili</option>';
+                species2.innerHTML = options || '<option value="">Brak profili</option>';
+            }
+
+            function wsSend(cmd) {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(cmd);
+                    return true;
+                }
+                setStatus('Brak poczenia z ESP', 'err');
+                return false;
+            }
+
+            function wsConnect() {
+                if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+                try {
+                    ws = new WebSocket(WS_URL);
+                    ws.onopen = function() {
+                        reconnectAttempts = 0;
+                        setWebSocketStatus(true);
+                        setStatus('Łączenie z ESP...', 'info');
+                        wsSend('getIncubationConfig');
+                        wsSend('getStartDate:0');
+                        wsSend('getStartDate:1');
+                        wsSend('carregarIdioma');
+                        loadProfiles();
+                    };
+                    ws.onmessage = function(event) {
+                        const msg = event.data;
+                        if (msg.startsWith('startDate:') || msg.startsWith('startUnix:')) {
+                            const parts = msg.split(':');
+                            if (parts.length === 3) {
+                                const trayIndex = parseInt(parts[1], 10);
+                                const unix = parseInt(parts[2], 10);
+                                if (!Number.isNaN(trayIndex) && !Number.isNaN(unix) && unix > 0) {
+                                    const input = trayIndex === 0 ? document.getElementById('startDate1') : document.getElementById('startDate2');
+                                    const date = new Date(unix * 1000);
+                                    input.value = date.toISOString().slice(0, 10);
+                                    setStatus('Odczytano datę startu dla T' + (trayIndex + 1), 'ok');
+                                }
+                            }
+                            return;
+                        }
+                        if (msg.startsWith('ok:setStartDate:') || msg.startsWith('ok:setStartUnix:')) {
+                            setStatus('Data startu ustawiona', 'ok');
+                            const parts = msg.split(':');
+                            if (parts.length === 3) {
+                                wsSend('getStartDate:' + parts[2]);
+                            }
+                            return;
+                        }
+                        if (msg.startsWith('ok:resetDay:')) {
+                            setStatus('Dzień inkubacji zresetowany', 'ok');
+                            const parts = msg.split(':');
+                            if (parts.length === 3) {
+                                wsSend('getStartDate:' + parts[2]);
+                            }
+                            return;
+                        }
+                        if (msg.startsWith('{')) {
+                            try {
+                                const data = JSON.parse(msg);
+                                window.lastStatusData = data;
+                                updateStartDateInputs();
+                            } catch (e) {
+                                console.warn('Błąd parsowania statusu:', e);
+                            }
+                            return;
+                        }
+                        if (msg.startsWith('idiomaAtual:')) return;
+                        if (msg.includes('diasIncubacao') || msg.includes('primeirosDias')) {
+                            setStatus('Konfiguracja wczytana', 'ok');
+                        }
+                    };
+                    ws.onclose = function() {
+                        setWebSocketStatus(false);
+                        setStatus('Rozczono, ponowna próba...', 'err');
+                        scheduleReconnect();
+                    };
+                    ws.onerror = function(err) {
+                        console.warn('WebSocket error:', err);
+                        setStatus('Bd WebSocket', 'err');
+                        if (ws) ws.close();
+                    };
+                } catch (e) {
+                    console.warn('WebSocket init error:', e);
+                    setStatus('Nie mona utworzy poczenia', 'err');
+                    scheduleReconnect();
+                }
+            }
+
+            function scheduleReconnect() {
+                if (reconnectTimer) clearTimeout(reconnectTimer);
+                reconnectAttempts++;
+                if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) {
+                    setStatus('Brak poczenia – spróbuj ponownie rcznie', 'err');
+                    return;
+                }
+                const delay = Math.min(5000, 1000 * Math.pow(1.5, reconnectAttempts));
+                reconnectTimer = setTimeout(wsConnect, delay);
+            }
+
+            function updateTrayInfo(trayIndex) {
+                const speciesEl = trayIndex === 0 ? species1 : species2;
+                const dayEl = trayIndex === 0 ? day1 : day2;
+                const totalEl = trayIndex === 0 ? totalDays1 : totalDays2;
+                const currentEl = trayIndex === 0 ? currentDay1 : currentDay2;
+                const remainEl = trayIndex === 0 ? remaining1 : remaining2;
+                const info = getSpeciesInfo(speciesEl.value);
+                const day = parseInt(dayEl.value, 10) || 1;
+                const clamped = Math.min(info.days, Math.max(1, day));
+                totalEl.textContent = info.days;
+                currentEl.textContent = clamped;
+                remainEl.textContent = Math.max(0, info.days - clamped);
+            }
+
+            function renderScheduleForTray(trayIndex) {
+                const speciesEl = trayIndex === 0 ? species1 : species2;
+                const dayEl = trayIndex === 0 ? day1 : day2;
+                const info = getSpeciesInfo(speciesEl.value);
+                const day = parseInt(dayEl.value, 10) || 1;
+                const clamped = Math.min(info.days, Math.max(1, day));
+
+                let html = '';
+                for (let d = 1; d <= info.days; d++) {
+                    const phase = getPhaseForDay(speciesEl.value, d);
+                    const isActive = d === clamped;
+                    const isLockdown = !phase.turn;
+                    const sensColor = phase.status_color || getSensitivityColor(phase.sensitivity);
+                    const turnHtml = phase.turn ? '✓' : '✗';
+                    const lockHtml = isLockdown ? '<span class="material-icons" style="font-size:14px; vertical-align:middle;">lock</span>' : '—';
+                    const trClass = isActive ? 'active' : (isLockdown ? 'lockdown' : '');
+
+                    html += `<tr class="${trClass}">
+                        <td>${isActive ? '▶ ' : ''}${d}</td>
+                        <td style="color:${sensColor};">${phase.temp.toFixed(1)}</td>
+                        <td>${phase.rh.toFixed(0)}</td>
+                        <td>${turnHtml}</td>
+                        <td>${lockHtml}</td>
+                        <td style="font-size:12px;color:#9eb1cd;">${phase.notes || ''}</td>
+                    </tr>`;
+                }
+                scheduleBody.innerHTML = html;
+                const wrap = scheduleBody.closest('.schedule-table-wrap');
+                if (wrap) {
+                    const activeRow = scheduleBody.querySelector('tr.active');
+                    if (activeRow) {
+                        wrap.scrollTop = Math.max(0, activeRow.offsetTop - 60);
+                    }
+                }
+            }
+
+            function updateAll() {
+                updateTrayInfo(0);
+                updateTrayInfo(1);
+                renderScheduleForTray(0);
+            }
+
+            function applyToTray() {
+                const info = getSpeciesInfo(species1.value);
+                const clamped = Math.min(info.days, Math.max(1, parseInt(day1.value, 10) || 1));
+                setStatus('Zastosowano do T1: ' + info.name + ', dzie ' + clamped, 'ok');
+                updateAll();
+            }
+
+            function previewTray() {
+                renderScheduleForTray(1);
+                setStatus('Podgld dla T2', 'info');
+            }
+
+            function goBack() {
+                window.location.href = '/';
+            }
+
+            function reconnectManually() {
+                if (reconnectTimer) clearTimeout(reconnectTimer);
+                reconnectAttempts = 0;
+                if (ws) { try { ws.close(); } catch (e) {} }
+                ws = null;
+                setStatus('czenie...', 'info');
+                wsConnect();
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                species1.addEventListener('change', function() {
+                    updateTrayInfo(0);
+                    renderScheduleForTray(0);
+                });
+                day1.addEventListener('input', function() {
+                    updateTrayInfo(0);
+                    renderScheduleForTray(0);
+                });
+                species2.addEventListener('change', function() { updateTrayInfo(1); });
+                day2.addEventListener('input', function() { updateTrayInfo(1); });
+                document.getElementById('applyBtn').addEventListener('click', applyToTray);
+                document.getElementById('previewBtn').addEventListener('click', previewTray);
+                document.getElementById('backBtn').addEventListener('click', goBack);
+                document.getElementById('setStart1').addEventListener('click', function() { setStartDate(0); });
+                document.getElementById('resetDay1').addEventListener('click', function() { resetDay(0); });
+                document.getElementById('setStart2').addEventListener('click', function() { setStartDate(1); });
+                document.getElementById('resetDay2').addEventListener('click', function() { resetDay(1); });
+                wsStatus.addEventListener('click', reconnectManually);
+                wsDot.addEventListener('click', reconnectManually);
+                loadProfiles();
+                wsConnect();
+                setInterval(function() {
+                    if (!wsConnected) reconnectManually();
+                }, 30000);
+            });
+
+            window.addEventListener('beforeunload', function() {
+                if (ws) { try { ws.close(); } catch (e) {} }
+                if (reconnectTimer) clearTimeout(reconnectTimer);
+            });
+        })();
+    </script>
+</body>
+</html>

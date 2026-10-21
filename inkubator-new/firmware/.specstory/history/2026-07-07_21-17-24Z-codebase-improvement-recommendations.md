@@ -180,3 +180,1765 @@ After analyzing the provided codebase, I've identified several issues and areas 
 10. **Implement a Logging System:** Create a logging system that writes logs to a file and forwards them to the WebSocket.
 
 By addressing these issues, the codebase will become more robust, maintainable, and secure.
+
+_**User (2026-07-07 21:27:23Z)**_
+
+1. Dodać obsługę **HTTPS/WSS** dla wszystkich pozostałych plików HTML (nie tylko `symulacja_legów.html`)
+
+_**User (2026-07-07 21:30:37Z)**_
+
+tak
+
+---
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+<think><details><summary>Thought Process</summary>
+Checking the remaining pages to add the shared WebSocket helper include consistently.
+
+Adding the shared WebSocket helper to `index.html` and `symulacja_legów.html` now.
+</details></think>
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file"><details>
+<summary>Tool use: **read_file**</summary>
+
+**Input:**
+
+- endLine: `30`
+- filePath: `j:\inkubator\inkubator-new\firmware\data\symulacja_legów.html`
+- startLine: `1`
+
+</details></tool-use>
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+<tool-use data-tool-type="generic" data-tool-name="multi_replace_string_in_file"><details>
+<summary>Tool use: **multi_replace_string_in_file**</summary>
+
+**Input:**
+
+- explanation: `Insert shared ws-utils.js helper into index and symulacja_legów HTML pages so all pages can use HTTPS/WSS-safe WebSocket URLs.`
+- replacements:
+
+```
+[map[filePath:j:\inkubator\inkubator-new\firmware\data\index.html newString:<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>INKUBATOR · PANEL STEROWANIA</title>
+    <script src="/ws-utils.js"></script>
+    <style>
+ oldString:<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>INKUBATOR · PANEL STEROWANIA</title>
+    <style>
+] map[filePath:j:\inkubator\inkubator-new\firmware\data\symulacja_legów.html newString:<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analiza lęgów · Porównanie v2.0</title>
+    <script src="/ws-utils.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+ oldString:<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analiza lęgów · Porównanie v2.0</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+]]
+```
+
+
+</details></tool-use>
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+Checking the remaining pages to add the shared WebSocket helper include consistently.
+
+---
+
+_**User (2026-07-07 21:32:55Z)**_
+
+firmware/data/
+├── index.html
+├── temperature.html
+├── humidity.html
+├── turner.html
+├── incubation.html
+├── alarms.html
+├── wifi.html
+├── various.html
+├── console.html
+├── ajustes.html
+├── symulacja_legów.html
+│
+├── css/
+│   └── style.css          ← wspólny styl dla WSZYSTKICH stron
+│
+└── js/
+    ├── common.js          ← WebSocket, status bar, narzędzia
+    └── pages/
+        ├── temperature.js ← specyficzna logika dla temperatury
+        ├── humidity.js    ← specyficzna logika dla wilgotności
+        └── ...
+
+---
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+**Structuring web assets**
+
+I think many pages might lack JavaScript since we haven’t read through all of them yet. I should search for elements like `onclick=` and `id=` to find possible inline JS. It seems like we need to create a skeleton structure while updating the head and scripts.
+
+The user’s request for “firmware/data/...” suggests they want directories created to restructure the web assets. I’ll quickly inspect the HTML pages to see if there’s any external JS and gather what we need for CSS and JS files. Let's start searching existing HTML files for inline JS or styles.
+
+---
+
+_**User (2026-07-07 21:35:19Z)**_
+
+/* ============================================================
+   RESET I PODSTAWY
+   ============================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    background: #0a0c0e;
+    font-family: 'Courier New', 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    color: #f0f6fc;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+}
+
+.instrument {
+    width: 100%;
+    max-width: 760px;
+    background: #0c0e12;
+    border: 1px solid #1e2228;
+    border-radius: 8px;
+    padding: 18px 22px 16px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+}
+
+/* ============================================================
+   NAGŁÓWEK
+   ============================================================ */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #1a1e24;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.header-title {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #ccdce8;
+    text-transform: uppercase;
+}
+
+.header-title span {
+    color: #5a6a7a;
+}
+
+.header-status {
+    font-size: 12px;
+    color: #5a6a7a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.header-status .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #2a3240;
+    transition: background 0.4s ease;
+}
+
+.header-status .dot.online {
+    background: #30c060;
+    box-shadow: 0 0 10px rgba(48, 192, 96, 0.4);
+}
+
+.header-status .dot.offline {
+    background: #e05050;
+    box-shadow: 0 0 10px rgba(224, 80, 80, 0.4);
+}
+
+.header-status .dot.warn {
+    background: #e8b830;
+    box-shadow: 0 0 10px rgba(232, 184, 48, 0.4);
+}
+
+/* ============================================================
+   STATUS BAR (dolny pasek)
+   ============================================================ */
+.status-bar {
+    margin-top: 14px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #5a6a7a;
+    background: rgba(20, 24, 32, 0.4);
+    border: 1px solid #1a1e24;
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.status-bar .msg {
+    flex: 1;
+}
+
+.status-bar .msg.ok {
+    color: #70d070;
+}
+
+.status-bar .msg.err {
+    color: #e05050;
+}
+
+.status-bar .msg.info {
+    color: #5a9a8a;
+}
+
+.status-bar .ws-detail {
+    font-size: 10px;
+    color: #2a3240;
+}
+
+/* ============================================================
+   PRZYCISKI
+   ============================================================ */
+.btn-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.btn {
+    padding: 8px 18px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid #2a3240;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #8a9aa8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Courier New', monospace;
+    flex: 1 1 auto;
+    min-width: 90px;
+    text-align: center;
+    text-decoration: none;
+}
+
+.btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #b0c8d8;
+    border-color: #3a4250;
+}
+
+.btn-primary {
+    border-color: #3a6a5a;
+    color: #5a9a8a;
+}
+
+.btn-primary:hover {
+    background: rgba(57, 211, 95, 0.08);
+    border-color: #5a8a7a;
+    color: #70d070;
+}
+
+.btn-danger {
+    border-color: #6a3a3a;
+    color: #c06060;
+}
+
+.btn-danger:hover {
+    background: rgba(224, 80, 80, 0.08);
+    border-color: #8a4a4a;
+    color: #e06060;
+}
+
+.btn-secondary {
+    border-color: #2a3240;
+    color: #6a7a8a;
+}
+
+.btn-secondary:hover {
+    border-color: #4a5a6a;
+    color: #8a9aa8;
+}
+
+.btn-back {
+    border-color: #1a1e24;
+    color: #4a525a;
+}
+
+.btn-back:hover {
+    border-color: #3a4250;
+    color: #6a7a8a;
+}
+
+.btn-full {
+    flex: 1 1 100%;
+}
+
+/* ============================================================
+   FORMULARZE
+   ============================================================ */
+.form-group {
+    margin-bottom: 14px;
+}
+
+.form-group .label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8a9aa8;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.form-group .label .unit {
+    color: #5a6a7a;
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.form-row input[type="number"],
+.form-row input[type="text"],
+.form-row input[type="password"],
+.form-row select {
+    flex: 1;
+    min-width: 90px;
+    background: #161d24;
+    border: 1px solid #2d3744;
+    border-radius: 4px;
+    color: #e6eef8;
+    padding: 8px 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.form-row input[type="number"]:focus,
+.form-row input[type="text"]:focus,
+.form-row input[type="password"]:focus,
+.form-row select:focus {
+    border-color: #5a8a7a;
+}
+
+.form-row input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.form-row input[type="number"]::-webkit-inner-spin-button,
+.form-row input[type="number"]::-webkit-outer-spin-button {
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.form-row select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234a525a'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 10px 6px;
+    padding-right: 32px;
+}
+
+.form-row .hint {
+    font-size: 11px;
+    color: #5a6a7a;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    font-weight: 400;
+}
+
+.form-divider {
+    border: none;
+    border-top: 1px solid #1a1e24;
+    margin: 16px 0;
+}
+
+/* ============================================================
+   RESPONSYWNOŚĆ
+   ============================================================ */
+@media (max-width: 600px) {
+    .instrument {
+        padding: 12px 14px;
+    }
+    .header-title {
+        font-size: 14px;
+    }
+    .form-row input[type="number"],
+    .form-row input[type="text"],
+    .form-row input[type="password"],
+    .form-row select {
+        font-size: 12px;
+        padding: 6px 10px;
+        min-width: 70px;
+    }
+    .btn {
+        font-size: 11px;
+        padding: 6px 14px;
+        min-width: 70px;
+    }
+}
+
+@media (max-width: 400px) {
+    .instrument {
+        padding: 8px 10px;
+    }
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    .form-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .form-row .hint {
+        white-space: normal;
+    }
+    .btn-group {
+        flex-direction: column;
+    }
+    .btn {
+        width: 100%;
+    }
+}
+
+_**User (2026-07-07 21:39:17Z)**_
+
+/* ============================================================
+   RESET I PODSTAWY
+   ============================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    background: #0a0c0e;
+    font-family: 'Courier New', 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    color: #f0f6fc;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+}
+
+.instrument {
+    width: 100%;
+    max-width: 760px;
+    background: #0c0e12;
+    border: 1px solid #1e2228;
+    border-radius: 8px;
+    padding: 18px 22px 16px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+}
+
+/* ============================================================
+   NAGŁÓWEK
+   ============================================================ */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #1a1e24;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.header-title {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #ccdce8;
+    text-transform: uppercase;
+}
+
+.header-title span {
+    color: #5a6a7a;
+}
+
+.header-status {
+    font-size: 12px;
+    color: #5a6a7a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.header-status .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #2a3240;
+    transition: background 0.4s ease;
+}
+
+.header-status .dot.online {
+    background: #30c060;
+    box-shadow: 0 0 10px rgba(48, 192, 96, 0.4);
+}
+
+.header-status .dot.offline {
+    background: #e05050;
+    box-shadow: 0 0 10px rgba(224, 80, 80, 0.4);
+}
+
+.header-status .dot.warn {
+    background: #e8b830;
+    box-shadow: 0 0 10px rgba(232, 184, 48, 0.4);
+}
+
+/* ============================================================
+   STATUS BAR (dolny pasek)
+   ============================================================ */
+.status-bar {
+    margin-top: 14px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #5a6a7a;
+    background: rgba(20, 24, 32, 0.4);
+    border: 1px solid #1a1e24;
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.status-bar .msg {
+    flex: 1;
+}
+
+.status-bar .msg.ok {
+    color: #70d070;
+}
+
+.status-bar .msg.err {
+    color: #e05050;
+}
+
+.status-bar .msg.info {
+    color: #5a9a8a;
+}
+
+.status-bar .ws-detail {
+    font-size: 10px;
+    color: #2a3240;
+}
+
+/* ============================================================
+   PRZYCISKI
+   ============================================================ */
+.btn-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.btn {
+    padding: 8px 18px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid #2a3240;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #8a9aa8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Courier New', monospace;
+    flex: 1 1 auto;
+    min-width: 90px;
+    text-align: center;
+    text-decoration: none;
+}
+
+.btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #b0c8d8;
+    border-color: #3a4250;
+}
+
+.btn-primary {
+    border-color: #3a6a5a;
+    color: #5a9a8a;
+}
+
+.btn-primary:hover {
+    background: rgba(57, 211, 95, 0.08);
+    border-color: #5a8a7a;
+    color: #70d070;
+}
+
+.btn-danger {
+    border-color: #6a3a3a;
+    color: #c06060;
+}
+
+.btn-danger:hover {
+    background: rgba(224, 80, 80, 0.08);
+    border-color: #8a4a4a;
+    color: #e06060;
+}
+
+.btn-secondary {
+    border-color: #2a3240;
+    color: #6a7a8a;
+}
+
+.btn-secondary:hover {
+    border-color: #4a5a6a;
+    color: #8a9aa8;
+}
+
+.btn-back {
+    border-color: #1a1e24;
+    color: #4a525a;
+}
+
+.btn-back:hover {
+    border-color: #3a4250;
+    color: #6a7a8a;
+}
+
+.btn-full {
+    flex: 1 1 100%;
+}
+
+/* ============================================================
+   FORMULARZE
+   ============================================================ */
+.form-group {
+    margin-bottom: 14px;
+}
+
+.form-group .label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8a9aa8;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.form-group .label .unit {
+    color: #5a6a7a;
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.form-row input[type="number"],
+.form-row input[type="text"],
+.form-row input[type="password"],
+.form-row select {
+    flex: 1;
+    min-width: 90px;
+    background: #161d24;
+    border: 1px solid #2d3744;
+    border-radius: 4px;
+    color: #e6eef8;
+    padding: 8px 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.form-row input[type="number"]:focus,
+.form-row input[type="text"]:focus,
+.form-row input[type="password"]:focus,
+.form-row select:focus {
+    border-color: #5a8a7a;
+}
+
+.form-row input[type="number"] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.form-row input[type="number"]::-webkit-inner-spin-button,
+.form-row input[type="number"]::-webkit-outer-spin-button {
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.form-row select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234a525a'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 10px 6px;
+    padding-right: 32px;
+}
+
+.form-row .hint {
+    font-size: 11px;
+    color: #5a6a7a;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    font-weight: 400;
+}
+
+.form-divider {
+    border: none;
+    border-top: 1px solid #1a1e24;
+    margin: 16px 0;
+}
+
+/* ============================================================
+   RESPONSYWNOŚĆ
+   ============================================================ */
+@media (max-width: 600px) {
+    .instrument {
+        padding: 12px 14px;
+    }
+    .header-title {
+        font-size: 14px;
+    }
+    .form-row input[type="number"],
+    .form-row input[type="text"],
+    .form-row input[type="password"],
+    .form-row select {
+        font-size: 12px;
+        padding: 6px 10px;
+        min-width: 70px;
+    }
+    .btn {
+        font-size: 11px;
+        padding: 6px 14px;
+        min-width: 70px;
+    }
+}
+
+@media (max-width: 400px) {
+    .instrument {
+        padding: 8px 10px;
+    }
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    .form-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .form-row .hint {
+        white-space: normal;
+    }
+    .btn-group {
+        flex-direction: column;
+    }
+    .btn {
+        width: 100%;
+    }
+}
+
+---
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+**Considering CSS implementation**
+
+I see the user provided CSS content, and it seems like they want to apply it. My first step will be to check the workspace’s file structure to see if css/style.css already exists or if I need to create it. I should also inspect the HTML pages to ensure they reference this CSS. The user's request is just that CSS block, suggesting they want
+
+---
+
+_**User (2026-07-07 21:40:17Z)**_
+
+### `js/common.js` – wspólny kod
+javascript
+
+```
+/**
+ * common.js – wspólny kod dla wszystkich stron inkubatora
+ * ============================================================
+ * Zawiera: WebSocket, status bar, narzędzia
+ */
+
+(function() {
+    'use strict';
+
+    // ============================================================
+    //  KONFIGURACJA
+    // ============================================================
+    const WS_PORT = 81;
+    const MAX_RECONNECT_ATTEMPTS = 10;
+    const RECONNECT_INTERVAL_MS = 30000;
+
+    // ============================================================
+    //  STAN
+    // ============================================================
+    let ws = null;
+    let wsConnected = false;
+    let reconnectTimer = null;
+    let reconnectAttempts = 0;
+    let statusCallbacks = [];
+
+    // ============================================================
+    //  ELEMENTY DOM
+    // ============================================================
+    const statusMsg = document.getElementById('statusMsg');
+    const wsDot = document.getElementById('wsDot');
+    const wsStatus = document.getElementById('wsStatus');
+    const wsDetail = document.getElementById('wsDetail');
+
+    // ============================================================
+    //  FUNKCJE STATUSU
+    // ============================================================
+    function setStatus(text, type) {
+        if (!statusMsg) return;
+        statusMsg.textContent = text;
+        statusMsg.className = 'msg' + (type ? ' ' + type : '');
+    }
+
+    function setWsStatus(connected) {
+        wsConnected = connected;
+        if (wsDot) {
+            wsDot.className = 'dot' + (connected ? ' online' : ' offline');
+        }
+        if (wsStatus) {
+            wsStatus.textContent = connected ? 'Połączono' : 'Rozłączono';
+        }
+        if (wsDetail) {
+            wsDetail.textContent = connected ? 'WebSocket OK' : 'próba ' + reconnectAttempts;
+        }
+    }
+
+    // ============================================================
+    //  WEB SOCKET
+    // ============================================================
+    function getWsUrl() {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        return protocol + '//' + window.location.hostname + ':' + WS_PORT + '/';
+    }
+
+    function wsSend(cmd) {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(cmd);
+            return true;
+        }
+        setStatus('Brak połączenia z ESP', 'err');
+        return false;
+    }
+
+    function wsConnect() {
+        if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+            return;
+        }
+
+        try {
+            const url = getWsUrl();
+            ws = new WebSocket(url);
+
+            ws.onopen = function() {
+                reconnectAttempts = 0;
+                setWsStatus(true);
+                setStatus('Połączono', 'ok');
+                // Wywołaj callbacki rejestracji
+                statusCallbacks.forEach(cb => cb('open', ws));
+            };
+
+            ws.onmessage = function(event) {
+                // Przekaż wiadomość do callbacków
+                statusCallbacks.forEach(cb => cb('message', ws, event.data));
+            };
+
+            ws.onclose = function() {
+                setWsStatus(false);
+                setStatus('Rozłączono, ponowna próba...', 'err');
+                scheduleReconnect();
+            };
+
+            ws.onerror = function(err) {
+                console.warn('WebSocket error:', err);
+                setStatus('Błąd WebSocket', 'err');
+                if (ws) ws.close();
+            };
+
+        } catch (e) {
+            console.warn('WebSocket init error:', e);
+            setStatus('Nie można utworzyć połączenia', 'err');
+            scheduleReconnect();
+        }
+    }
+
+    function scheduleReconnect() {
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+        reconnectAttempts++;
+        if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) {
+            setStatus('Brak połączenia – spróbuj ponownie ręcznie', 'err');
+            return;
+        }
+        const delay = Math.min(5000, 1000 * Math.pow(1.5, reconnectAttempts));
+        reconnectTimer = setTimeout(wsConnect, delay);
+    }
+
+    function reconnectManually() {
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+        reconnectAttempts = 0;
+        if (ws) {
+            try { ws.close(); } catch (e) {}
+            ws = null;
+        }
+        setStatus('Łączenie...', 'info');
+        wsConnect();
+    }
+
+    // ============================================================
+    //  REJESTRACJA CALLBACKÓW
+    // ============================================================
+    function onWsEvent(callback) {
+        if (typeof callback === 'function') {
+            statusCallbacks.push(callback);
+        }
+    }
+
+    // ============================================================
+    //  NARZĘDZIA
+    // ============================================================
+    function parseFloatSafe(value, fallback) {
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? fallback : parsed;
+    }
+
+    function parseIntSafe(value, fallback) {
+        const parsed = parseInt(value, 10);
+        return isNaN(parsed) ? fallback : parsed;
+    }
+
+    function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    // ============================================================
+    //  INICJALIZACJA
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+        // Kliknięcie w status – ręczne ponowne połączenie
+        if (wsStatus) wsStatus.addEventListener('click', reconnectManually);
+        if (wsDot) wsDot.addEventListener('click', reconnectManually);
+
+        // Start WebSocket
+        wsConnect();
+
+        // Okresowe sprawdzanie połączenia
+        setInterval(function() {
+            if (!wsConnected) reconnectManually();
+        }, RECONNECT_INTERVAL_MS);
+    });
+
+    window.addEventListener('beforeunload', function() {
+        if (ws) {
+            try { ws.close(); } catch (e) {}
+        }
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+    });
+
+    // ============================================================
+    //  EKSPORT (globalny)
+    // ============================================================
+    window.Inkubator = {
+        wsSend: wsSend,
+        wsConnect: wsConnect,
+        wsConnected: function() { return wsConnected; },
+        setStatus: setStatus,
+        setWsStatus: setWsStatus,
+        reconnectManually: reconnectManually,
+        onWsEvent: onWsEvent,
+        parseFloatSafe: parseFloatSafe,
+        parseIntSafe: parseIntSafe,
+        clamp: clamp,
+        getWsUrl: getWsUrl
+    };
+
+})();
+```
+
+---
+
+### 4. 📄 Przykład: `temperature.html` – po wydzieleniu
+
+---
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+**Considering updates to structure**
+
+I'm thinking we should infer what's needed here. Perhaps it's a good idea to update common.js so it exactly matches the content. I wonder if we might need to create page
+
+---
+
+_**User (2026-07-07 21:41:42Z)**_
+
+### Przykład: `temperature.html` – po wydzieleniu
+html
+
+```
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ustawienia · Temperatura</title>
+    <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+    <div class="instrument">
+
+        <!-- ===== NAGŁÓWEK ===== -->
+        <div class="header">
+            <div class="header-title">
+                <span>⚙</span> Ustawienia · <span id="pageTitle">Temperatura</span>
+            </div>
+            <div class="header-status">
+                <span class="dot" id="wsDot"></span>
+                <span id="wsStatus">Łączenie...</span>
+            </div>
+        </div>
+
+        <!-- ===== FORMULARZ ===== -->
+        <form id="configForm" autocomplete="off">
+
+            <div class="form-group">
+                <span class="label">Setpoint temperatury <span class="unit">(36.0 – 39.0 °C)</span></span>
+                <div class="form-row">
+                    <input type="number" id="setpoint" min="36.0" max="39.0" step="0.1" value="37.5" />
+                    <span class="hint">°C</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <span class="label">Histereza <span class="unit">(0.2 – 1.0 °C)</span></span>
+                <div class="form-row">
+                    <input type="number" id="hysteresis" min="0.2" max="1.0" step="0.1" value="0.5" />
+                    <span class="hint">°C</span>
+                </div>
+            </div>
+
+            <!-- ... reszta pól ... -->
+
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" id="saveBtn">Zapisz ustawienia</button>
+                <button type="button" class="btn btn-secondary" id="clearMinMaxBtn">Resetuj min/max</button>
+                <button type="button" class="btn btn-danger" id="resetBtn">Przywróć domyślne</button>
+            </div>
+
+            <div class="btn-group" style="margin-top:6px;">
+                <button type="button" class="btn btn-back btn-full" id="backBtn">← Wróć do panelu</button>
+            </div>
+
+        </form>
+
+        <!-- ===== STATUS BAR ===== -->
+        <div class="status-bar">
+            <span class="msg" id="statusMsg">Gotowy</span>
+            <span class="ws-detail" id="wsDetail"></span>
+        </div>
+
+    </div>
+
+    <!-- ===== SKRYPTY ===== -->
+    <script src="/js/common.js"></script>
+    <script>
+        (function() {
+            'use strict';
+
+            // Użyj wspólnego WebSocket
+            const ink = window.Inkubator;
+
+            // Elementy DOM
+            const setpointEl = document.getElementById('setpoint');
+            const hysteresisEl = document.getElementById('hysteresis');
+            // ... reszta elementów
+
+            // Rejestracja callbacków WebSocket
+            ink.onWsEvent(function(type, ws, data) {
+                if (type === 'open') {
+                    ws.send('carregarConfiguracao');
+                    return;
+                }
+                if (type === 'message') {
+                    // Obsługa wiadomości
+                    const msg = data;
+                    if (msg.startsWith('setpoint:') || msg.startsWith('setTemp:')) {
+                        const val = msg.includes('setpoint:') ? msg.substring(9) : msg.substring(7);
+                        setpointEl.value = parseFloat(val) || 37.5;
+                        ink.setStatus('Wczytano setpoint', 'ok');
+                    }
+                    // ... reszta obsługi
+                }
+            });
+
+            // Przycisk Zapisz
+            document.getElementById('saveBtn').addEventListener('click', function() {
+                const value = parseFloat(setpointEl.value) || 37.5;
+                if (value < 36 || value > 39) {
+                    ink.setStatus('Setpoint poza zakresem 36–39°C', 'err');
+                    return;
+                }
+                ink.wsSend('setpoint:' + value.toFixed(1));
+                ink.setStatus('Wysłano setpoint', 'ok');
+            });
+
+            // Przycisk Wróć
+            document.getElementById('backBtn').addEventListener('click', function() {
+                window.location.href = '/';
+            });
+
+            // Przycisk Reset
+            document.getElementById('resetBtn').addEventListener('click', function() {
+                if (!confirm('Przywrócić domyślne ustawienia temperatury?')) return;
+                setpointEl.value = 37.5;
+                hysteresisEl.value = 0.5;
+                ink.setStatus('Ustawiono wartości domyślne (zapisz, aby wysłać)', 'info');
+            });
+
+            // Przycisk Resetuj min/max
+            document.getElementById('clearMinMaxBtn').addEventListener('click', function() {
+                ink.wsSend('limparMinMax');
+                ink.setStatus('Wysłano reset min/max', 'info');
+            });
+
+        })();
+    </script>
+
+</body>
+</html>
+```
+
+---
+
+### 5. 📁 Struktura plików do wdrożenia
+text
+
+```
+firmware/data/
+├── index.html
+├── temperature.html
+├── humidity.html
+├── turner.html
+├── incubation.html
+├── alarms.html
+├── wifi.html
+├── various.html
+├── console.html
+├── ajustes.html
+├── symulacja_legów.html
+│
+├── css/
+│   └── style.css          ← NOWY
+│
+└── js/
+    ├── common.js          ← NOWY
+    └── pages/             ← opcjonalnie, dla większych stron
+        ├── temperature.js
+        ├── humidity.js
+        └── ...
+```
+
+---
+
+### 6. ✅ Korzyści
+
+AspektPrzedPo**Konserwacja**Zmiana w 10 plikachZmiana w 1 pliku**Wielkość**~200 linii kodu na stronę~50 linii + wspólny kod**Błędy**Łatwo o pomyłkęSpójność gwarantowana**Testowanie**Trzeba testować każdą stronęTestujesz common.js raz**Live Server**DziałaDziała (ścieżki względne)
+
+---
+
+### 7. 🚀 Jak przetestować lokalnie (Live Server)
+
+1. Uruchom Live Server w VSCode w katalogu `data/`
+2. Otwórz `http://127.0.0.1:5500/index.html`
+3. CSS i JS będą ładowane jako:
+
+- `<link rel="stylesheet" href="/css/style.css" />`
+- `<script src="/js/common.js"></script>`
+**Uwaga:** WebSocket będzie próbował połączyć się z `localhost:81` – jeśli ESP nie jest podłączone, zobaczysz status "Rozłączono", ale strona będzie działać w trybie demonstracyjnym.
+
+---
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+**Interpreting user request**
+
+I need to address the user's request carefully. They provided a detailed description of a new structure and example HTML, so it seems like they want us to implement a refactor. Since they included the content of `common.js` and structural instructions, I should treat this as a prompt to patch the pages to utilize `common.js` and tidy up any inline scripts. It's essential to inspect the current data files and ensure that all HTML pages have the correct includes.
+
+---
+
+_**User (2026-07-07 21:45:33Z)**_
+
+### Struktura plików po zmianach
+text
+
+```
+firmware/data/
+├── wifi.html                    ← NOWY (dostosowany)
+│
+├── css/
+│   └── style.css                ← ISTNIEJE (wspólny)
+│
+└── js/
+    ├── common.js                ← ISTNIEJE (wspólny)
+    └── pages/
+        └── wifi.js              ← NOWY (logika specyficzna)
+```
+
+---
+
+### ✅ Co się zmieniło w `wifi.html`?
+
+ElementPrzedPo**Kontener**Brak `instrument`Pełny kontener z nagłówkiem i status barem**Nagłówek**Tylko tytułTytuł + status WebSocket (kropka + tekst)**Status bar**BrakPełny pasek z `statusMsg` i `wsDetail`**Przyciski**Własne styleKlasy `.btn`, `.btn-primary`, `.btn-danger`, `.btn-secondary`**Formularz**Własne styleKlasy `.form-group`, `.label`, `.form-row`**Skrypty**Własny kod`common.js` + `wifi.js` (podział logiki)
+
+---
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+**Inspecting files for changes**
+
+The user likely wants me to implement changes from wifi.html and ensure the structure is correct. I'll need to look at the current files, including wifi.html and js/pages/wifi.js, and probably update them to align with those changes. It’s important to follow the instructions carefully so I’ll inspect the current contents. I'll pull up the wifi.html and wifi.js files to see what adjustments are needed. Let's get started!
+
+---
+
+_**User (2026-07-07 21:47:13Z)**_
+
+## Doskonale! To jest wzorcowa implementacja dla `wifi.js`.
+Widzę, że już prawidłowo korzystasz z `window.Inkubator` z `common.js`. To jest dokładnie to, co chciałem osiągnąć.
+
+Teraz pokażę Ci, jak wygląda **kompletny zestaw** dla tej strony i podsumuję, co jest potrzebne dla kolejnych.
+
+---
+
+### 📁 Komplet dla `wifi.html`
+text
+
+```
+firmware/data/
+├── wifi.html          ← szkielet HTML
+├── css/style.css      ← wspólny styl
+├── js/common.js       ← wspólny WebSocket + narzędzia
+└── js/pages/wifi.js   ← logika specyficzna dla Wi-Fi (TWOJA WERSJA)
+```
+
+---
+
+### 📄 `wifi.html` – ostateczna wersja
+html
+
+```
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ustawienia · Wi-Fi</title>
+    <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+    <div class="instrument">
+
+        <!-- ===== NAGŁÓWEK ===== -->
+        <div class="header">
+            <div class="header-title">
+                <span>📶</span> Ustawienia · <span id="pageTitle">Wi-Fi</span>
+            </div>
+            <div class="header-status">
+                <span class="dot" id="wsDot"></span>
+                <span id="wsStatus">Łączenie...</span>
+            </div>
+        </div>
+
+        <!-- ===== TREŚĆ ===== -->
+        <form id="configForm" autocomplete="off">
+
+            <div class="form-group">
+                <span class="label">Nazwa sieci (SSID)</span>
+                <div class="form-row">
+                    <input type="text" id="wifiSsid" placeholder="np. MojaSieć" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <span class="label">Hasło <span class="unit">(minimum 8 znaków)</span></span>
+                <div class="form-row">
+                    <input type="password" id="wifiPass" placeholder="********" />
+                </div>
+            </div>
+
+            <!-- ===== STATUS POŁĄCZENIA ===== -->
+            <div style="display:flex;justify-content:space-between;font-size:12px;color:#5a6a7a;padding:6px 0;border-top:1px solid #1a1e24;margin-top:8px;">
+                <span>Status połączenia</span>
+                <span id="wifiStatus" style="color:#8a9aa8;font-weight:600;">Nieznany</span>
+            </div>
+
+            <!-- ===== PRZYCISKI ===== -->
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" id="wifiSaveBtn">Zapisz sieć</button>
+                <button type="button" class="btn btn-danger" id="wifiRemoveBtn">Usuń sieć</button>
+                <button type="button" class="btn btn-secondary" id="wifiRefreshBtn">Odśwież</button>
+            </div>
+
+            <div class="btn-group" style="margin-top:6px;">
+                <button type="button" class="btn btn-back btn-full" id="backBtn">← Wróć do panelu</button>
+            </div>
+
+        </form>
+
+        <!-- ===== STATUS BAR ===== -->
+        <div class="status-bar">
+            <span class="msg" id="statusMsg">Gotowy</span>
+            <span class="ws-detail" id="wsDetail"></span>
+        </div>
+
+    </div>
+
+    <!-- ===== SKRYPTY ===== -->
+    <script src="/js/common.js"></script>
+    <script src="/js/pages/wifi.js"></script>
+
+</body>
+</html>
+```
+
+---
+
+### 📄 `js/pages/wifi.js` – TWOJA WERSJA (zachowana)
+javascript
+
+```
+(function() {
+    'use strict';
+
+    const ink = window.Inkubator;
+    const ssidEl = document.getElementById('wifiSsid');
+    const passEl = document.getElementById('wifiPass');
+    const statusVal = document.getElementById('wifiStatus');
+    const saveBtn = document.getElementById('wifiSaveBtn');
+    const removeBtn = document.getElementById('wifiRemoveBtn');
+    const refreshBtn = document.getElementById('wifiRefreshBtn');
+    const backBtn = document.getElementById('backBtn');
+
+    if (!ssidEl || !passEl || !statusVal || !saveBtn || !removeBtn || !refreshBtn || !backBtn) {
+        return;
+    }
+
+    function updateWifiStatusText(text, type = 'info') {
+        statusVal.textContent = text;
+        statusVal.style.color = type === 'err' ? '#e05050' : type === 'ok' ? '#70d070' : '#8a9aa8';
+    }
+
+    ink.onWsEvent(function(type, ws, data) {
+        if (type === 'open') {
+            ws.send('carregarRede');
+            ws.send('getWifiStatus');
+            return;
+        }
+        if (type !== 'message') return;
+
+        const msg = data;
+        if (msg.startsWith('wifiConfig:')) {
+            const payload = msg.substring(11);
+            const parts = payload.split(',');
+            parts.forEach(part => {
+                const [key, value] = part.split('=');
+                if (key === 'ssid') ssidEl.value = value || '';
+            });
+            ink.setStatus('Pobrano konfigurację sieci', 'ok');
+            return;
+        }
+        if (msg.startsWith('wifiStatus:')) {
+            const status = msg.substring(11);
+            updateWifiStatusText(status === 'connected' ? 'Połączono' : 'Brak połączenia', status === 'connected' ? 'ok' : 'err');
+            return;
+        }
+        if (msg.startsWith('ok:setWifi') || msg.startsWith('ok:salvarRede')) {
+            ink.setStatus('Sieć zapisana', 'ok');
+            return;
+        }
+        if (msg.startsWith('ok:removeWifi')) {
+            ink.setStatus('Sieć usunięta', 'ok');
+            ssidEl.value = '';
+            passEl.value = '';
+            updateWifiStatusText('Usunięto', 'info');
+            return;
+        }
+    });
+
+    saveBtn.addEventListener('click', function() {
+        const ssid = ssidEl.value.trim();
+        const pass = passEl.value.trim();
+        if (!ssid) {
+            ink.setStatus('SSID nie może być pusty', 'err');
+            return;
+        }
+        if (pass.length > 0 && pass.length < 8) {
+            ink.setStatus('Hasło musi mieć minimum 8 znaków', 'err');
+            return;
+        }
+        ink.wsSend('salvarRede:' + ssid + ',' + pass);
+        ink.setStatus('Wysłano konfigurację Wi-Fi', 'info');
+    });
+
+    removeBtn.addEventListener('click', function() {
+        if (!confirm('Usunąć zapisane dane sieci Wi-Fi?')) return;
+        ink.wsSend('removerRede');
+        ink.setStatus('Wysłano usunięcie sieci', 'info');
+    });
+
+    refreshBtn.addEventListener('click', function() {
+        ink.wsSend('carregarRede');
+        ink.wsSend('getWifiStatus');
+        ink.setStatus('Odswiezanie ustawien...', 'info');
+    });
+
+    backBtn.addEventListener('click', function() {
+        window.location.href = '/';
+    });
+})();
+```
+
+---
+
+### ✅ Co zostało osiągnięte?
+
+ElementStatusUwagi**HTML**✅ GotowyUżywa `instrument`, `header`, `status-bar`**CSS**✅ Wspólny`style.css` z jednym zestawem reguł**JS (common)**✅ GotowyWebSocket, status, narzędzia**JS (page)**✅ GotowyTWOJA logika, używa `ink.*`**Live Server**✅ DziałaŚcieżki `/css/`, `/js/`
+
+---
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+**Finalizing page references**
+
+I can say we might apply the same approach to the remaining pages, like for temperature, humidity, etc. It seems like no changes
+
+---
+
+_**User (2026-07-07 21:49:21Z)**_
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ustawienia · [NAZWA]</title>
+    <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+    <div class="instrument">
+
+        <!-- ===== NAGŁÓWEK (ZAKOtwieramy od razu) ===== -->
+        <div class="header">
+            <div class="header-title">
+                <span>⚙</span> Ustawienia · <span id="pageTitle">[NAZWA]</span>
+            </div>
+            <div class="header-status">
+                <span class="dot" id="wsDot"></span>
+                <span id="wsStatus">Łączenie...</span>
+            </div>
+        </div>
+
+        <!-- ===== TREŚĆ (TU WKŁADAMY TWOJĄ ZAWARTOŚĆ) ===== -->
+        <!-- ... -->
+
+        <!-- ===== STATUS BAR (ZAWSZE NA DOLE) ===== -->
+        <div class="status-bar">
+            <span class="msg" id="statusMsg">Gotowy</span>
+            <span class="ws-detail" id="wsDetail"></span>
+        </div>
+
+    </div>
+
+    <!-- ===== SKRYPTY ===== -->
+    <script src="/js/common.js"></script>
+    <script src="/js/pages/[nazwa].js"></script>
+
+</body>
+</html>
+
+_**User (2026-07-07 21:53:50Z)**_
+
+sprawdz teraz wifi zmieniłem styl u js
+
+---
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+<think><details><summary>Thought Process</summary>
+Reviewing the current `wifi.html` and `js/pages/wifi.js` content to verify recent styling and JS updates.
+</details></think>
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file"><details>
+<summary>Tool use: **read_file**</summary>
+
+**Input:**
+
+- endLine: `220`
+- filePath: `j:\inkubator\inkubator-new\firmware\data\wifi.html`
+- startLine: `1`
+
+</details></tool-use>
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+<tool-use data-tool-type="read" data-tool-name="read_file"><details>
+<summary>Tool use: **read_file**</summary>
+
+**Input:**
+
+- endLine: `220`
+- filePath: `j:\inkubator\inkubator-new\firmware\data\js\pages\wifi.js`
+- startLine: `1`
+
+</details></tool-use>
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+**Checking wifi files**
+
+The user seems to want me to check the current changes in the wifi HTML and JavaScript. I think I should inspect those files to verify their content. I’ll use tools to read the current wifi.html and wifi.js files. If I notice anything that doesn’t match, I’ll look into adjusting them. It’s important to ensure everything aligns properly, so I’ll get started on reading both files now!
+
+---
+
+_**User (2026-07-07 21:54:51Z)**_
+
+napraw
+
+---
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+<think><details><summary>Thought Process</summary>
+Naprawiam obsługę otwarcia WebSocket w `wifi.js`, aby używała wspólnej funkcji `ink.wsSend` tak jak reszta kodu.
+</details></think>
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+<tool-use data-tool-type="generic" data-tool-name="replace_string_in_file"><details>
+<summary>Tool use: **replace_string_in_file**</summary>
+
+**Input:**
+
+- filePath: `j:\inkubator\inkubator-new\firmware\data\js\pages\wifi.js`
+- newString:
+
+```
+    ink.onWsEvent(function(type, ws, data) {
+        if (type === 'open') {
+            ink.wsSend('carregarRede');
+            ink.wsSend('getWifiStatus');
+            return;
+        }
+        if (type !== 'message') return;
+
+```
+
+- oldString:
+
+```
+    ink.onWsEvent(function(type, ws, data) {
+        if (type === 'open') {
+            ws.send('carregarRede');
+            ws.send('getWifiStatus');
+            return;
+        }
+        if (type !== 'message') return;
+
+```
+
+
+</details></tool-use>
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+**Implementing code changes**
+
+I need to replace `ws.send` with `ink.wsSend` in the open callback, and consider using `ink.setStatus` for updates. There might also be a similar issue with the status class that I should address. My plan is to patch this by using `replace_string_in_file`. First, I need to find the exact lines to make sure I'm only replacing in `wifi.js`. Let's proceed with that!
+
+---
+
+_**User (2026-07-07 21:57:26Z)**_
+
+### `js/pages/ajustes.js` – logika (czysta, bez emoji)
+javascript
+
+```
+(function() {
+    'use strict';
+
+    const ink = window.Inkubator;
+    if (!ink) {
+        console.error('[ajustes.js] Brak wspólnego modułu Inkubator');
+        return;
+    }
+
+    // ============================================================
+    //  OBSŁUGA WEBSOCKET
+    // ============================================================
+    ink.onWsEvent(function(type, ws, data) {
+        if (type === 'open') {
+            ink.setStatus('Połączono', 'ok');
+            // Opcjonalnie: pobierz jakieś dane
+            // ws.send('carregarConfiguracao');
+            return;
+        }
+
+        if (type === 'message') {
+            const msg = data;
+            // Obsługa wiadomości – jeśli potrzebna
+            // np. wyświetlenie wersji firmware
+            if (msg.startsWith('versaoFirmware:')) {
+                const version = msg.substring(15);
+                ink.setStatus('Wersja firmware: ' + version, 'info');
+            }
+        }
+    });
+
+    // ============================================================
+    //  PRZYCISK POWROTU – już w HTML jako link, ale dodajemy dla spójności
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+        // Wszystkie linki w siatce to już <a href="...">, więc nie potrzebują JS
+        // Ale możemy dodać logowanie kliknięć dla debugu
+        document.querySelectorAll('.btn-primary').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                console.log('[ajustes] Przejście do:', this.getAttribute('href'));
+            });
+        });
+    });
+
+})();
+```
+
+---
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+**Inspecting file contents**
+
+I need to respond to the user, as they requested a js/pages/ajustes.js snippet, which likely means they want to create or update this file. First, I'll check the current contents of that file, especially since they mentioned changes to ajustes.html. It’s crucial to verify what’s in js/pages/ajustes.js, and possibly data/ajustes.html, before making any edits. Let's inspect those files to gather all the necessary context!
+
+---
+
+_**User (2026-07-07 22:12:45Z)**_
+
+czy rózne nazwy robia problem?
+
+_**User (2026-07-07 22:14:23Z)**_
+
+napraw na własciwe nazwy i wypchnij nasz folder do do github
+
+_**User (2026-07-07 22:20:04Z)**_
+
+mozesz w git usunac wszystkie pliki inkubatora i te dzisiajsze wgraj jako główne bo reszte starych mam  na dysku i i ch tam  nie potrzeba w git
+
+---
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+**Understanding user request**
+
+The user wants to remove all files related to "inkubator" in their Git repository and upload today's files as the main ones since the older files are on their disk and not needed in Git anymore. I need to check the Git status—there may be many files. It’s crucial to handle this carefully. I'll be removing files from the repo index while ensuring we correctly identify the workspace root at j:\inkubator\inkubator-new\firmware. Let's proceed step by step!
+
+---
+
+_**User (2026-07-07 22:26:33Z)**_
+
+czy mozesz z git usunac inne stare commi ty backupy i inne linie - niech zostanie tylko folder inkubator new z firmware - nie potrzeba tam zadnych juz smieci i commitów starych
+
+---
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+## Zrobione
+
+- Tak, wyczyściłem `master` i wypchnąłem nową gałąź `clean-firmware` jako `master`.
+- Obecny `master` zawiera tylko folder `inkubator-new/firmware`.
+- Stare pliki, backupy i „śmieci” nie są już w gałęzi `master`.
+
+### Uwaga
+- Stare commity są już nieosiągalne z `master` po force-push.
+- Jeśli chcesz, mogę też usunąć zdalną gałąź `backup/com7-ap-fix` lub inne stare branch-e z origin.
+
+---
+
+_**User (2026-07-07 22:27:08Z)**_
+
+tak usun inne
+
+---
+
+_**Agent (copilot/oswe-vscode-prime)**_
+
+**Considering git branch deletions**
+
+I need to respond to the user's request to remove other branches, which may include a remote branch like backup/com7-ap-fix and possibly a local branch. It’s important to be careful since they want to keep only the folder and have previously indicated that they want to delete old commits and backups. I might need to delete local branches like backup/com7-ap-fix while keeping the clean-firmware. I’ll check remote branches to clarify what can be deleted without issues.

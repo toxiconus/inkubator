@@ -1,4 +1,4 @@
-(function() {
+﻿(function() {
     'use strict';
 
     const ink = window.Inkubator;
@@ -22,6 +22,24 @@
     const saveBtn = document.getElementById('saveBtn');
     const resetBtn = document.getElementById('resetBtn');
     const backBtn = document.getElementById('backBtn');
+
+    const requiredElements = [
+        setpointEl,
+        hysteresisEl,
+        alarmMaxEl,
+        alarmMinEl,
+        calibrationEl,
+        pumpTimeEl,
+        waterIntervalEl,
+        saveBtn,
+        resetBtn,
+        backBtn
+    ];
+
+    if (requiredElements.some(function(el) { return !el; })) {
+        console.error('[humidity.js] Brak wymaganych elementow DOM');
+        return;
+    }
 
     // ============================================================
     //  FUNKCJE POMOCNICZE
@@ -51,32 +69,53 @@
     function validateConfig(cfg) {
         if (cfg.setpoint < 30 || cfg.setpoint > 80) {
             ink.setStatus('Setpoint poza zakresem 30–80%', 'err');
+            setpointEl.setAttribute('aria-invalid', 'true');
+            setpointEl.focus();
             return false;
         }
+        setpointEl.removeAttribute('aria-invalid');
         if (cfg.hysteresis < 1 || cfg.hysteresis > 20) {
             ink.setStatus('Histereza poza zakresem 1–20%', 'err');
+            hysteresisEl.setAttribute('aria-invalid', 'true');
+            hysteresisEl.focus();
             return false;
         }
+        hysteresisEl.removeAttribute('aria-invalid');
         if (cfg.alarmMax <= cfg.setpoint + cfg.hysteresis) {
             ink.setStatus('Alarm max musi być > setpoint + histereza', 'err');
+            alarmMaxEl.setAttribute('aria-invalid', 'true');
+            alarmMaxEl.focus();
             return false;
         }
+        alarmMaxEl.removeAttribute('aria-invalid');
         if (cfg.alarmMin >= cfg.setpoint - cfg.hysteresis) {
             ink.setStatus('Alarm min musi być < setpoint – histereza', 'err');
+            alarmMinEl.setAttribute('aria-invalid', 'true');
+            alarmMinEl.focus();
             return false;
         }
+        alarmMinEl.removeAttribute('aria-invalid');
         if (cfg.calibration < -10 || cfg.calibration > 10) {
             ink.setStatus('Kalibracja poza zakresem -10..+10%', 'err');
+            calibrationEl.setAttribute('aria-invalid', 'true');
+            calibrationEl.focus();
             return false;
         }
+        calibrationEl.removeAttribute('aria-invalid');
         if (cfg.pumpTime < 0 || cfg.pumpTime > 60) {
             ink.setStatus('Czas pompy poza zakresem 0–60s', 'err');
+            pumpTimeEl.setAttribute('aria-invalid', 'true');
+            pumpTimeEl.focus();
             return false;
         }
+        pumpTimeEl.removeAttribute('aria-invalid');
         if (cfg.waterInterval < 1 || cfg.waterInterval > 24) {
             ink.setStatus('Interwał poza zakresem 1–24h', 'err');
+            waterIntervalEl.setAttribute('aria-invalid', 'true');
+            waterIntervalEl.focus();
             return false;
         }
+        waterIntervalEl.removeAttribute('aria-invalid');
         return true;
     }
 
@@ -242,7 +281,7 @@
         ink.wsSend('setPumpTime:' + cfg.pumpTime);
         ink.wsSend('setWaterCheckInterval:' + cfg.waterInterval);
 
-        ink.setStatus('Wysłano ustawienia wilgotności', 'ok');
+        ink.setStatus('Wysłano ustawienia wilgotności', 'info');
     }
 
     function resetToDefaults() {
@@ -263,7 +302,7 @@
     }
 
     function goBack() {
-        window.location.href = '/';
+        window.location.href = 'index.html';
     }
 
     // ============================================================
@@ -289,7 +328,12 @@
             ink.wsSend('getHumidityConfig');
         }
 
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') goBack();
+        });
+
         console.log('[humidity.js] Zainicjalizowano');
     });
 
 })();
+

@@ -1,4 +1,4 @@
-(function() {
+﻿(function() {
     'use strict';
 
     const ink = window.Inkubator;
@@ -15,6 +15,12 @@
     const sendBtn = document.getElementById('sendBtn');
     const clearBtn = document.getElementById('clearBtn');
     const backBtn = document.getElementById('backBtn');
+
+    const requiredElements = [consoleDiv, cmdInput, sendBtn, clearBtn, backBtn];
+    if (requiredElements.some(function(el) { return !el; })) {
+        console.error('[console.js] Brak wymaganych elementow DOM');
+        return;
+    }
 
     // ============================================================
     //  FUNKCJE POMOCNICZE
@@ -54,7 +60,7 @@
     }
 
     function goBack() {
-        window.location.href = '/';
+        window.location.href = 'index.html';
     }
 
     // ============================================================
@@ -62,7 +68,7 @@
     // ============================================================
     ink.onWsEvent(function(type, ws, data) {
         if (type === 'open') {
-            ink.setStatus('Połączono', 'ok');
+            ink.setStatus('Połączono z ESP', 'ok');
             displayMessage('--- Połączono z ESP ---', 'system-message');
             // Opcjonalnie: wyślij komendę powitalną
             // ws.send('carregarIdioma');
@@ -82,12 +88,12 @@
 
         if (type === 'close') {
             displayMessage('--- Rozłączono ---', 'error-message');
-            ink.setStatus('Rozłączono', 'err');
+            ink.setStatus('Rozłączono z ESP', 'err');
         }
 
         if (type === 'error') {
             displayMessage('--- Błąd WebSocket ---', 'error-message');
-            ink.setStatus('Błąd WebSocket', 'err');
+            ink.setStatus('Błąd połączenia z ESP', 'err');
         }
     });
 
@@ -107,6 +113,10 @@
             cmdInput.focus();
         }
 
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') goBack();
+        });
+
         // Wyświetl komunikat powitalny
         if (consoleDiv && consoleDiv.children.length === 0) {
             displayMessage('--- Konsola gotowa ---', 'system-message');
@@ -121,3 +131,4 @@
     });
 
 })();
+

@@ -1,0 +1,1085 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Symulacja legow i porownanie warunkow inkubacji dla dwoch gatunkow." />
+    <meta name="theme-color" content="#101317" />
+    <title>Analiza legow · Porownanie</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+        .config-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 16px;
+            padding: 10px 14px;
+            background: rgba(20, 24, 32, 0.4);
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .config-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .config-group label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #8a9aa8;
+        }
+
+        .config-group select,
+        .config-group input[type="number"],
+        .config-group input[type="range"] {
+            background: #161d24;
+            border: 1px solid #2d3744;
+            border-radius: 4px;
+            color: #e6eef8;
+            padding: 4px 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            outline: none;
+            min-width: 60px;
+        }
+
+        .config-group select:focus,
+        .config-group input:focus {
+            border-color: #5a8a7a;
+        }
+
+        .config-group input[type="range"] {
+            width: 120px;
+            padding: 0;
+            accent-color: #5a8a7a;
+        }
+
+        .config-group .day-display {
+            font-size: 16px;
+            font-weight: 700;
+            color: #70d070;
+            min-width: 32px;
+            text-align: center;
+        }
+
+        .sim-label {
+            font-weight: 700;
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .sim-label.sim1 {
+            background: rgba(57, 170, 255, 0.2);
+            color: #4ab0ff;
+            border: 1px solid rgba(57, 170, 255, 0.3);
+        }
+
+        .sim-label.sim2 {
+            background: rgba(255, 100, 100, 0.2);
+            color: #ff6a6a;
+            border: 1px solid rgba(255, 100, 100, 0.3);
+        }
+
+        .scenario-box {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(180px, 1fr));
+            gap: 8px 14px;
+            margin-bottom: 10px;
+            padding: 10px 12px;
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            background: rgba(12, 14, 18, 0.55);
+        }
+
+        .scenario-box .title {
+            grid-column: 1 / -1;
+            font-size: 10px;
+            color: #6f8498;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .scenario-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .scenario-row label {
+            font-size: 10px;
+            color: #8a9aa8;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            min-width: 82px;
+        }
+
+        .scenario-row .val {
+            font-size: 10px;
+            color: #b8d2df;
+            min-width: 52px;
+            text-align: right;
+        }
+
+        .chart-container {
+            --chart-height: 220px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .chart-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 10px;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 10px;
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            background: rgba(14, 18, 24, 0.72);
+        }
+
+        .chart-toolbar .label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #8a9aa8;
+            font-weight: 700;
+        }
+
+        .chart-toolbar input[type="range"] {
+            width: 160px;
+            accent-color: #5a8a7a;
+        }
+
+        .chart-toolbar .chart-height-value {
+            min-width: 62px;
+            text-align: right;
+            font-size: 10px;
+            color: #b8d2df;
+            font-family: 'Courier New', monospace;
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .chart-btn {
+            border: 1px solid #2b3a48;
+            background: #141b24;
+            color: #b8d2df;
+            border-radius: 4px;
+            font-size: 10px;
+            padding: 4px 8px;
+            cursor: pointer;
+        }
+
+        .chart-btn.active {
+            border-color: #5a8a7a;
+            color: #d9f0e6;
+            background: #1a2a26;
+        }
+
+        .chart-box {
+            background: rgba(12, 14, 18, 0.8);
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            padding: 6px 10px;
+        }
+
+        .chart-box .chart-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #5a6a7a;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            letter-spacing: 0.06em;
+        }
+
+        .chart-box .chart-title .legend {
+            font-weight: 400;
+            color: #5a6a7a;
+            font-size: 9px;
+        }
+
+        .chart-mini-controls {
+            display: inline-flex;
+            gap: 4px;
+            margin-left: 8px;
+        }
+
+        .y-range-pill {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 8px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            border: 1px solid #2b3a48;
+            background: rgba(20, 27, 36, 0.75);
+            color: #9ec7d6;
+            font-size: 9px;
+            letter-spacing: 0.04em;
+            font-family: 'Courier New', monospace;
+            text-transform: none;
+        }
+
+        .chart-mini-btn {
+            min-width: 28px;
+            height: 24px;
+            border: 1px solid #2b3a48;
+            background: #141b24;
+            color: #c7dfeb;
+            border-radius: 4px;
+            font-size: 11px;
+            line-height: 1;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 0 6px;
+        }
+
+        .chart-mini-btn:active {
+            transform: translateY(1px);
+        }
+
+        .chart-box canvas {
+            width: 100%;
+            height: var(--chart-height);
+            display: block;
+            background: transparent;
+            border-radius: 2px;
+        }
+
+        .chart-box.is-expanded {
+            grid-column: 1 / -1;
+        }
+
+        .chart-container.focus-temp #humChartBox,
+        .chart-container.focus-humidity #tempChartBox {
+            opacity: 0.35;
+            transform: scale(0.985);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .info-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .info-card {
+            background: rgba(20, 24, 32, 0.4);
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            padding: 8px 12px;
+        }
+
+        .info-card .info-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #5a6a7a;
+            letter-spacing: 0.08em;
+            margin-bottom: 4px;
+            border-bottom: 1px solid rgba(26, 30, 36, 0.4);
+            padding-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(26, 30, 36, 0.15);
+        }
+
+        .info-row .label {
+            color: #5a6a7a;
+        }
+
+        .info-row .value {
+            color: #b0c8d8;
+            font-weight: 600;
+        }
+
+        .alarm-box {
+            margin-top: 4px;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            min-height: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .alarm-box.ok {
+            background: rgba(48, 192, 96, 0.08);
+            border: 1px solid rgba(48, 192, 96, 0.15);
+            color: #70d070;
+        }
+
+        .alarm-box.warning {
+            background: rgba(232, 184, 48, 0.08);
+            border: 1px solid rgba(232, 184, 48, 0.15);
+            color: #e8b830;
+        }
+
+        .alarm-box.err {
+            background: rgba(224, 80, 80, 0.08);
+            border: 1px solid rgba(224, 80, 80, 0.15);
+            color: #e05050;
+        }
+
+        .comparison-card {
+            background: rgba(20, 24, 32, 0.4);
+            border: 2px solid rgba(48, 192, 96, 0.2);
+            border-radius: 4px;
+            padding: 8px 12px;
+            grid-column: 1 / -1;
+        }
+
+        .comparison-card .card-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #70d070;
+            letter-spacing: 0.08em;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        @media (max-width: 1024px) {
+            .chart-container {
+                grid-template-columns: 1fr;
+            }
+            .info-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 860px) {
+            .scenario-box {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .config-panel {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 6px;
+            }
+            .config-group {
+                justify-content: space-between;
+            }
+            .config-group input[type="range"] {
+                width: 100px;
+            }
+            .chart-box canvas {
+                height: max(160px, calc(var(--chart-height) - 40px));
+            }
+            .chart-mini-btn {
+                min-width: 32px;
+                height: 28px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .instrument {
+                padding: 8px 10px;
+            }
+            .config-group {
+                flex-wrap: wrap;
+            }
+            .config-group input[type="range"] {
+                width: 80px;
+            }
+            .chart-box canvas {
+                height: max(140px, calc(var(--chart-height) - 60px));
+            }
+        }
+    </style>
+</head>
+<body data-ws-autoconnect="false">
+
+    <noscript><div class="noscript-banner">Do poprawnego dzialania panelu wymagany jest JavaScript.</div></noscript>
+    <div id="offlineBanner" class="offline-banner" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <main class="instrument" id="mainContent" role="main">
+
+        <div class="header">
+            <div class="header-title">
+                <span>SIM</span> Analiza legow · <span id="pageTitle">Porownanie</span>
+            </div>
+            <div class="header-status">
+                <span class="dot" id="wsDot"></span>
+                <span id="wsStatus">Laczenie...</span>
+            </div>
+        </div>
+
+        <div class="config-panel">
+            <div class="config-group">
+                <span class="sim-label sim1">SIM1</span>
+                <label for="species1">Gatunek</label>
+                <select id="species1">
+                    <option value="chicken">Kura (21d)</option>
+                    <option value="duck_indian_runner">Kaczka Biegus (28d)</option>
+                    <option value="goose">Ges (30d)</option>
+                    <option value="quail">Przepiorka (17d)</option>
+                </select>
+                <label for="offset1">Offset</label>
+                <input type="number" id="offset1" min="0" max="10" value="0" />
+                <span style="color:#5a6a7a;font-size:9px;">dni</span>
+            </div>
+
+            <div class="config-group">
+                <span class="sim-label sim2">SIM2</span>
+                <label for="species2">Gatunek</label>
+                <select id="species2">
+                    <option value="chicken">Kura (21d)</option>
+                    <option value="duck_indian_runner" selected>Kaczka Biegus (28d)</option>
+                    <option value="goose">Ges (30d)</option>
+                    <option value="quail">Przepiorka (17d)</option>
+                </select>
+                <label for="offset2">Offset</label>
+                <input type="number" id="offset2" min="0" max="10" value="5" />
+                <span style="color:#5a6a7a;font-size:9px;">dni</span>
+            </div>
+
+            <div class="config-group" style="flex:1;min-width:220px;">
+                <label for="daySlider">Dzien</label>
+                <input type="range" id="daySlider" min="1" max="30" value="10" />
+                <span class="day-display" id="dayDisplay">10</span>
+                <button type="button" class="btn btn-primary" id="updateBtn" style="font-size:10px;padding:4px 12px;min-width:60px;">Odswiez</button>
+            </div>
+        </div>
+
+        <section class="scenario-box" aria-label="Konfiguracja scenariusza symulacji">
+            <div class="title">Silnik symulacji danych</div>
+
+            <div class="scenario-row">
+                <label for="scenarioSelect">Scenariusz</label>
+                <select id="scenarioSelect" style="min-width:180px;">
+                    <option value="normal">Normalny</option>
+                    <option value="heat_stress">Przegrzanie</option>
+                    <option value="cold_stress">Wychlodzenie</option>
+                    <option value="dry">Przesuszenie</option>
+                    <option value="wet">Przewilgocenie</option>
+                </select>
+            </div>
+
+            <div class="scenario-row">
+                <label for="noiseLevel">Zaklocenia</label>
+                <input type="range" id="noiseLevel" min="0" max="0.8" step="0.05" value="0.15" />
+                <span class="val" id="noiseLevelVal">0.15</span>
+            </div>
+
+            <div class="scenario-row">
+                <label for="tempBias">Korekta temp.</label>
+                <input type="range" id="tempBias" min="-1.5" max="1.5" step="0.1" value="0" />
+                <span class="val" id="tempBiasVal">0.0 C</span>
+            </div>
+
+            <div class="scenario-row">
+                <label for="humBias">Korekta RH</label>
+                <input type="range" id="humBias" min="-15" max="15" step="1" value="0" />
+                <span class="val" id="humBiasVal">0 %</span>
+            </div>
+
+            <div class="scenario-row" style="grid-column: 1 / -1;">
+                <button type="button" class="btn btn-secondary" id="playBtn">Auto-run OFF</button>
+                <span style="font-size:10px;color:#8496a8;">Auto-run przesuwa dzien co 1.2s i zapetlaja cykl.</span>
+            </div>
+        </section>
+
+        <div class="chart-toolbar" role="group" aria-label="Sterowanie widokiem wykresow">
+            <span class="label">Wysokosc wykresow</span>
+            <input type="range" id="chartHeightRange" min="160" max="420" step="10" value="220" />
+            <span class="chart-height-value" id="chartHeightValue">220 px</span>
+
+            <div class="chart-actions">
+                <button type="button" class="chart-btn" id="expandTempBtn">Powieksz temp</button>
+                <button type="button" class="chart-btn" id="expandHumBtn">Powieksz RH</button>
+                <button type="button" class="chart-btn" id="resetZoomBtn">Reset widoku</button>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-box" id="tempChartBox">
+                <div class="chart-title">
+                    <span>Temperatura skorupy (C)</span>
+                    <span class="legend" id="tempLegend">SIM1: -- | SIM2: --</span>
+                    <span class="y-range-pill" id="tempYRange" aria-label="Zakres osi Y temperatury">Y: 35.5-40.5 C</span>
+                    <span class="chart-mini-controls" role="group" aria-label="Szybki zoom temperatury">
+                        <button type="button" class="chart-mini-btn" id="tempZoomInBtn" aria-label="Przybliz wykres temperatury">+</button>
+                        <button type="button" class="chart-mini-btn" id="tempZoomOutBtn" aria-label="Oddal wykres temperatury">-</button>
+                        <button type="button" class="chart-mini-btn" id="tempZoomResetBtn" aria-label="Reset skali temperatury">0</button>
+                    </span>
+                </div>
+                <canvas id="tempChart"></canvas>
+            </div>
+            <div class="chart-box" id="humChartBox">
+                <div class="chart-title">
+                    <span>Wilgotnosc (RH%)</span>
+                    <span class="legend" id="humLegend">SIM1: -- | SIM2: --</span>
+                    <span class="y-range-pill" id="humYRange" aria-label="Zakres osi Y wilgotnosci">Y: 25-90 %</span>
+                    <span class="chart-mini-controls" role="group" aria-label="Szybki zoom wilgotnosci">
+                        <button type="button" class="chart-mini-btn" id="humZoomInBtn" aria-label="Przybliz wykres wilgotnosci">+</button>
+                        <button type="button" class="chart-mini-btn" id="humZoomOutBtn" aria-label="Oddal wykres wilgotnosci">-</button>
+                        <button type="button" class="chart-mini-btn" id="humZoomResetBtn" aria-label="Reset skali wilgotnosci">0</button>
+                    </span>
+                </div>
+                <canvas id="humChart"></canvas>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <div class="info-card">
+                <div class="info-title">
+                    <span class="sim-label sim1">SIM1</span>
+                    <span id="info1Name">Kura</span>
+                </div>
+                <div class="info-row"><span class="label">Dzien</span><span class="value" id="info1Day">1/21</span></div>
+                <div class="info-row"><span class="label">Temp. set</span><span class="value" id="info1Temp">--</span></div>
+                <div class="info-row"><span class="label">Temp. zakres</span><span class="value" id="info1TempRange">--</span></div>
+                <div class="info-row"><span class="label">Wilgotnosc set</span><span class="value" id="info1Hum">--</span></div>
+                <div class="info-row"><span class="label">RH zakres</span><span class="value" id="info1HumRange">--</span></div>
+                <div class="info-row"><span class="label">Wrazliwosc</span><span class="value" id="info1Sens">--</span></div>
+                <div class="info-row"><span class="label">Obracanie</span><span class="value" id="info1Turn">--</span></div>
+                <div class="alarm-box ok" id="alarm1">Brak alarmow</div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-title">
+                    <span class="sim-label sim2">SIM2</span>
+                    <span id="info2Name">Kaczka</span>
+                </div>
+                <div class="info-row"><span class="label">Dzien</span><span class="value" id="info2Day">1/28</span></div>
+                <div class="info-row"><span class="label">Temp. set</span><span class="value" id="info2Temp">--</span></div>
+                <div class="info-row"><span class="label">Temp. zakres</span><span class="value" id="info2TempRange">--</span></div>
+                <div class="info-row"><span class="label">Wilgotnosc set</span><span class="value" id="info2Hum">--</span></div>
+                <div class="info-row"><span class="label">RH zakres</span><span class="value" id="info2HumRange">--</span></div>
+                <div class="info-row"><span class="label">Wrazliwosc</span><span class="value" id="info2Sens">--</span></div>
+                <div class="info-row"><span class="label">Obracanie</span><span class="value" id="info2Turn">--</span></div>
+                <div class="alarm-box ok" id="alarm2">Brak alarmow</div>
+            </div>
+
+            <div class="comparison-card">
+                <div class="card-title">Kompromis (czesc wspolna)</div>
+                <div class="info-row"><span class="label">Zakres temp.</span><span class="value" id="compTemp">-- C do -- C</span></div>
+                <div class="info-row"><span class="label">Zakres wilg.</span><span class="value" id="compHum">--% do --%</span></div>
+                <div class="info-row"><span class="label">Kompatybilnosc</span><span class="value" id="compStatus">--</span></div>
+                <div style="margin-top:2px;font-size:9px;color:#5a6a7a;" id="compDesc">Wyznacz zakresy wspolne dla obu gatunkow na wybranym dniu.</div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button type="button" class="btn btn-primary" id="exportBtn">Eksportuj CSV</button>
+            <button type="button" class="btn btn-secondary" id="resetBtn">Reset</button>
+        </div>
+
+        <div class="btn-group" style="margin-top:6px;">
+            <button type="button" class="btn btn-back btn-full" id="backBtn">Powrot do panelu</button>
+        </div>
+
+        <div class="status-bar" role="status" aria-live="polite">
+            <span class="msg" id="statusMsg">Gotowy</span>
+            <span class="ws-detail" id="wsDetail"></span>
+        </div>
+
+    </main>
+
+    <!-- ===== SKRYPTY ===== -->
+    <script src="js/common.js"></script>
+    <script>
+    (function() {
+        'use strict';
+
+        // ============================================================
+        //  DANE SYMULACYJNE
+        // ============================================================
+        const SPECIES_DATA = {
+            chicken: { name: 'Kura', days: 21, lockdown: 19 },
+            duck_indian_runner: { name: 'Kaczka Biegus', days: 28, lockdown: 25 },
+            goose: { name: 'Gęś', days: 30, lockdown: 27 },
+            quail: { name: 'Przepiórka', days: 17, lockdown: 15 }
+        };
+
+        // ============================================================
+        //  GENEROWANIE DANYCH SYMULACYJNYCH
+        // ============================================================
+        function generateProfile(speciesId, day, offset = 0, noise = 0.15, tempBias = 0, humBias = 0, scenario = 'normal') {
+            const info = SPECIES_DATA[speciesId] || SPECIES_DATA.chicken;
+            const totalDays = info.days;
+            const effectiveDay = Math.min(day + offset, totalDays);
+
+            // Bazowe wartości
+            let temp = 37.8;
+            let rh = 55;
+            let sensitivity = 'MEDIUM';
+            let turning = true;
+            let lockdown = false;
+
+            // Fazy inkubacji
+            if (effectiveDay >= info.lockdown) {
+                temp = 37.2;
+                rh = 70;
+                lockdown = true;
+                turning = false;
+                sensitivity = 'HIGH';
+            } else if (effectiveDay > totalDays * 0.7) {
+                temp = 37.8 + (effectiveDay - totalDays * 0.7) / totalDays * 0.3;
+                rh = 55 + (effectiveDay - totalDays * 0.7) / totalDays * 10;
+                sensitivity = 'CRITICAL';
+            } else if (effectiveDay < 4) {
+                sensitivity = 'CRITICAL';
+            } else if (effectiveDay < 7) {
+                sensitivity = 'HIGH';
+            }
+
+            // Scenariusze
+            switch (scenario) {
+                case 'heat_stress':
+                    temp += 2.0 + Math.random() * 0.5;
+                    break;
+                case 'cold_stress':
+                    temp -= 2.0 + Math.random() * 0.5;
+                    break;
+                case 'dry':
+                    rh -= 15 + Math.random() * 5;
+                    break;
+                case 'wet':
+                    rh += 15 + Math.random() * 5;
+                    break;
+            }
+
+            // Szum i bias
+            temp += (Math.random() - 0.5) * noise * 2 + tempBias;
+            rh += (Math.random() - 0.5) * noise * 6 + humBias;
+
+            // Ograniczenia
+            temp = Math.max(35, Math.min(42, temp));
+            rh = Math.max(20, Math.min(95, rh));
+
+            return {
+                day: effectiveDay,
+                totalDays,
+                temp: Math.round(temp * 100) / 100,
+                rh: Math.round(rh * 10) / 10,
+                sensitivity,
+                turning,
+                lockdown,
+                isLockdown: lockdown,
+                species: info.name
+            };
+        }
+
+        // ============================================================
+        //  RYSOWANIE WYKRESÓW
+        // ============================================================
+        function drawChart(canvasId, data1, data2, metric, yMin, yMax) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.parentElement.getBoundingClientRect();
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const w = rect.width - 20;
+            const h = canvas.parentElement.clientHeight - 30 || 200;
+
+            canvas.width = w * dpr;
+            canvas.height = h * dpr;
+            canvas.style.width = w + 'px';
+            canvas.style.height = h + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            ctx.clearRect(0, 0, w, h);
+
+            if (!data1 || data1.length < 2) {
+                ctx.fillStyle = '#3a424a';
+                ctx.font = '12px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('oczekiwanie na dane...', w / 2, h / 2);
+                return;
+            }
+
+            const pad = { top: 8, bottom: 8, left: 28, right: 8 };
+            const plotW = w - pad.left - pad.right;
+            const plotH = h - pad.top - pad.bottom;
+
+            // Określenie zakresu
+            const allValues = [...data1, ...data2].filter(v => isFinite(v));
+            let min = yMin !== undefined ? yMin : Math.min(...allValues) - 0.3;
+            let max = yMax !== undefined ? yMax : Math.max(...allValues) + 0.3;
+            if (max - min < 1) { min -= 0.5; max += 0.5; }
+
+            const mapX = (idx, len) => pad.left + (idx / (len - 1 || 1)) * plotW;
+            const mapY = (v) => pad.top + plotH - ((v - min) / (max - min)) * plotH;
+
+            // Tło
+            ctx.fillStyle = 'rgba(10,12,14,0.3)';
+            ctx.fillRect(pad.left, pad.top, plotW, plotH);
+
+            // Siatka
+            ctx.strokeStyle = 'rgba(42,50,64,0.3)';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < 5; i++) {
+                const y = pad.top + (i / 4) * plotH;
+                ctx.beginPath();
+                ctx.moveTo(pad.left, y);
+                ctx.lineTo(pad.left + plotW, y);
+                ctx.stroke();
+            }
+
+            // Rysowanie linii dla data1
+            if (data1.length > 1) {
+                ctx.strokeStyle = '#4ab0ff';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                data1.forEach((v, i) => {
+                    const x = mapX(i, data1.length);
+                    const y = mapY(v);
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+
+                // Ostatni punkt
+                const last = data1[data1.length - 1];
+                if (isFinite(last)) {
+                    ctx.fillStyle = '#4ab0ff';
+                    ctx.beginPath();
+                    ctx.arc(mapX(data1.length - 1, data1.length), mapY(last), 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Rysowanie linii dla data2
+            if (data2.length > 1) {
+                ctx.strokeStyle = '#ff6a6a';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                data2.forEach((v, i) => {
+                    const x = mapX(i, data2.length);
+                    const y = mapY(v);
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+
+                const last = data2[data2.length - 1];
+                if (isFinite(last)) {
+                    ctx.fillStyle = '#ff6a6a';
+                    ctx.beginPath();
+                    ctx.arc(mapX(data2.length - 1, data2.length), mapY(last), 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Legenda na wykresie
+            ctx.font = '7px monospace';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'bottom';
+            ctx.fillStyle = '#4ab0ff';
+            ctx.fillText('SIM1', pad.left + 4, pad.top + plotH - 4);
+            ctx.fillStyle = '#ff6a6a';
+            ctx.fillText('SIM2', pad.left + 34, pad.top + plotH - 4);
+
+            // Etykiety osi Y
+            ctx.fillStyle = '#5a6a7a';
+            ctx.font = '7px monospace';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            const yLabels = [min, (min + max) / 2, max];
+            yLabels.forEach(v => {
+                ctx.fillText(v.toFixed(1), pad.left - 4, mapY(v));
+            });
+        }
+
+        // ============================================================
+        //  GŁÓWNA LOGIKA SYMULACJI
+        // ============================================================
+        let tempData1 = [], tempData2 = [];
+        let humData1 = [], humData2 = [];
+        let autoRun = false;
+        let autoRunTimer = null;
+        let currentDay = 10;
+
+        // Generowanie danych
+        function generateAllData(day) {
+            const species1 = document.getElementById('species1').value;
+            const species2 = document.getElementById('species2').value;
+            const offset1 = parseInt(document.getElementById('offset1').value) || 0;
+            const offset2 = parseInt(document.getElementById('offset2').value) || 0;
+            const noise = parseFloat(document.getElementById('noiseLevel').value) || 0.15;
+            const tempBias = parseFloat(document.getElementById('tempBias').value) || 0;
+            const humBias = parseFloat(document.getElementById('humBias').value) || 0;
+            const scenario = document.getElementById('scenarioSelect').value;
+
+            const day1 = Math.max(1, Math.min(day + offset1, 30));
+            const day2 = Math.max(1, Math.min(day + offset2, 30));
+
+            const profile1 = generateProfile(species1, day1, 0, noise, tempBias, humBias, scenario);
+            const profile2 = generateProfile(species2, day2, 0, noise, tempBias, humBias, scenario);
+
+            // Historia
+            const steps = 20;
+            tempData1 = [];
+            tempData2 = [];
+            humData1 = [];
+            humData2 = [];
+
+            for (let i = 0; i < steps; i++) {
+                const progress = i / steps;
+                const d1 = Math.max(1, Math.min(day1 - 5 + progress * 10, 30));
+                const d2 = Math.max(1, Math.min(day2 - 5 + progress * 10, 30));
+                const p1 = generateProfile(species1, d1, 0, noise * 0.5, tempBias, humBias, scenario);
+                const p2 = generateProfile(species2, d2, 0, noise * 0.5, tempBias, humBias, scenario);
+                tempData1.push(p1.temp);
+                tempData2.push(p2.temp);
+                humData1.push(p1.rh);
+                humData2.push(p2.rh);
+            }
+
+            return { profile1, profile2 };
+        }
+
+        function updateDisplay(day) {
+            const data = generateAllData(day);
+            const p1 = data.profile1;
+            const p2 = data.profile2;
+
+            // Update info cards
+            document.getElementById('info1Name').textContent = p1.species;
+            document.getElementById('info1Day').textContent = p1.day + '/' + p1.totalDays;
+            document.getElementById('info1Temp').textContent = p1.temp.toFixed(1) + ' °C';
+            document.getElementById('info1TempRange').textContent = (p1.temp - 0.3).toFixed(1) + ' – ' + (p1.temp + 0.3).toFixed(1) + ' °C';
+            document.getElementById('info1Hum').textContent = p1.rh.toFixed(0) + ' %';
+            document.getElementById('info1HumRange').textContent = (p1.rh - 5).toFixed(0) + ' – ' + (p1.rh + 5).toFixed(0) + ' %';
+            document.getElementById('info1Sens').textContent = p1.sensitivity;
+            document.getElementById('info1Turn').textContent = p1.turning ? 'TAK' : 'NIE';
+
+            document.getElementById('info2Name').textContent = p2.species;
+            document.getElementById('info2Day').textContent = p2.day + '/' + p2.totalDays;
+            document.getElementById('info2Temp').textContent = p2.temp.toFixed(1) + ' °C';
+            document.getElementById('info2TempRange').textContent = (p2.temp - 0.3).toFixed(1) + ' – ' + (p2.temp + 0.3).toFixed(1) + ' °C';
+            document.getElementById('info2Hum').textContent = p2.rh.toFixed(0) + ' %';
+            document.getElementById('info2HumRange').textContent = (p2.rh - 5).toFixed(0) + ' – ' + (p2.rh + 5).toFixed(0) + ' %';
+            document.getElementById('info2Sens').textContent = p2.sensitivity;
+            document.getElementById('info2Turn').textContent = p2.turning ? 'TAK' : 'NIE';
+
+            // Alarmy
+            const alarm1 = document.getElementById('alarm1');
+            const alarm2 = document.getElementById('alarm2');
+            if (p1.sensitivity === 'CRITICAL' || p1.temp > 39.5 || p1.temp < 36.5) {
+                alarm1.textContent = '⚠️ UWAGA! Krytyczna faza!';
+                alarm1.className = 'alarm-box err';
+            } else if (p1.sensitivity === 'HIGH' || p1.temp > 38.5 || p1.temp < 37.0) {
+                alarm1.textContent = '⚠️ Uwaga! Wrażliwa faza';
+                alarm1.className = 'alarm-box warning';
+            } else {
+                alarm1.textContent = '✅ OK';
+                alarm1.className = 'alarm-box ok';
+            }
+
+            if (p2.sensitivity === 'CRITICAL' || p2.temp > 39.5 || p2.temp < 36.5) {
+                alarm2.textContent = '⚠️ UWAGA! Krytyczna faza!';
+                alarm2.className = 'alarm-box err';
+            } else if (p2.sensitivity === 'HIGH' || p2.temp > 38.5 || p2.temp < 37.0) {
+                alarm2.textContent = '⚠️ Uwaga! Wrażliwa faza';
+                alarm2.className = 'alarm-box warning';
+            } else {
+                alarm2.textContent = '✅ OK';
+                alarm2.className = 'alarm-box ok';
+            }
+
+            // Kompromis
+            const tempMin = Math.min(p1.temp, p2.temp) - 0.2;
+            const tempMax = Math.max(p1.temp, p2.temp) + 0.2;
+            const humMin = Math.min(p1.rh, p2.rh) - 3;
+            const humMax = Math.max(p1.rh, p2.rh) + 3;
+            document.getElementById('compTemp').textContent = tempMin.toFixed(1) + ' °C do ' + tempMax.toFixed(1) + ' °C';
+            document.getElementById('compHum').textContent = humMin.toFixed(0) + '% do ' + humMax.toFixed(0) + '%';
+
+            const overlap = Math.max(0, Math.min(p1.temp + 0.5, p2.temp + 0.5) - Math.max(p1.temp - 0.5, p2.temp - 0.5));
+            const compStatus = document.getElementById('compStatus');
+            if (overlap > 0.5) {
+                compStatus.textContent = '✅ Dobra kompatybilność';
+                compStatus.style.color = '#70d070';
+            } else if (overlap > 0.2) {
+                compStatus.textContent = '⚠️ Średnia kompatybilność';
+                compStatus.style.color = '#e8b830';
+            } else {
+                compStatus.textContent = '❌ Niska kompatybilność';
+                compStatus.style.color = '#e05050';
+            }
+
+            // Legendy
+            document.getElementById('tempLegend').textContent = 'SIM1: ' + p1.temp.toFixed(1) + '°C | SIM2: ' + p2.temp.toFixed(1) + '°C';
+            document.getElementById('humLegend').textContent = 'SIM1: ' + p1.rh.toFixed(0) + '% | SIM2: ' + p2.rh.toFixed(0) + '%';
+
+            // Wykresy
+            drawChart('tempChart', tempData1, tempData2, 'temp');
+            drawChart('humChart', humData1, humData2, 'hum');
+        }
+
+        // ============================================================
+        //  EVENTY
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const daySlider = document.getElementById('daySlider');
+            const dayDisplay = document.getElementById('dayDisplay');
+
+            // Update na zmianę suwaka
+            daySlider.addEventListener('input', function() {
+                currentDay = parseInt(this.value);
+                dayDisplay.textContent = currentDay;
+                updateDisplay(currentDay);
+            });
+
+            // Przycisk odśwież
+            document.getElementById('updateBtn').addEventListener('click', function() {
+                updateDisplay(currentDay);
+            });
+
+            // Auto-run
+            document.getElementById('playBtn').addEventListener('click', function() {
+                autoRun = !autoRun;
+                this.textContent = autoRun ? '⏹️ Auto-run ON' : '▶️ Auto-run OFF';
+                if (autoRun) {
+                    autoRunTimer = setInterval(function() {
+                        currentDay = (currentDay % 30) + 1;
+                        daySlider.value = currentDay;
+                        dayDisplay.textContent = currentDay;
+                        updateDisplay(currentDay);
+                    }, 1200);
+                } else {
+                    clearInterval(autoRunTimer);
+                }
+            });
+
+            // Zmiana gatunku/offsetu
+            document.getElementById('species1').addEventListener('change', function() { updateDisplay(currentDay); });
+            document.getElementById('species2').addEventListener('change', function() { updateDisplay(currentDay); });
+            document.getElementById('offset1').addEventListener('change', function() { updateDisplay(currentDay); });
+            document.getElementById('offset2').addEventListener('change', function() { updateDisplay(currentDay); });
+            document.getElementById('noiseLevel').addEventListener('input', function() {
+                document.getElementById('noiseLevelVal').textContent = this.value;
+                updateDisplay(currentDay);
+            });
+            document.getElementById('tempBias').addEventListener('input', function() {
+                document.getElementById('tempBiasVal').textContent = parseFloat(this.value).toFixed(1) + ' °C';
+                updateDisplay(currentDay);
+            });
+            document.getElementById('humBias').addEventListener('input', function() {
+                document.getElementById('humBiasVal').textContent = parseInt(this.value) + ' %';
+                updateDisplay(currentDay);
+            });
+            document.getElementById('scenarioSelect').addEventListener('change', function() { updateDisplay(currentDay); });
+
+            // Wysokość wykresów
+            document.getElementById('chartHeightRange').addEventListener('input', function() {
+                const val = this.value;
+                document.getElementById('chartHeightValue').textContent = val + ' px';
+                document.querySelectorAll('.chart-box canvas').forEach(c => {
+                    c.style.height = val + 'px';
+                });
+            });
+
+            // Zoom
+            document.getElementById('expandTempBtn').addEventListener('click', function() {
+                document.querySelector('.chart-container').classList.toggle('focus-temp');
+            });
+            document.getElementById('expandHumBtn').addEventListener('click', function() {
+                document.querySelector('.chart-container').classList.toggle('focus-humidity');
+            });
+            document.getElementById('resetZoomBtn').addEventListener('click', function() {
+                document.querySelector('.chart-container').classList.remove('focus-temp', 'focus-humidity');
+            });
+
+            // Powrót
+            document.getElementById('backBtn').addEventListener('click', function() {
+                window.location.href = 'index.html';
+            });
+
+            // Eksport
+            document.getElementById('exportBtn').addEventListener('click', function() {
+                let csv = 'day,temp1,temp2,rh1,rh2\n';
+                for (let i = 0; i < tempData1.length; i++) {
+                    csv += i + ',' + tempData1[i] + ',' + tempData2[i] + ',' + humData1[i] + ',' + humData2[i] + '\n';
+                }
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'symulacja_legow_' + new Date().toISOString().slice(0, 19).replace(/:/g, '-') + '.csv';
+                link.click();
+            });
+
+            // Reset
+            document.getElementById('resetBtn').addEventListener('click', function() {
+                if (confirm('Resetować symulację?')) {
+                    tempData1 = [];
+                    tempData2 = [];
+                    humData1 = [];
+                    humData2 = [];
+                    currentDay = 10;
+                    document.getElementById('daySlider').value = 10;
+                    document.getElementById('dayDisplay').textContent = 10;
+                    document.getElementById('species1').value = 'chicken';
+                    document.getElementById('species2').value = 'duck_indian_runner';
+                    document.getElementById('offset1').value = 0;
+                    document.getElementById('offset2').value = 5;
+                    document.getElementById('noiseLevel').value = 0.15;
+                    document.getElementById('noiseLevelVal').textContent = '0.15';
+                    document.getElementById('tempBias').value = 0;
+                    document.getElementById('tempBiasVal').textContent = '0.0 °C';
+                    document.getElementById('humBias').value = 0;
+                    document.getElementById('humBiasVal').textContent = '0 %';
+                    document.getElementById('scenarioSelect').value = 'normal';
+                    if (autoRun) {
+                        autoRun = false;
+                        document.getElementById('playBtn').textContent = '▶️ Auto-run OFF';
+                        clearInterval(autoRunTimer);
+                    }
+                    updateDisplay(currentDay);
+                }
+            });
+
+            // Initial render
+            updateDisplay(currentDay);
+
+            // Responsive - przerysuj wykresy przy zmianie rozmiaru
+            let resizeTimer;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(function() {
+                    updateDisplay(currentDay);
+                }, 300);
+            });
+        });
+
+    })();
+    </script>
+</body>
+</html>
+

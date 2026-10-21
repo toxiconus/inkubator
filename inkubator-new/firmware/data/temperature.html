@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ustawienia · Temperatura</title>
-    <link rel="stylesheet" href="/css/style.css" />
+
+    
+    <meta name="description" content="Panel sterowania inkubatorem: konfiguracja, diagnostyka i monitoring." />
+    <meta name="theme-color" content="#101317" />
+<title>Ustawienia · Temperatura</title>
+    <link rel="stylesheet" href="css/style.css" />
     <style>
         /* ===== STYLE SPECYFICZNE DLA TEMPERATURY ===== */
         .current-value {
@@ -69,7 +73,10 @@
 </head>
 <body>
 
-    <div class="instrument">
+    <noscript><div class="noscript-banner">Do poprawnego dzialania panelu wymagany jest JavaScript.</div></noscript>
+    <div id="offlineBanner" class="offline-banner" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <main class="instrument" id="mainContent" role="main">
 
         <!-- ===== NAGŁÓWEK ===== -->
         <div class="header">
@@ -93,18 +100,18 @@
 
             <!-- Setpoint -->
             <div class="form-group">
-                <span class="label">Setpoint <span class="unit">(36.0 – 39.0 °C)</span></span>
+                <label class="label" for="setpoint">Setpoint <span class="unit">(36.0 – 39.0 °C)</span></label>
                 <div class="form-row">
-                    <input type="number" id="setpoint" min="36.0" max="39.0" step="0.1" value="37.5" />
+                    <input type="number" id="setpoint" min="36.0" max="39.0" step="0.1" value="37.5" inputmode="decimal" aria-label="Setpoint temperatury" />
                     <span class="hint">°C</span>
                 </div>
             </div>
 
             <!-- Histereza -->
             <div class="form-group">
-                <span class="label">Histereza <span class="unit">(0.2 – 1.0 °C)</span></span>
+                <label class="label" for="hysteresis">Histereza <span class="unit">(0.2 – 1.0 °C)</span></label>
                 <div class="form-row">
-                    <input type="number" id="hysteresis" min="0.2" max="1.0" step="0.1" value="0.5" />
+                    <input type="number" id="hysteresis" min="0.2" max="1.0" step="0.1" value="0.5" inputmode="decimal" aria-label="Histereza temperatury" />
                     <span class="hint">°C</span>
                 </div>
             </div>
@@ -112,17 +119,17 @@
             <!-- Alarmy -->
             <div class="temp-range">
                 <div class="form-group">
-                    <span class="label">Alarm max <span class="unit">(38.0 – 40.0 °C)</span></span>
+                    <label class="label" for="alarmMax">Alarm max <span class="unit">(38.0 – 40.0 °C)</span></label>
                     <div class="form-row">
-                        <input type="number" id="alarmMax" min="38.0" max="40.0" step="0.1" value="40.0" />
+                        <input type="number" id="alarmMax" min="38.0" max="40.0" step="0.1" value="40.0" inputmode="decimal" aria-label="Próg alarmu temperatury maksymalnej" />
                         <span class="hint">°C</span>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <span class="label">Alarm min <span class="unit">(34.0 – 36.0 °C)</span></span>
+                    <label class="label" for="alarmMin">Alarm min <span class="unit">(34.0 – 36.0 °C)</span></label>
                     <div class="form-row">
-                        <input type="number" id="alarmMin" min="34.0" max="36.0" step="0.1" value="36.0" />
+                        <input type="number" id="alarmMin" min="34.0" max="36.0" step="0.1" value="36.0" inputmode="decimal" aria-label="Próg alarmu temperatury minimalnej" />
                         <span class="hint">°C</span>
                     </div>
                 </div>
@@ -130,18 +137,18 @@
 
             <!-- Kalibracja -->
             <div class="form-group">
-                <span class="label">Kalibracja czujnika <span class="unit">(offset -5.0 – +5.0 °C)</span></span>
+                <label class="label" for="calibration">Kalibracja czujnika <span class="unit">(offset -5.0 – +5.0 °C)</span></label>
                 <div class="form-row">
-                    <input type="number" id="calibration" min="-5.0" max="5.0" step="0.1" value="0.0" />
+                    <input type="number" id="calibration" min="-5.0" max="5.0" step="0.1" value="0.0" inputmode="decimal" aria-label="Kalibracja czujnika temperatury" />
                     <span class="hint">°C</span>
                 </div>
             </div>
 
             <!-- Tryb sterowania -->
             <div class="form-group">
-                <span class="label">Tryb sterowania</span>
+                <label class="label" for="controlMode">Tryb sterowania</label>
                 <div class="form-row">
-                    <select id="controlMode">
+                    <select id="controlMode" aria-label="Tryb sterowania temperaturą">
                         <option value="0">On/Off</option>
                         <option value="1">PID</option>
                     </select>
@@ -150,9 +157,9 @@
 
             <!-- Opóźnienie wentylatora -->
             <div class="form-group">
-                <span class="label">Opóźnienie wentylatora <span class="unit">(0 – 15 s)</span></span>
+                <label class="label" for="fanDelay">Opóźnienie wentylatora <span class="unit">(0 – 15 s)</span></label>
                 <div class="form-row">
-                    <input type="number" id="fanDelay" min="0" max="15" step="1" value="5" />
+                    <input type="number" id="fanDelay" min="0" max="15" step="1" value="5" inputmode="numeric" aria-label="Opóźnienie wentylatora" />
                     <span class="hint">sekund</span>
                 </div>
             </div>
@@ -173,16 +180,21 @@
         </form>
 
         <!-- ===== STATUS BAR ===== -->
-        <div class="status-bar">
+        <div class="status-bar" role="status" aria-live="polite" aria-atomic="true">
             <span class="msg" id="statusMsg">Gotowy</span>
             <span class="ws-detail" id="wsDetail"></span>
         </div>
 
-    </div>
+    </main>
 
     <!-- ===== SKRYPTY ===== -->
-    <script src="/js/common.js"></script>
-    <script src="/js/pages/temperature.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/pages/temperature.js"></script>
 
 </body>
 </html>
+
+
+
+
+

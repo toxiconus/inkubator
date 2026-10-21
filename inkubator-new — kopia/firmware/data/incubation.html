@@ -1,0 +1,291 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Panel sterowania inkubatorem: konfiguracja, diagnostyka i monitoring." />
+    <meta name="theme-color" content="#101317" />
+    <title>Ustawienia · Inkubacja</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="js/common.js"></script>
+    <script src="js/pages/incubation.js" defer></script>
+    <style>
+        .tray-section {
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+            background: rgba(20, 24, 32, 0.3);
+        }
+
+        .tray-title {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #8a9aa8;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #1a1e24;
+            padding-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tray-summary {
+            font-size: 10px;
+            color: #5a6a7a;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .info-card {
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            background: rgba(12, 16, 22, 0.35);
+            padding: 6px 8px;
+        }
+
+        .info-label {
+            font-size: 10px;
+            color: #5a6a7a;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .info-value {
+            font-size: 13px;
+            font-weight: 700;
+            color: #e6eef8;
+        }
+
+        .info-value.ok {
+            color: #70d070;
+        }
+
+        .info-value.critical {
+            color: #e05050;
+        }
+
+        .schedule-box {
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            background: rgba(20, 24, 32, 0.25);
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+
+        .schedule-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #5a6a7a;
+            margin-bottom: 6px;
+        }
+
+        #scheduleWrap {
+            max-height: 240px;
+            overflow: auto;
+            border: 1px solid #1a1e24;
+            border-radius: 3px;
+        }
+
+        table.schedule {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .schedule th,
+        .schedule td {
+            padding: 5px 6px;
+            border-bottom: 1px solid rgba(26, 30, 36, 0.4);
+            text-align: left;
+        }
+
+        .schedule th {
+            position: sticky;
+            top: 0;
+            background: #121820;
+            color: #8a9aa8;
+            z-index: 1;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-size: 10px;
+        }
+
+        .schedule tr.active {
+            background: rgba(90, 138, 122, 0.2);
+        }
+
+        .schedule tr.lockdown {
+            background: rgba(232, 184, 48, 0.1);
+        }
+
+        .schedule tr.critical {
+            border-left: 2px solid #e05050;
+        }
+
+        @media (max-width: 700px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <noscript><div class="noscript-banner">Do poprawnego dzialania panelu wymagany jest JavaScript.</div></noscript>
+    <div id="offlineBanner" class="offline-banner" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <main class="instrument" id="mainContent" role="main">
+
+        <div class="header">
+            <div class="header-title">
+                <span>🐣</span> Ustawienia · <span id="pageTitle">Inkubacja</span>
+            </div>
+            <div class="header-status">
+                <span class="dot" id="wsDot"></span>
+                <span id="wsStatus">Łączenie...</span>
+            </div>
+        </div>
+
+        <form id="configForm" autocomplete="off">
+            <div class="tray-section">
+                <div class="tray-title">
+                    <span>Taca 1</span>
+                    <span class="tray-summary" id="tray1Day">Dzień --/--</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="species1">Gatunek</label>
+                    <div class="form-row">
+                        <select id="species1" aria-label="Gatunek dla tacy 1">
+                            <option value="CHICKEN">Kura</option>
+                            <option value="DUCK">Kaczka</option>
+                            <option value="GOOSE">Gęś</option>
+                            <option value="QUAIL">Przepiórka</option>
+                            <option value="GUINEA">Perliczka</option>
+                            <option value="PHEASANT">Bażant</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="day1">Aktualny dzień</label>
+                    <div class="form-row">
+                        <input type="number" id="day1" min="1" max="30" step="1" value="1" inputmode="numeric" aria-label="Aktualny dzień inkubacji taca 1" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="startDate1">Data startu</label>
+                    <div class="form-row">
+                        <input type="date" id="startDate1" aria-label="Data startu inkubacji taca 1" />
+                        <button type="button" class="btn btn-secondary" id="setStart1">Ustaw</button>
+                        <button type="button" class="btn btn-danger" id="resetDay1">Reset dnia</button>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-card"><div class="info-label">Dni łącznie</div><div class="info-value" id="totalDays1">--</div></div>
+                    <div class="info-card"><div class="info-label">Dzień bieżący</div><div class="info-value" id="currentDay1">--</div></div>
+                    <div class="info-card"><div class="info-label">Do końca</div><div class="info-value" id="remaining1">--</div></div>
+                    <div class="info-card"><div class="info-label">Status</div><div class="info-value" id="status1">--</div></div>
+                </div>
+            </div>
+
+            <div class="tray-section">
+                <div class="tray-title">
+                    <span>Taca 2</span>
+                    <span class="tray-summary" id="tray2Day">Dzień --/--</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="species2">Gatunek</label>
+                    <div class="form-row">
+                        <select id="species2" aria-label="Gatunek dla tacy 2">
+                            <option value="CHICKEN">Kura</option>
+                            <option value="DUCK" selected>Kaczka</option>
+                            <option value="GOOSE">Gęś</option>
+                            <option value="QUAIL">Przepiórka</option>
+                            <option value="GUINEA">Perliczka</option>
+                            <option value="PHEASANT">Bażant</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="day2">Aktualny dzień</label>
+                    <div class="form-row">
+                        <input type="number" id="day2" min="1" max="30" step="1" value="1" inputmode="numeric" aria-label="Aktualny dzień inkubacji taca 2" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="startDate2">Data startu</label>
+                    <div class="form-row">
+                        <input type="date" id="startDate2" aria-label="Data startu inkubacji taca 2" />
+                        <button type="button" class="btn btn-secondary" id="setStart2">Ustaw</button>
+                        <button type="button" class="btn btn-danger" id="resetDay2">Reset dnia</button>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-card"><div class="info-label">Dni łącznie</div><div class="info-value" id="totalDays2">--</div></div>
+                    <div class="info-card"><div class="info-label">Dzień bieżący</div><div class="info-value" id="currentDay2">--</div></div>
+                    <div class="info-card"><div class="info-label">Do końca</div><div class="info-value" id="remaining2">--</div></div>
+                    <div class="info-card"><div class="info-label">Status</div><div class="info-value" id="status2">--</div></div>
+                </div>
+            </div>
+
+            <div class="schedule-box">
+                <div class="schedule-title" id="scheduleInfo">Taca 1</div>
+                <div id="scheduleWrap">
+                    <table class="schedule" aria-label="Harmonogram inkubacji">
+                        <thead>
+                            <tr>
+                                <th>Dzień</th>
+                                <th>Temp</th>
+                                <th>RH</th>
+                                <th>Obrót</th>
+                                <th>Lock</th>
+                                <th>Stan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scheduleBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" id="applyBtn">Zastosuj dla T1</button>
+                <button type="button" class="btn btn-secondary" id="previewBtn">Podgląd T2</button>
+                <button type="button" class="btn btn-secondary" id="refreshBtn">Odśwież</button>
+            </div>
+
+            <div class="btn-group" style="margin-top:6px;">
+                <button type="button" class="btn btn-back btn-full" id="backBtn">← Wróć do panelu</button>
+            </div>
+        </form>
+
+        <div class="status-bar" role="status" aria-live="polite" aria-atomic="true">
+            <span class="msg" id="statusMsg">Gotowy</span>
+            <span class="ws-detail" id="wsDetail"></span>
+        </div>
+
+    </main>
+
+</body>
+</html>
+
+
+
+
+
+

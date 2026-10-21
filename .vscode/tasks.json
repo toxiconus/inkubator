@@ -1,0 +1,122 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Inkubator Mini (ESP32-S3)",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": ["-m", "platformio", "run", "-e", "esp32s3"],
+      "options": {
+        "cwd": "${workspaceFolder}/inkubator-new/firmware"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "Build LittleFS image",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": ["-m", "platformio", "run", "-t", "buildfs", "-e", "esp32s3"],
+      "options": {
+        "cwd": "${workspaceFolder}/inkubator-new/firmware"
+      },
+      "group": "build",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "Upload firmware to ESP32-S3 (COM7)",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": ["-m", "platformio", "run", "-e", "esp32s3", "-t", "upload", "--upload-port", "COM7"],
+      "options": {
+        "cwd": "${workspaceFolder}/inkubator-new/firmware"
+      },
+      "group": "none"
+    },
+    {
+      "label": "Upload LittleFS to ESP32-S3 (COM7)",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": ["-m", "platformio", "run", "-e", "esp32s3", "-t", "uploadfs", "--upload-port", "COM7"],
+      "options": {
+        "cwd": "${workspaceFolder}/inkubator-new/firmware"
+      },
+      "group": "none"
+    },
+    {
+      "label": "Upload firmware and LittleFS",
+      "type": "shell",
+      "command": "echo Upload completed",
+      "dependsOn": [
+        "Build Inkubator Mini (ESP32-S3)",
+        "Build LittleFS image",
+        "Upload firmware to ESP32-S3 (COM7)",
+        "Upload LittleFS to ESP32-S3 (COM7)"
+      ],
+      "dependsOrder": "sequence"
+    },
+    {
+      "label": "Backup ESP flash (COM7)",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": [
+        "-m",
+        "esptool",
+        "--chip",
+        "esp32s3",
+        "--port",
+        "COM7",
+        "--baud",
+        "2000000",
+        "read_flash",
+        "0x0000",
+        "0x800000",
+        "${workspaceFolder}/inkubator-new/firmware/old_v1.bin"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/inkubator-new/firmware"
+      },
+      "group": "none",
+      "problemMatcher": []
+    },
+    {
+      "label": "Erase ESP32-S3 (COM7)",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": [
+        "-m",
+        "platformio",
+        "run",
+        "-e",
+        "esp32s3",
+        "-t",
+        "erase",
+        "--upload-port",
+        "COM7"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/inkubator-new/firmware"
+      },
+      "group": "none",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "Backup, erase and upload all (ESP32-S3 COM7)",
+      "type": "shell",
+      "command": "echo Task completed",
+      "dependsOn": [
+        "Backup ESP flash (COM7)",
+        "Erase ESP32-S3 (COM7)",
+        "Build Inkubator Mini (ESP32-S3)",
+        "Build LittleFS image",
+        "Upload firmware to ESP32-S3 (COM7)",
+        "Upload LittleFS to ESP32-S3 (COM7)"
+      ],
+      "dependsOrder": "sequence",
+      "group": "none"
+    }
+  ]
+}

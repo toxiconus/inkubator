@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ustawienia · Alarmy</title>
-    <link rel="stylesheet" href="/css/style.css" />
+
+    
+    <meta name="description" content="Panel sterowania inkubatorem: konfiguracja, diagnostyka i monitoring." />
+    <meta name="theme-color" content="#101317" />
+<title>Ustawienia · Alarmy</title>
+    <link rel="stylesheet" href="css/style.css" />
     <style>
         /* ===== STYLE SPECYFICZNE DLA ALARMÓW ===== */
         .alarm-group {
@@ -98,7 +102,10 @@
 </head>
 <body>
 
-    <div class="instrument">
+    <noscript><div class="noscript-banner">Do poprawnego dzialania panelu wymagany jest JavaScript.</div></noscript>
+    <div id="offlineBanner" class="offline-banner" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <main class="instrument" id="mainContent" role="main">
 
         <!-- ===== NAGŁÓWEK ===== -->
         <div class="header">
@@ -115,14 +122,14 @@
         <form id="configForm">
 
             <div class="alarm-section-title">🔴 Alarmy krytyczne</div>
-            <div id="alarmList">
+            <div id="alarmList" role="group" aria-label="Lista alarmów">
                 <!-- Alarmy będą generowane przez JS -->
             </div>
 
             <div style="margin-top:10px;padding:8px 4px;background:rgba(20,24,32,0.3);border-radius:4px;border:1px solid #1a1e24;">
                 <div style="display:flex;justify-content:space-between;font-size:11px;color:#5a6a7a;padding:2px 4px;">
                     <span>Status ogólny</span>
-                    <span id="alarmOverallStatus" style="color:#70d070;font-weight:600;">OK</span>
+                    <span id="alarmOverallStatus" style="color:#70d070;font-weight:600;" role="status" aria-live="polite" aria-atomic="true">OK</span>
                 </div>
             </div>
 
@@ -139,16 +146,21 @@
         </form>
 
         <!-- ===== STATUS BAR ===== -->
-        <div class="status-bar">
+        <div class="status-bar" role="status" aria-live="polite" aria-atomic="true">
             <span class="msg" id="statusMsg">Gotowy</span>
             <span class="ws-detail" id="wsDetail"></span>
         </div>
 
-    </div>
+    </main>
 
     <!-- ===== SKRYPTY ===== -->
-    <script src="/js/common.js"></script>
-    <script src="/js/pages/alarms.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/pages/alarms.js"></script>
 
 </body>
 </html>
+
+
+
+
+
