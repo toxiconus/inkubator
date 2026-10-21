@@ -991,6 +991,36 @@ static void sendJsonError(int code, const char* message) {
     webServer.send(code, "application/json", String("{\"error\":\"") + message + "\"}");
 }
 
+// Wiersz logu: timestamp_ms,temp_chamber,temp_aquarium,humidity,heater_pct,heater_raw,diffuser_on
+static bool parseLogLine(const String& line, unsigned long& ts, float& temp, float& hum, int& heater, int& dif) {
+    const char* p = line.c_str();
+    char* end = nullptr;
+    ts = strtoul(p, &end, 10);
+    if (end == p || *end != ',') return false;
+    p = end + 1;
+    temp = (float)strtod(p, &end);
+    if (end == p || *end != ',') return false;
+    p = end + 1;
+    strtod(p, &end);                       // temp_aquarium (pomijamy)
+    if (end == p || *end != ',') return false;
+    p = end + 1;
+    hum = (float)strtod(p, &end);
+    if (end == p || *end != ',') return false;
+    p = end + 1;
+    heater = (int)strtol(p, &end, 10);
+    if (end == p || *end != ',') return false;
+    p = end + 1;
+    strtol(p, &end, 10);                   // heater_raw (pomijamy)
+    if (end == p || *end != ',') return false;
+    p = end + 1;
+    dif = (int)strtol(p, &end, 10);
+    return end != p;
+}
+
+static String jsonNumberOrNull(float v, int digits) {
+    return (isnan(v) || isinf(v)) ? String("null") : String(v, digits);
+}
+
 void webserver_setup() {
     webServer.on("/api/status", HTTP_GET, []() {
         JsonDocument doc;
@@ -1259,6 +1289,92 @@ void webserver_setup() {
         learning_mode = false;
         learning_profile = "";
         webServer.send(200, "application/json", "{\"ok\":true,\"message\":\"Dane uczenia wyczyszczone\"}");
+    });
+
+    // Historia z logu CSV zmniejszona do ok. `points` próbek. Log ma odczyty co minutę, a czas jest liczony
+    // od startu urządzenia (millis), więc zwracamy tylko bieżący odcinek (od ostatniego restartu).
+    webServer.on("/api/history", HTTP_GET, []() {
+        const int hours = constrain(webServer.hasArg("hours") ? webServer.arg("hours").toInt() : 6, 1, 168);
+        const int points = constrain(webServer.hasArg("points") ? webServer.arg("points").toInt() : 240, 20, 400);
+        const unsigned long now_ms = millis();
+        const unsigned long window_ms = (unsigned long)hours * 3600000UL;
+
+        File f = LittleFS.exists("/inkubator_log.csv") ? LittleFS.open("/inkubator_log.csv", "r") : File();
+        String ts_s, temp_s, hum_s, heater_s, dif_s;
+        int emitted = 0;
+        int step = 1;
+
+        if (f) {
+            const size_t size = f.size();
+            size_t want = (size_t)hours * 60 * 64;                 // ok. 50-60 B na wiersz, zapis co minutę
+            if (want > size) want = size;
+            const size_t start_pos = size - want;
+            f.seek(start_pos);
+            if (start_pos > 0) f.readStringUntil('\n');            // odrzuć niepełny wiersz
+            const size_t data_pos = f.position();
+
+            unsigned long ts = 0, prev = 0;
+            float temp = 0, hum = 0;
+            int heater = 0, dif = 0;
+
+            // Przebieg 1: gdzie zaczyna się bieżący odcinek (ostatni spadek czasu to restart urządzenia)
+            long idx = 0, seg_start = 0;
+            while (f.available()) {
+                const String line = f.readStringUntil('\n');
+                if (!parseLogLine(line, ts, temp, hum, heater, dif)) continue;
+                if (idx > 0 && ts < prev) seg_start = idx;
+                prev = ts;
+                idx++;
+            }
+
+            // Przebieg 2: ile wierszy mieści się w oknie czasu
+            f.seek(data_pos);
+            idx = 0;
+            long eligible = 0;
+            while (f.available()) {
+                const String line = f.readStringUntil('\n');
+                if (!parseLogLine(line, ts, temp, hum, heater, dif)) continue;
+                if (idx >= seg_start && ts + window_ms >= now_ms) eligible++;
+                idx++;
+            }
+
+            // Przebieg 3: zapis co k-tego wiersza oraz ostatniego
+            step = (int)max(1L, (eligible + points - 1) / points);
+            f.seek(data_pos);
+            idx = 0;
+            long j = 0;
+            ts_s.reserve(points * 11 + 16);
+            temp_s.reserve(points * 7 + 16);
+            hum_s.reserve(points * 7 + 16);
+            heater_s.reserve(points * 4 + 16);
+            dif_s.reserve(points * 2 + 16);
+            while (f.available()) {
+                const String line = f.readStringUntil('\n');
+                if (!parseLogLine(line, ts, temp, hum, heater, dif)) continue;
+                const bool ok = idx >= seg_start && ts + window_ms >= now_ms;
+                idx++;
+                if (!ok) continue;
+                if (j % step == 0 || j == eligible - 1) {
+                    const char* sep = emitted ? "," : "";
+                    ts_s += sep; ts_s += String(ts);
+                    temp_s += sep; temp_s += jsonNumberOrNull(temp < -50.0f ? NAN : temp, 2);
+                    hum_s += sep; hum_s += jsonNumberOrNull(hum < 0.0f ? NAN : hum, 1);
+                    heater_s += sep; heater_s += String(heater);
+                    dif_s += sep; dif_s += String(dif ? 1 : 0);
+                    emitted++;
+                }
+                j++;
+            }
+            f.close();
+        }
+
+        String out;
+        out.reserve(ts_s.length() + temp_s.length() + hum_s.length() + heater_s.length() + dif_s.length() + 160);
+        out += "{\"now_ms\":" + String(now_ms) + ",\"hours\":" + String(hours) + ",\"step\":" + String(step) +
+               ",\"count\":" + String(emitted) + ",\"since_boot\":true,\"t\":[" + ts_s + "],\"temp\":[" + temp_s +
+               "],\"hum\":[" + hum_s + "],\"heater\":[" + heater_s + "],\"dif\":[" + dif_s + "]}";
+        webServer.sendHeader("Cache-Control", "no-store");
+        webServer.send(200, "application/json", out);
     });
 
     webServer.onNotFound([]() {

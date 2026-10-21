@@ -1422,6 +1422,132 @@
         .schedule-table td.pk { font-size: 13px; color: var(--text-dim); padding: 6px 8px; border-bottom: 1px solid rgba(26, 30, 36, 0.5); width: 38%; }
         .schedule-table td.pv { font-size: 14px; color: var(--text); text-align: right; padding: 6px 8px; border-bottom: 1px solid rgba(26, 30, 36, 0.5); }
 
+        /* ===== ŹRÓDŁO DANYCH, ŁĄCZNOŚĆ, BLOKADA, MOTYW ===== */
+        .src-banner {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
+            margin: 0 0 10px; padding: 9px 14px; border-radius: 8px;
+            border: 1px solid var(--line); font-size: 14px; line-height: 1.35;
+        }
+        .src-banner[hidden] { display: none; }
+        .src-banner b { letter-spacing: 0.04em; }
+        .src-banner span { color: var(--text-dim); flex: 1 1 220px; }
+        .src-banner button {
+            font: inherit; font-weight: 600; padding: 6px 12px; border-radius: 6px; cursor: pointer;
+            color: var(--text); background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .src-banner.test { background: repeating-linear-gradient(135deg, rgba(232, 160, 48, 0.16) 0 14px, rgba(232, 160, 48, 0.08) 14px 28px); border-color: #e8a030; }
+        .src-banner.test b { color: #f0b860; }
+        .src-banner.offline { background: rgba(224, 80, 80, 0.14); border-color: #e05050; }
+        .src-banner.offline b { color: #ff8a8a; }
+        .src-banner.stale { background: rgba(232, 160, 48, 0.10); border-color: #8a6a30; }
+        .src-banner.stale b { color: #f0b860; }
+        body.link-offline .tiles, body.link-offline .center-panel, body.link-offline .sliders-panel { opacity: 0.5; filter: grayscale(0.7); }
+        body.src-test .toolbar { box-shadow: 0 0 0 2px #e8a030 inset; }
+        body.src-test .instrument::after {
+            content: "TEST"; position: fixed; right: 14px; bottom: 44px; z-index: 40; pointer-events: none;
+            font-weight: 800; font-size: 13px; letter-spacing: 0.2em; padding: 3px 10px; border-radius: 4px;
+            color: #1a1200; background: #e8a030; opacity: 0.9;
+        }
+        body:not(.src-test) .test-only { display: none !important; }
+
+        .tb-tool {
+            display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 4px 10px;
+            font: inherit; font-size: 13px; font-weight: 650; color: var(--text); cursor: pointer;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line); border-radius: 6px;
+            position: relative; overflow: hidden; user-select: none; -webkit-user-select: none; touch-action: manipulation;
+        }
+        .tb-tool:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+        .tb-tool .tool-dot { width: 9px; height: 9px; border-radius: 50%; background: #30c060; }
+        .tb-tool.is-test { border-color: #e8a030; color: #f0b860; }
+        .tb-tool.is-test .tool-dot { background: #e8a030; }
+        .tb-tool.lock::before {
+            content: ""; position: absolute; inset: 0; background: rgba(95, 176, 138, 0.45);
+            transform: scaleX(0); transform-origin: left; transition: none;
+        }
+        .tb-tool.lock.holding::before { transform: scaleX(1); transition: transform 1.2s linear; }
+        .tb-tool.lock.open { border-color: #5fb08a; color: #9be0bc; }
+        .tb-tool > * { position: relative; }
+
+        body.locked [data-risky] { opacity: 0.45; cursor: not-allowed; }
+        body.locked #view-status [data-risky] { pointer-events: auto; }
+
+        .panel-toast {
+            position: fixed; left: 50%; bottom: 52px; z-index: 100; max-width: min(92vw, 520px);
+            transform: translate(-50%, 12px); opacity: 0; transition: opacity 0.2s, transform 0.2s;
+            padding: 10px 16px; border-radius: 8px; font-size: 14px; line-height: 1.35; text-align: center;
+            color: #eef4fa; background: #1b222b; border: 1px solid #34404e; box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+        .panel-toast.show { opacity: 1; transform: translate(-50%, 0); }
+        .panel-toast.warn { border-color: #e8a030; }
+        .panel-toast.error { border-color: #e05050; }
+
+        /* ===== KAFELKI STATUSU ===== */
+        .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin: 0 0 10px; }
+        .tile {
+            border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0;
+            background: linear-gradient(180deg, rgba(18, 22, 28, 0.92), rgba(12, 14, 18, 0.92));
+        }
+        .tile-head { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 650; letter-spacing: 0.04em; color: var(--text-dim); text-transform: uppercase; }
+        .tile-val { font-size: 40px; line-height: 1.1; font-weight: 700; margin: 4px 0 6px; color: var(--text); }
+        .tile-val small { font-size: 16px; font-weight: 600; color: var(--text-dim); margin-left: 4px; }
+        .tile-sub { font-size: 13px; color: var(--text-dim); line-height: 1.4; }
+        .tile-note { font-size: 13px; margin-top: 6px; color: #f0b860; }
+        .tile-note.warn { margin: 0 0 10px; padding: 8px 12px; border: 1px solid #8a6a30; border-radius: 8px; background: rgba(232, 160, 48, 0.08); }
+        .tile[data-state="ok"] { border-color: #2e7a4c; }
+        .tile[data-state="ok"] .tile-val { color: #7fdc9a; }
+        .tile[data-state="warn"] { border-color: #b8842a; }
+        .tile[data-state="warn"] .tile-val { color: #f0b860; }
+        .tile[data-state="err"] { border-color: #b84040; background: linear-gradient(180deg, rgba(60, 20, 20, 0.7), rgba(24, 12, 12, 0.9)); }
+        .tile[data-state="err"] .tile-val { color: #ff8a8a; }
+        .gauge-bar { position: relative; height: 10px; border-radius: 5px; background: rgba(255, 255, 255, 0.07); margin: 4px 0 8px; }
+        .gauge-bar i { position: absolute; top: 0; bottom: 0; display: block; }
+        .gauge-bar .g-band { background: rgba(48, 192, 96, 0.35); border-radius: 5px; }
+        .gauge-bar .g-ideal { width: 2px; margin-left: -1px; background: #7fdc9a; top: -3px; bottom: -3px; }
+        .gauge-bar .g-mark { width: 4px; margin-left: -2px; top: -4px; bottom: -4px; border-radius: 2px; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6); transition: left 0.6s; }
+        .tray-meta { font-size: 13px; color: var(--text-dim); line-height: 1.5; padding: 4px 0; border-top: 1px solid var(--line); }
+        .tray-meta:first-of-type { border-top: 0; }
+        .tray-meta b { color: var(--text); }
+        .tray-meta .phase.ok { color: #7fdc9a; }
+        .tray-meta .phase.warn { color: #f0b860; }
+        .tray-meta .phase.critical { color: #ff8a8a; font-weight: 650; }
+        .muted { color: var(--text-dim); }
+
+        /* ===== WYKRESY ===== */
+        .chart-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 10px; }
+        .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+        .seg button {
+            font: inherit; font-size: 14px; font-weight: 600; min-height: 36px; padding: 6px 16px; cursor: pointer;
+            color: var(--text-dim); background: transparent; border: 0; border-right: 1px solid var(--line);
+        }
+        .seg button:last-child { border-right: 0; }
+        .seg button.active { color: #f2fbf6; background: rgba(95, 176, 138, 0.22); }
+        .chip { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--text-dim); }
+        .chip.test { border-color: #e8a030; color: #f0b860; }
+        .chip.live { border-color: #2e7a4c; color: #7fdc9a; }
+        .chart-canvas { width: 100%; height: 190px; display: block; border: 1px solid var(--line); border-radius: 6px; background: rgba(0, 0, 0, 0.25); touch-action: pan-y; }
+        .chart-stats { font-size: 12px; color: var(--text-dim); }
+        .chart-note { font-size: 13px; color: var(--text-dim); margin: 0 2px 8px; }
+        .chart-note:empty { display: none; }
+        .journal-row { display: flex; justify-content: space-between; gap: 12px; padding: 5px 8px; border-bottom: 1px solid var(--line); font-size: 13px; }
+        .journal-row span:last-child { color: var(--text-dim); text-align: right; }
+
+        /* ===== MOTYWY: ciemny (domyślny), nocny (przygaszony, ciepły), jasny ===== */
+        .instrument { transition: filter 0.4s; }
+        html[data-theme="night"] .instrument { filter: sepia(0.75) hue-rotate(-28deg) saturate(1.6) brightness(0.62) contrast(1.05); }
+        html[data-theme="night"] body { background: #000; }
+        html[data-theme="light"] { color-scheme: light; }
+        html[data-theme="light"] body { background: #f2f4f7; }
+        html[data-theme="light"] .instrument { filter: invert(1) hue-rotate(180deg) brightness(1.02); }
+        html[data-theme="light"] .instrument canvas, html[data-theme="light"] .instrument .steam { filter: none; }
+
+        @media (max-width: 760px) {
+            .tile-val { font-size: 34px; }
+            .tb-tool { padding: 4px 8px; } .toolbar { flex-wrap: wrap; } .toolbar-right { flex-wrap: wrap; gap: 6px 8px; width: 100%; justify-content: space-between; } .toolbar-right .tb-sep, .toolbar-right .tb-clock, .toolbar-right .tb-indicator:first-child { display: none; }
+            .seg button { padding: 6px 12px; }
+            .chart-canvas { height: 170px; }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             * { transition: none !important; animation: none !important; }
         }
@@ -1469,14 +1595,47 @@
                 <span class="tb-clock">
                     <span class="time" id="tbClock">--:--:--</span>
                 </span>
+                <button type="button" class="tb-tool src" id="btnSource" onclick="setDataSource(dataSource === 'test' ? 'live' : 'test')" title="Źródło danych">
+                    <span class="tool-dot"></span><span id="srcLabel">Rzecz.</span>
+                </button>
+                <button type="button" class="tb-tool" id="btnTheme" onclick="cycleTheme()" title="Motyw"><span id="themeIcon">🌓</span></button>
+                <button type="button" class="tb-tool lock" id="btnLock" title="Sterowanie zablokowane"><span id="lockIcon">🔒</span><span id="lockLabel"></span></button>
             </div>
         </header>
 
         <!-- ===== CONTENT ===== -->
         <div class="content">
+            <div id="srcBanner" class="src-banner" hidden></div>
 
             <!-- ===== ZAKŁADKA STATUS ===== -->
             <div id="view-status" class="view active">
+                <div class="tiles">
+                    <div class="tile gauge" id="tileTempTile" data-state="na">
+                        <div class="tile-head"><span>Temperatura</span><span class="tile-badge" id="tileTempBadge"></span></div>
+                        <div class="tile-val"><span id="tileTempVal">--</span><small>°C</small></div>
+                        <div class="gauge-bar"><i class="g-band" id="tileTempBand"></i><i class="g-ideal" id="tileTempIdeal"></i><i class="g-mark" id="tileTempMark"></i></div>
+                        <div class="tile-sub" id="tileTempSub">Brak aktywnego programu.</div>
+                        <div class="tile-note" id="tileTempNote" style="display:none"></div>
+                    </div>
+                    <div class="tile gauge" id="tileRhTile" data-state="na">
+                        <div class="tile-head"><span>Wilgotność</span><span class="tile-badge" id="tileRhBadge"></span></div>
+                        <div class="tile-val"><span id="tileRhVal">--</span><small>%</small></div>
+                        <div class="gauge-bar"><i class="g-band" id="tileRhBand"></i><i class="g-ideal" id="tileRhIdeal"></i><i class="g-mark" id="tileRhMark"></i></div>
+                        <div class="tile-sub" id="tileRhSub">Brak aktywnego programu.</div>
+                    </div>
+                    <div class="tile" id="tileHeatTile">
+                        <div class="tile-head"><span>Grzałka</span></div>
+                        <div class="tile-val"><span id="tileHeatVal">--</span><small>%</small></div>
+                        <div class="tile-sub" id="tileHeatSub"></div>
+                        <div class="tile-sub" id="diffuserSwitches"></div>
+                    </div>
+                    <div class="tile">
+                        <div class="tile-head"><span>Klucie</span></div>
+                        <div class="tray-meta" id="trayMeta1"></div>
+                        <div class="tray-meta" id="trayMeta2"></div>
+                    </div>
+                </div>
+                <div class="tile-note warn" id="tilesConflict" style="display:none">Tace mają programy o rozłącznych zakresach. Pokazano sumę zakresów, więc nie da się spełnić obu naraz.</div>
                 <div class="center-panel">
                     <div class="balance-wrap"><canvas id="balanceCanvas"></canvas></div>
 
@@ -1694,31 +1853,34 @@
 
             <!-- ===== ZAKŁADKA CHARTS ===== -->
             <div id="view-charts" class="view">
-                <div class="card">
-                    <div class="card-header"><span class="card-title">Temperatura</span></div>
-                    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px;">
-                        <button class="btn btn-ghost active" onclick="setChartRange('temp','1h')">1h</button>
-                        <button class="btn btn-ghost" onclick="setChartRange('temp','6h')">6h</button>
-                        <button class="btn btn-ghost" onclick="setChartRange('temp','24h')">24h</button>
-                        <button class="btn btn-ghost" onclick="setChartRange('temp','7d')">7d</button>
+                <div class="chart-bar">
+                    <div class="seg" id="chartRangeSeg">
+                        <button type="button" data-range="1h" onclick="setChartRange('1h')">1 h</button>
+                        <button type="button" data-range="6h" class="active" onclick="setChartRange('6h')">6 h</button>
+                        <button type="button" data-range="24h" onclick="setChartRange('24h')">24 h</button>
+                        <button type="button" data-range="7d" onclick="setChartRange('7d')">7 dni</button>
                     </div>
-                    <canvas id="chartTempMain" style="width:100%;height:150px;background:#0c0e12;border:1px solid #1a1e24;border-radius:3px;"></canvas>
+                    <span class="chip" id="chartSrcChip"></span>
                 </div>
                 <div class="card">
-                    <div class="card-header"><span class="card-title">Wilgotność</span></div>
-                    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px;">
-                        <button class="btn btn-ghost active" onclick="setChartRange('hum','1h')">1h</button>
-                        <button class="btn btn-ghost" onclick="setChartRange('hum','6h')">6h</button>
-                        <button class="btn btn-ghost" onclick="setChartRange('hum','24h')">24h</button>
-                        <button class="btn btn-ghost" onclick="setChartRange('hum','7d')">7d</button>
-                    </div>
-                    <canvas id="chartHumMain" style="width:100%;height:150px;background:#0c0e12;border:1px solid #1a1e24;border-radius:3px;"></canvas>
+                    <div class="card-header"><span class="card-title">Temperatura</span><span class="chart-stats" id="chartTempStats"></span></div>
+                    <canvas id="chartTempMain" class="chart-canvas"></canvas>
                 </div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Wilgotność</span><span class="chart-stats" id="chartHumStats"></span></div>
+                    <canvas id="chartHumMain" class="chart-canvas"></canvas>
+                </div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Moc grzałki i dyfuzory</span><span class="chart-stats" id="chartPowerStats"></span></div>
+                    <canvas id="chartPowerMain" class="chart-canvas"></canvas>
+                </div>
+                <div class="chart-note" id="chartBandNote"></div>
+                <div class="chart-note" id="chartNote"></div>
                 <div class="card">
                     <div class="card-header"><span class="card-title">Eksport</span></div>
                     <div class="btn-group">
-                        <button class="btn btn-primary" onclick="exportCSV()">Export CSV</button>
-                        <button class="btn btn-ghost" onclick="clearHistory()">Wyczyść historię</button>
+                        <button class="btn btn-primary" onclick="exportCSV()">Eksport CSV</button>
+                        <button class="btn btn-ghost" data-risky="1" onclick="clearHistory()">Wyczyść wykresy panelu</button>
                     </div>
                 </div>
             </div>
@@ -1748,10 +1910,11 @@
             <!-- ===== ZAKŁADKA JOURNAL ===== -->
             <div id="view-journal" class="view">
                 <div class="card">
-                    <div class="card-header"><span class="card-title">Dziennik inkubacji</span></div>
+                    <div class="card-header"><span class="card-title">Dziennik inkubacji</span><span class="chip" id="journalChip">zapis w tej przeglądarce</span></div>
                     <div id="journalList" class="journal-empty">Brak wpisów.</div>
                     <div class="btn-group" style="margin-top:6px;">
-                        <button class="btn btn-primary" onclick="journalAddTest()">+ Dodaj testowy</button>
+                        <button class="btn btn-primary" onclick="journalAdd()">+ Dodaj wpis</button>
+                        <button class="btn btn-ghost test-only" onclick="journalAddTest()">+ Dodaj testowy</button>
                         <button class="btn btn-ghost" onclick="journalClear()">Wyczyść</button>
                     </div>
                 </div>
@@ -1816,7 +1979,7 @@
             <div id="view-calibrate" class="view">
                 <div class="card">
                     <div class="card-header"><span class="card-title">Kalibracja tacy</span></div>
-                    <div style="font-size:12px;color:#5a6a7a;">Symulacja kalibracji — wersja demonstracyjna.</div>
+                    <div style="font-size:12px;color:#5a6a7a;">Symulacja kalibracji — wersja demonstracyjna, działa tylko w trybie testowym.</div>
                     <div class="grid-2" style="margin-top:6px;">
                         <div>
                             <div class="section-label">PWM</div>
@@ -2141,8 +2304,6 @@
             const HISTORY_LEN = 45;
             let tempRange = 1.0;
             let rhRange = 5.0;
-            let chartTempRange = '1h';
-            let chartHumRange = '1h';
             const RANGE_MS = { '1h': 3600000, '6h': 21600000, '24h': 86400000, '7d': 604800000 };
             const API_FETCH_TIMEOUT_MS = 5000;
             let apiOnline = false;
@@ -2743,53 +2904,238 @@
                 return response.json();
             }
 
-            async function fetchData() {
-                try {
-                    const [statusResp, trayResp] = await Promise.all([
-                        fetchJson('/api/status', {}, API_FETCH_TIMEOUT_MS),
-                        fetchJson('/api/trays', {}, API_FETCH_TIMEOUT_MS)
-                    ]);
-                    statusData = statusResp;
-                    trayData = trayResp;
-                    apiOnline = true;
-                    apiRetries = 0;
-                } catch (e) {
-                    apiRetries++;
-                    if (apiRetries >= 3) apiOnline = false;
-                    console.warn('Błąd pobierania danych, używam symulacji:', e.message);
-                    statusData = {
-                        temp_chamber: 37.65 + (Math.random() - 0.5) * 0.2,
-                        temp_aquarium: 37.55 + (Math.random() - 0.5) * 0.2,
-                        humidity: 60.2 + (Math.random() - 0.5) * 0.8,
-                        target_temp: 37.7,
-                        target_humidity: 60.0,
-                        humidity_target_min: 55,
-                        humidity_target_max: 65,
-                        heater_pct: 45 + Math.random() * 25,
-                        pwm_max: 1023,
-                        diffuser_0_on: Math.random() > 0.5,
-                        esp_internal_temp: 42 + Math.random() * 6
-                    };
-                    trayData = { trays: [{ species_id: 'CHICKEN', current_day: 12, total_days: 21 }, { species_id: 'DUCK',
-                            current_day: 8, total_days: 28 }] };
-                }
+// ============================================================
+            //  ŹRÓDŁO DANYCH: RZECZYWISTE (urządzenie) ALBO TESTOWE (symulacja)
+            //  Dane testowe nigdy nie są podstawiane po cichu. Gdy urządzenie nie odpowiada,
+            //  panel pokazuje brak połączenia i ostatnie prawdziwe odczyty razem z ich wiekiem.
+            // ============================================================
+            let dataSource = 'live';          // 'live' albo 'test'
+            let linkState = 'connecting';     // connecting | live | stale | offline | test
+            let lastLiveOk = 0;               // czas ostatniego udanego odczytu z urządzenia
+            const liveBuffer = [];            // prawdziwe odczyty zebrane w tej sesji (zapas dla wykresów)
+            const LIVE_BUFFER_MAX = 4000;
+            let seriesCache = {};
 
+            (function initDataSource() {
+                try {
+                    const q = new URLSearchParams(window.location.search).get('source');
+                    if (q === 'test' || q === 'live') dataSource = q;
+                    else if (sessionStorage.getItem('inkubator.dataSource') === 'test') dataSource = 'test';
+                } catch (e) { /* brak dostępu do pamięci przeglądarki: zostaje źródło rzeczywiste */ }
+                if (dataSource === 'test') linkState = 'test';
+            })();
+
+            function ageText(ms) {
+                const s = Math.max(0, Math.round(ms / 1000));
+                if (s < 90) return s + ' s';
+                const m = Math.floor(s / 60);
+                if (m < 90) return m + ' min';
+                return Math.floor(m / 60) + ' h ' + String(m % 60).padStart(2, '0') + ' min';
+            }
+
+            function fmtSpan(hours) {
+                if (hours < 1) return Math.round(hours * 60) + ' min';
+                if (hours < 48) return hours.toFixed(1).replace('.', ',') + ' h';
+                return (hours / 24).toFixed(1).replace('.', ',') + ' dni';
+            }
+
+            function notify(message, level) {
+                const el = document.createElement('div');
+                el.className = 'panel-toast ' + (level || 'info');
+                el.textContent = message;
+                document.body.appendChild(el);
+                requestAnimationFrame(function () { el.classList.add('show'); });
+                setTimeout(function () { el.classList.remove('show'); setTimeout(function () { el.remove(); }, 250); }, 3600);
+            }
+
+            // ------------------------------------------------------------
+            //  SYMULACJA (tylko dla trybu testowego). Regulator trzyma temperaturę blisko ideału,
+            //  wilgotność waha się piłą w zakresie, a co kilka godzin krótko otwierane są drzwi.
+            // ------------------------------------------------------------
+            const SIM_BOOT = Date.now();
+            function simHash(n) { const x = Math.sin(n * 12.9898) * 43758.5453; return x - Math.floor(x); }
+            function simAt(ms) {
+                const m = ms / 60000;
+                const k = Math.floor(m / 420), ph = m - k * 420;
+                const door = (simHash(k) > 0.45 && ph < 3) ? 1 - ph / 3 : 0;
+                const temp = 37.8 + 0.12 * Math.sin(2 * Math.PI * m / 37) + 0.05 * Math.sin(2 * Math.PI * m / 9.3) +
+                    (simHash(m) - 0.5) * 0.04 - 0.6 * door;
+                const P = 11, u = (m % P) / P, lo = 54, top = 58;
+                const on = u < 0.3;
+                let rh = on ? lo + (top - lo) * (u / 0.3) : top - (top - lo) * Math.pow((u - 0.3) / 0.7, 1.2);
+                rh += (simHash(m + 7) - 0.5) * 0.4 - 4 * door;
+                const heater = Math.max(0, Math.min(100, 36 + 6 * Math.sin(2 * Math.PI * m / 37 + 1) + 45 * door));
+                return { temp: temp, rh: rh, heater: heater, on: on, cyc: Math.floor(m / P) };
+            }
+
+            function simStatus() {
+                const now = Date.now();
+                const s = simAt(now);
+                return {
+                    temp_chamber: +s.temp.toFixed(2), temp_aquarium: +(s.temp - 0.2).toFixed(2), humidity: +s.rh.toFixed(1),
+                    target_temp: 37.8, control_mode: 2, control_temp: +s.temp.toFixed(2), setpoint_temp: 37.8,
+                    control_sensor: 0, control_on_shell: false,
+                    heater_pct: +s.heater.toFixed(1), pwm_max: 1023,
+                    heater_pwm_ch0: Math.round(s.heater * 10.23), heater_pwm_ch1: Math.round(s.heater * 10.23),
+                    diffuser_count: 2, diffuser_switches: 18 + Math.floor((now - SIM_BOOT) / 660000),
+                    diffuser_0_on: s.on && s.cyc % 2 === 0, diffuser_1_on: s.on && s.cyc % 2 === 1,
+                    esp_internal_temp: 41.2, uptime_ms: now - SIM_BOOT
+                };
+            }
+
+            function simTrays() {
+                const nowS = Math.floor(Date.now() / 1000);
+                const tray = function (i) {
+                    return { index: i, active: true, current_day: 12, total_days: 21, species_id: 'gallus_gallus_domesticus',
+                        target_temp: 37.8, target_humidity: 57, should_rotate: false, in_lockdown: false,
+                        start_unix: nowS - 11 * 86400 - 3600 };
+                };
+                return { trays: [tray(0), tray(1)] };
+            }
+
+            function simSeries(hours, points) {
+                const end = Date.now();
+                const step = hours * 3600000 / points;
+                const out = [];
+                for (let i = 0; i < points; i++) {
+                    const t = end - (points - 1 - i) * step;
+                    const s = simAt(t);
+                    out.push({ t: t, temp: s.temp, rh: s.rh, heater: s.heater, dif: s.on ? 1 : 0 });
+                }
+                return out;
+            }
+
+            function seedTestHistory() {
+                const now = Date.now();
+                for (let i = 59; i >= 0; i--) {
+                    const s = simAt(now - i * 5000);
+                    history.push({ temp: s.temp, wilg: s.rh, timestamp: now - i * 5000 });
+                    trendHistory.push({ temp: s.temp, rh: s.rh, timestamp: now - i * 5000 });
+                }
+            }
+
+            function pushLiveSample(s) {
+                liveBuffer.push({
+                    t: Date.now(), temp: (s.control_temp != null ? s.control_temp : s.temp_chamber), rh: s.humidity,
+                    heater: s.heater_pct != null ? s.heater_pct : null, dif: (s.diffuser_0_on || s.diffuser_1_on) ? 1 : 0
+                });
+                if (liveBuffer.length > LIVE_BUFFER_MAX) liveBuffer.shift();
+            }
+
+            // ------------------------------------------------------------
+            //  Komunikat o źródle danych i o łączności
+            // ------------------------------------------------------------
+            function renderLinkState() {
+                const banner = document.getElementById('srcBanner');
+                document.body.classList.toggle('src-test', dataSource === 'test');
+                document.body.classList.toggle('link-offline', dataSource === 'live' && linkState === 'offline');
+                document.body.classList.toggle('link-stale', dataSource === 'live' && linkState === 'stale');
+                const btn = document.getElementById('btnSource');
+                if (btn) {
+                    btn.classList.toggle('is-test', dataSource === 'test');
+                    document.getElementById('srcLabel').textContent = dataSource === 'test' ? 'TEST' : 'Rzecz.';
+                    btn.title = dataSource === 'test'
+                        ? 'Dane testowe (symulacja). Kliknij, aby wrócić do danych z urządzenia.'
+                        : 'Dane z urządzenia. Kliknij, aby przełączyć na dane testowe.';
+                }
+                if (!banner) return;
+                const age = lastLiveOk ? ageText(Date.now() - lastLiveOk) : null;
+                if (dataSource === 'test') {
+                    banner.className = 'src-banner test';
+                    banner.innerHTML = '<b>TRYB TESTOWY</b><span>Dane są symulowane i nie pochodzą z urządzenia. Zmiany nie trafiają do inkubatora.</span>' +
+                        '<button type="button" onclick="setDataSource(\'live\')">Pokaż dane z urządzenia</button>';
+                    banner.hidden = false;
+                } else if (linkState === 'offline') {
+                    banner.className = 'src-banner offline';
+                    banner.innerHTML = '<b>BRAK POŁĄCZENIA Z URZĄDZENIEM</b><span>' +
+                        (age ? 'Poniżej ostatnie odczyty sprzed ' + age + '. Nie są aktualne.' : 'Nie ma jeszcze żadnych odczytów.') + '</span>';
+                    banner.hidden = false;
+                } else if (linkState === 'stale') {
+                    banner.className = 'src-banner stale';
+                    banner.innerHTML = '<b>Urządzenie nie odpowiada</b><span>Ponawiam połączenie' + (age ? ', ostatnie dane sprzed ' + age : '') + '.</span>';
+                    banner.hidden = false;
+                } else {
+                    banner.hidden = true;
+                }
+            }
+
+            window.setDataSource = function (mode) {
+                if (mode !== 'live' && mode !== 'test') return;
+                if (mode === dataSource) return;
+                if (mode === 'test' && !confirm('Przełączyć na DANE TESTOWE?\n\nPanel pokaże symulowane odczyty, które nie pochodzą z urządzenia. ' +
+                        'Zmiany w tym trybie nie trafiają do inkubatora.')) return;
+                dataSource = mode;
+                try { sessionStorage.setItem('inkubator.dataSource', mode); } catch (e) { /* ignorujemy */ }
+                statusData = null;
+                trayData = null;
+                history = [];
+                trendHistory = [];
+                seriesCache = {};
+                apiRetries = 0;
+                linkState = mode === 'test' ? 'test' : 'connecting';
+                if (mode === 'test') seedTestHistory();
+                renderLinkState();
+                fetchData();
+            };
+
+            // ============================================================
+            //  POBIERANIE DANYCH
+            // ============================================================
+            async function fetchData() {
+                if (dataSource === 'test') {
+                    statusData = simStatus();
+                    trayData = simTrays();
+                    linkState = 'test';
+                } else {
+                    try {
+                        const [statusResp, trayResp] = await Promise.all([
+                            fetchJson('/api/status', {}, API_FETCH_TIMEOUT_MS),
+                            fetchJson('/api/trays', {}, API_FETCH_TIMEOUT_MS)
+                        ]);
+                        if (!statusResp || typeof statusResp.temp_chamber !== 'number') throw new Error('Nieprawidłowa odpowiedź status');
+                        if (!trayResp || !Array.isArray(trayResp.trays)) throw new Error('Nieprawidłowa odpowiedź tray');
+                        if (dataSource !== 'live') return;             // w międzyczasie przełączono na dane testowe
+                        statusData = statusResp;
+                        trayData = trayResp;
+                        apiOnline = true;
+                        apiRetries = 0;
+                        linkState = 'live';
+                        lastLiveOk = Date.now();
+                        pushLiveSample(statusResp);
+                    } catch (e) {
+                        if (dataSource !== 'live') return;
+                        apiRetries++;
+                        apiOnline = false;
+                        linkState = apiRetries >= 3 ? 'offline' : 'stale';
+                        console.warn('Brak odpowiedzi urządzenia (' + apiRetries + '): ' + e.message);
+                        // Ostatnie prawdziwe odczyty zostają na ekranie (bez symulacji), z wyraźnym oznaczeniem.
+                    }
+                }
+                renderLinkState();
+
+                const fresh = dataSource === 'test' || linkState === 'live';
                 if (statusData) {
-                    const avgTemp = statusData.temp_chamber ?? 0;
-                    const rh = statusData.humidity ?? 0;
-                    history.push({ temp: avgTemp, wilg: rh, timestamp: Date.now() });
-                    if (history.length > HISTORY_LEN) history.shift();
-                    trendHistory.push({ temp: avgTemp, rh: rh, timestamp: Date.now() });
-                    if (trendHistory.length > TREND_LEN * 2) trendHistory.shift();
+                    if (fresh) {
+                        const avgTemp = (statusData.control_temp != null ? statusData.control_temp : statusData.temp_chamber) ?? 0;
+                        const rh = statusData.humidity ?? 0;
+                        history.push({ temp: avgTemp, wilg: rh, timestamp: Date.now() });
+                        if (history.length > HISTORY_LEN) history.shift();
+                        trendHistory.push({ temp: avgTemp, rh: rh, timestamp: Date.now() });
+                        if (trendHistory.length > TREND_LEN * 2) trendHistory.shift();
+                    }
                     updateHUD();
                     updateToolbar();
                     draw();
                     drawTrend();
                     updateAlerts();
-                    renderCharts();
+                    if (typeof updateTiles === 'function') updateTiles();
+                    const chartsView = document.getElementById('view-charts');
+                    if (chartsView && chartsView.classList.contains('active')) renderCharts();
                 }
                 if (trayData) {
                     updateTrays();
+                    updateTrayMeta();
+                    if (typeof updateTiles === 'function') updateTiles();
                     renderScheduleTables();
                 }
             }
@@ -2837,101 +3183,734 @@
             }
 
             // ============================================================
-            //  CHARTS
+            //  WYKRESY
             // ============================================================
-            function renderCharts() {
-                const tempC = document.getElementById('chartTempMain');
-                const humC = document.getElementById('chartHumMain');
-                if (!tempC || !humC) return;
-                drawChart(tempC, 'temp', chartTempRange);
-                drawChart(humC, 'hum', chartHumRange);
+// ============================================================
+            //  WYKRESY: prawdziwa historia z urządzenia albo dane testowe.
+            //  Pasmo to zakres dopuszczalny bieżącego etapu programu, linia przerywana to wartość idealna.
+            // ============================================================
+            const RANGE_HOURS = { '1h': 1, '6h': 6, '24h': 24, '7d': 168 };
+            let chartRange = '6h';
+            let chartSeries = null;
+            let chartLoading = false;
+
+            async function loadLiveSeries(hours) {
+                try {
+                    const r = await fetchJson('/api/history?hours=' + hours + '&points=240', {}, 12000);
+                    if (r && Array.isArray(r.t) && r.t.length > 1) {
+                        const now = Date.now();
+                        const pts = r.t.map(function (ts, i) {
+                            return { t: now - (r.now_ms - ts), temp: r.temp[i], rh: r.hum[i], heater: r.heater[i], dif: r.dif[i] };
+                        });
+                        const spanH = (pts[pts.length - 1].t - pts[0].t) / 3600000;
+                        return {
+                            points: pts, source: 'live',
+                            note: spanH < hours * 0.9 ? 'Historia od ostatniego uruchomienia urządzenia (' + fmtSpan(spanH) + ').' : ''
+                        };
+                    }
+                } catch (e) { /* przechodzimy do zapasowego źródła */ }
+                if (liveBuffer.length > 1) {
+                    const from = Date.now() - hours * 3600000;
+                    const pts = liveBuffer.filter(function (p) { return p.t >= from; });
+                    if (pts.length > 1) {
+                        return { points: pts, source: 'session',
+                            note: 'Urządzenie nie udostępniło historii. Pokazuję odczyty zebrane w tej sesji przeglądarki (' + fmtSpan((pts[pts.length - 1].t - pts[0].t) / 3600000) + ').' };
+                    }
+                }
+                return { points: [], source: 'none', note: 'Brak historii do wyświetlenia.' };
             }
 
-            function drawChart(canvas, metric, range) {
+            async function loadSeries(rangeKey, force) {
+                const hours = RANGE_HOURS[rangeKey] || 6;
+                const key = dataSource + ':' + rangeKey;
+                const cached = seriesCache[key];
+                if (!force && cached && Date.now() - cached.at < 30000) return cached.value;
+                const value = dataSource === 'test'
+                    ? { points: simSeries(hours, 240), source: 'test', note: 'Dane testowe (symulacja), nie pochodzą z urządzenia.' }
+                    : await loadLiveSeries(hours);
+                seriesCache[key] = { at: Date.now(), value: value };
+                return value;
+            }
+
+            function fmtAxisTime(ms, hours) {
+                const d = new Date(ms);
+                if (hours <= 24) return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+                return d.toLocaleDateString('pl-PL', { weekday: 'short' }) + ' ' + String(d.getHours()).padStart(2, '0') + ':00';
+            }
+
+            // Rysuje wykres liniowy z pasmem zakresu dopuszczalnego. Zwraca statystyki.
+            function drawLineChart(canvas, points, pick, opt, hoverX) {
                 const ctx2 = canvas.getContext('2d');
                 const rect = canvas.getBoundingClientRect();
                 const w = Math.round(rect.width) || (canvas.parentElement ? canvas.parentElement.clientWidth : 0) || 400;
-                const h = Math.round(rect.height) || 150;
+                const h = Math.round(rect.height) || 170;
                 const cdpr = window.devicePixelRatio || 1;
                 canvas.width = w * cdpr;
                 canvas.height = h * cdpr;
-                // szerokość zostaje 100% (z HTML), żeby wykres dopasowywał się do ekranu
                 canvas.style.width = '100%';
                 canvas.style.height = h + 'px';
                 ctx2.setTransform(cdpr, 0, 0, cdpr, 0, 0);
                 ctx2.clearRect(0, 0, w, h);
 
-                const store = metric === 'temp' ? history : trendHistory;
-                const data = store.slice(-50);
+                const data = points.filter(function (p) { return isFinite(pick(p)); });
                 if (data.length < 2) {
-                    ctx2.fillStyle = '#3a424a';
-                    ctx2.font = '12px ' + CANVAS_FONT;
+                    ctx2.fillStyle = '#6a7a8a';
+                    ctx2.font = '13px ' + CANVAS_FONT;
                     ctx2.textAlign = 'center';
-                    ctx2.fillText('oczekiwanie na dane...', w / 2, h / 2);
-                    return;
+                    ctx2.fillText('Brak danych do wyświetlenia', w / 2, h / 2);
+                    return null;
                 }
 
-                const vals = data.map(d => metric === 'temp' ? d.temp : d.rh).filter(isFinite);
-                if (vals.length < 2) return;
-                const lo = Math.min(...vals) - 0.5;
-                const hi = Math.max(...vals) + 0.5;
+                const vals = data.map(pick);
+                let lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+                if (opt.min != null) { lo = Math.min(lo, opt.min); hi = Math.max(hi, opt.max); }
+                const pad = Math.max(opt.minSpan / 2, (hi - lo) * 0.12);
+                lo -= pad; hi += pad;
+                if (opt.clamp) { lo = Math.max(opt.clamp[0], lo); hi = Math.min(opt.clamp[1], hi); }
 
-                const pad = { top: 12, bottom: 12, left: 30, right: 10 };
-                const plotW = w - pad.left - pad.right;
-                const plotH = h - pad.top - pad.bottom;
+                const m = { top: 10, bottom: 20, left: 40, right: 10 };
+                const plotW = w - m.left - m.right, plotH = h - m.top - m.bottom;
+                const t0 = data[0].t, t1 = data[data.length - 1].t;
+                const mapX = function (t) { return m.left + (t1 === t0 ? 0 : (t - t0) / (t1 - t0)) * plotW; };
+                const mapY = function (v) { return m.top + plotH - ((v - lo) / (hi - lo)) * plotH; };
 
-                const mapX = (i) => pad.left + (i / (data.length - 1)) * plotW;
-                const mapY = (v) => pad.top + plotH - ((v - lo) / (hi - lo)) * plotH;
-
-                // Zielony pas
-                const mid = (lo + hi) / 2;
-                const band = (hi - lo) * 0.2;
-                ctx2.fillStyle = 'rgba(34,197,94,0.08)';
-                ctx2.fillRect(pad.left, mapY(mid + band), plotW, mapY(mid - band) - mapY(mid + band));
-
-                // Linia trendu
-                ctx2.strokeStyle = '#7a8a9a';
-                ctx2.lineWidth = 1.2;
-                ctx2.beginPath();
-                data.forEach((d, i) => {
-                    const v = metric === 'temp' ? d.temp : d.rh;
-                    if (!isFinite(v)) return;
-                    const x = mapX(i);
-                    const y = mapY(v);
-                    if (i === 0) ctx2.moveTo(x, y);
-                    else ctx2.lineTo(x, y);
-                });
-                ctx2.stroke();
-
-                // Ostatnia kropka
-                const last = data[data.length - 1];
-                const lv = metric === 'temp' ? last.temp : last.rh;
-                if (isFinite(lv)) {
-                    ctx2.fillStyle = '#70d070';
-                    ctx2.beginPath();
-                    ctx2.arc(mapX(data.length - 1), mapY(lv), 3, 0, Math.PI * 2);
-                    ctx2.fill();
-                }
-
-                // Etykiety osi
-                ctx2.fillStyle = '#3a424a';
-                ctx2.font = '9px ' + CANVAS_FONT;
-                ctx2.textAlign = 'right';
+                // siatka i oś Y
+                ctx2.font = '11px ' + CANVAS_FONT;
                 ctx2.textBaseline = 'middle';
-                const labels = [lo, (lo + hi) / 2, hi];
-                labels.forEach(v => {
-                    ctx2.fillText(v.toFixed(1), pad.left - 4, mapY(v));
-                });
+                ctx2.textAlign = 'right';
+                for (let i = 0; i <= 3; i++) {
+                    const v = lo + (hi - lo) * i / 3, y = mapY(v);
+                    ctx2.strokeStyle = 'rgba(255,255,255,0.06)';
+                    ctx2.lineWidth = 1;
+                    ctx2.beginPath(); ctx2.moveTo(m.left, y); ctx2.lineTo(w - m.right, y); ctx2.stroke();
+                    ctx2.fillStyle = '#7a8a9a';
+                    ctx2.fillText(v.toFixed(opt.digits), m.left - 5, y);
+                }
+                // oś czasu
+                ctx2.textBaseline = 'alphabetic';
+                ctx2.textAlign = 'center';
+                const hours = (t1 - t0) / 3600000;
+                for (let i = 0; i <= 4; i++) {
+                    const t = t0 + (t1 - t0) * i / 4;
+                    ctx2.fillStyle = '#7a8a9a';
+                    ctx2.fillText(fmtAxisTime(t, hours), Math.min(w - 18, Math.max(m.left + 14, mapX(t))), h - 5);
+                }
+
+                // pasmo zakresu dopuszczalnego i wartość idealna
+                if (opt.min != null) {
+                    ctx2.fillStyle = 'rgba(48,192,96,0.13)';
+                    ctx2.fillRect(m.left, mapY(opt.max), plotW, mapY(opt.min) - mapY(opt.max));
+                    ctx2.strokeStyle = 'rgba(48,192,96,0.55)';
+                    ctx2.lineWidth = 1;
+                    ctx2.beginPath();
+                    ctx2.moveTo(m.left, mapY(opt.max)); ctx2.lineTo(w - m.right, mapY(opt.max));
+                    ctx2.moveTo(m.left, mapY(opt.min)); ctx2.lineTo(w - m.right, mapY(opt.min));
+                    ctx2.stroke();
+                }
+                if (opt.ideal != null) {
+                    ctx2.strokeStyle = 'rgba(143,224,138,0.9)';
+                    ctx2.setLineDash([5, 4]);
+                    ctx2.beginPath(); ctx2.moveTo(m.left, mapY(opt.ideal)); ctx2.lineTo(w - m.right, mapY(opt.ideal)); ctx2.stroke();
+                    ctx2.setLineDash([]);
+                }
+
+                // linia: czerwone odcinki poza zakresem dopuszczalnym
+                const inRange = function (v) { return opt.min == null || (v >= opt.min && v <= opt.max); };
+                ctx2.lineWidth = 1.8;
+                ctx2.lineJoin = 'round';
+                let inCount = 0;
+                for (let i = 1; i < data.length; i++) {
+                    const a = data[i - 1], b = data[i];
+                    const ok = inRange(pick(a)) && inRange(pick(b));
+                    ctx2.strokeStyle = ok ? '#9ec6dc' : '#ff6b6b';
+                    ctx2.beginPath(); ctx2.moveTo(mapX(a.t), mapY(pick(a))); ctx2.lineTo(mapX(b.t), mapY(pick(b))); ctx2.stroke();
+                }
+                data.forEach(function (p) { if (inRange(pick(p))) inCount++; });
+
+                // ostatni punkt
+                const last = data[data.length - 1];
+                ctx2.fillStyle = inRange(pick(last)) ? '#70d070' : '#ff6b6b';
+                ctx2.beginPath(); ctx2.arc(mapX(last.t), mapY(pick(last)), 3.5, 0, Math.PI * 2); ctx2.fill();
+
+                // krzyżyk z wartością (dotyk lub mysz)
+                if (hoverX != null && hoverX >= m.left && hoverX <= w - m.right) {
+                    const tt = t0 + (hoverX - m.left) / plotW * (t1 - t0);
+                    let best = data[0];
+                    data.forEach(function (p) { if (Math.abs(p.t - tt) < Math.abs(best.t - tt)) best = p; });
+                    const hx = mapX(best.t), hy = mapY(pick(best));
+                    ctx2.strokeStyle = 'rgba(255,255,255,0.45)';
+                    ctx2.lineWidth = 1;
+                    ctx2.beginPath(); ctx2.moveTo(hx, m.top); ctx2.lineTo(hx, h - m.bottom); ctx2.stroke();
+                    ctx2.fillStyle = '#ffffff';
+                    ctx2.beginPath(); ctx2.arc(hx, hy, 3.5, 0, Math.PI * 2); ctx2.fill();
+                    const label = new Date(best.t).toLocaleString('pl-PL', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) +
+                        '   ' + pick(best).toFixed(opt.digits) + ' ' + opt.unit;
+                    ctx2.font = '600 12px ' + CANVAS_FONT;
+                    const tw = ctx2.measureText(label).width + 14;
+                    const bx = Math.min(w - tw - 2, Math.max(2, hx - tw / 2));
+                    ctx2.fillStyle = 'rgba(10,12,14,0.92)';
+                    ctx2.fillRect(bx, m.top + 2, tw, 20);
+                    ctx2.strokeStyle = 'rgba(255,255,255,0.25)';
+                    ctx2.strokeRect(bx, m.top + 2, tw, 20);
+                    ctx2.fillStyle = '#e8eff6';
+                    ctx2.textAlign = 'left';
+                    ctx2.textBaseline = 'middle';
+                    ctx2.fillText(label, bx + 7, m.top + 12);
+                }
+
+                const avg = vals.reduce(function (a, b) { return a + b; }, 0) / vals.length;
+                return { min: Math.min.apply(null, vals), max: Math.max.apply(null, vals), avg: avg, inPct: Math.round(100 * inCount / data.length), n: data.length };
             }
 
-            window.setChartRange = function(metric, range) {
-                if (metric === 'temp') chartTempRange = range;
-                else chartHumRange = range;
-                renderCharts();
-                document.querySelectorAll('#view-charts .btn-ghost').forEach(b => b.classList.remove('active'));
-                const btns = document.querySelectorAll('#view-charts .btn-ghost');
-                btns.forEach(b => { if (b.textContent === range) b.classList.add('active'); });
+            // Moc grzałki (linia) i praca dyfuzorów (pasy na dole)
+            function drawPowerChart(canvas, points, hoverX) {
+                const ctx2 = canvas.getContext('2d');
+                const rect = canvas.getBoundingClientRect();
+                const w = Math.round(rect.width) || 400, h = Math.round(rect.height) || 170;
+                const cdpr = window.devicePixelRatio || 1;
+                canvas.width = w * cdpr;
+                canvas.height = h * cdpr;
+                canvas.style.width = '100%';
+                canvas.style.height = h + 'px';
+                ctx2.setTransform(cdpr, 0, 0, cdpr, 0, 0);
+                ctx2.clearRect(0, 0, w, h);
+                const data = points.filter(function (p) { return isFinite(p.heater); });
+                if (data.length < 2) {
+                    ctx2.fillStyle = '#6a7a8a';
+                    ctx2.font = '13px ' + CANVAS_FONT;
+                    ctx2.textAlign = 'center';
+                    ctx2.fillText('Brak danych o mocy grzałki', w / 2, h / 2);
+                    return null;
+                }
+                const m = { top: 10, bottom: 26, left: 40, right: 10 };
+                const plotW = w - m.left - m.right, plotH = h - m.top - m.bottom;
+                const t0 = data[0].t, t1 = data[data.length - 1].t;
+                const mapX = function (t) { return m.left + (t1 === t0 ? 0 : (t - t0) / (t1 - t0)) * plotW; };
+                const mapY = function (v) { return m.top + plotH - (v / 100) * plotH; };
+                ctx2.font = '11px ' + CANVAS_FONT;
+                ctx2.textAlign = 'right';
+                ctx2.textBaseline = 'middle';
+                [0, 50, 100].forEach(function (v) {
+                    ctx2.strokeStyle = 'rgba(255,255,255,0.06)';
+                    ctx2.beginPath(); ctx2.moveTo(m.left, mapY(v)); ctx2.lineTo(w - m.right, mapY(v)); ctx2.stroke();
+                    ctx2.fillStyle = '#7a8a9a';
+                    ctx2.fillText(v + '%', m.left - 5, mapY(v));
+                });
+                // dyfuzory: niebieskie pasy pod wykresem
+                const stripY = h - m.bottom + 6;
+                ctx2.fillStyle = 'rgba(64,176,212,0.85)';
+                for (let i = 1; i < data.length; i++) {
+                    if (data[i - 1].dif) ctx2.fillRect(mapX(data[i - 1].t), stripY, Math.max(1, mapX(data[i].t) - mapX(data[i - 1].t)), 8);
+                }
+                ctx2.fillStyle = '#7a8a9a';
+                ctx2.textAlign = 'right';
+                ctx2.fillText('dyfuzory', m.left - 5, stripY + 4);
+                // grzałka
+                ctx2.strokeStyle = '#d4a040';
+                ctx2.lineWidth = 1.8;
+                ctx2.beginPath();
+                data.forEach(function (p, i) { if (i === 0) ctx2.moveTo(mapX(p.t), mapY(p.heater)); else ctx2.lineTo(mapX(p.t), mapY(p.heater)); });
+                ctx2.stroke();
+                if (hoverX != null && hoverX >= m.left && hoverX <= w - m.right) {
+                    const tt = t0 + (hoverX - m.left) / plotW * (t1 - t0);
+                    let best = data[0];
+                    data.forEach(function (p) { if (Math.abs(p.t - tt) < Math.abs(best.t - tt)) best = p; });
+                    const hx = mapX(best.t);
+                    ctx2.strokeStyle = 'rgba(255,255,255,0.45)';
+                    ctx2.beginPath(); ctx2.moveTo(hx, m.top); ctx2.lineTo(hx, h - m.bottom); ctx2.stroke();
+                    const label = new Date(best.t).toLocaleString('pl-PL', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) +
+                        '   grzałka ' + best.heater.toFixed(0) + '%' + (best.dif ? ', dyfuzor włączony' : '');
+                    ctx2.font = '600 12px ' + CANVAS_FONT;
+                    const tw = ctx2.measureText(label).width + 14;
+                    const bx = Math.min(w - tw - 2, Math.max(2, hx - tw / 2));
+                    ctx2.fillStyle = 'rgba(10,12,14,0.92)';
+                    ctx2.fillRect(bx, m.top + 2, tw, 20);
+                    ctx2.strokeStyle = 'rgba(255,255,255,0.25)';
+                    ctx2.strokeRect(bx, m.top + 2, tw, 20);
+                    ctx2.fillStyle = '#e8eff6';
+                    ctx2.textAlign = 'left';
+                    ctx2.fillText(label, bx + 7, m.top + 12);
+                }
+                let sum = 0, mx = 0, switches = 0, onSamples = 0;
+                data.forEach(function (p, i) {
+                    sum += p.heater; mx = Math.max(mx, p.heater);
+                    if (p.dif) onSamples++;
+                    if (i > 0 && p.dif && !data[i - 1].dif) switches++;
+                });
+                return { avg: sum / data.length, max: mx, switches: switches, onPct: Math.round(100 * onSamples / data.length) };
+            }
+
+            const chartViews = {};      // canvas.id -> { draw: function(hoverX) }
+
+            function bindChart(id, drawFn) {
+                const canvas = document.getElementById(id);
+                if (!canvas) return;
+                chartViews[id] = { draw: drawFn };
+                if (!canvas.__bound) {
+                    canvas.__bound = true;
+                    const onMove = function (ev) {
+                        const r = canvas.getBoundingClientRect();
+                        const x = (ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left;
+                        if (chartViews[id]) chartViews[id].draw(x);
+                    };
+                    canvas.addEventListener('pointermove', onMove);
+                    canvas.addEventListener('pointerdown', onMove);
+                    canvas.addEventListener('pointerleave', function () { if (chartViews[id]) chartViews[id].draw(null); });
+                    canvas.style.touchAction = 'pan-y';
+                }
+            }
+
+            function chartStatsText(s, unit, digits, hasRange) {
+                if (!s) return '';
+                return 'min ' + s.min.toFixed(digits) + ' · śr. ' + s.avg.toFixed(digits) + ' · maks. ' + s.max.toFixed(digits) + ' ' + unit +
+                    (hasRange ? ' · w zakresie ' + s.inPct + '%' : '');
+            }
+
+            async function renderCharts(force) {
+                if (!document.getElementById('chartTempMain')) return;
+                if (chartLoading) return;
+                chartLoading = true;
+                try {
+                    chartSeries = await loadSeries(chartRange, !!force);
+                } finally {
+                    chartLoading = false;
+                }
+                const series = chartSeries;
+                const chip = document.getElementById('chartSrcChip');
+                if (chip) {
+                    chip.className = 'src-chip ' + (series.source === 'test' ? 'test' : (series.source === 'live' ? 'live' : 'warn'));
+                    chip.textContent = series.source === 'test' ? 'DANE TESTOWE' : (series.source === 'live' ? 'Dane z urządzenia' : (series.source === 'session' ? 'Dane z tej sesji' : 'Brak danych'));
+                }
+                const note = document.getElementById('chartNote');
+                if (note) { note.textContent = series.note || ''; note.style.display = series.note ? '' : 'none'; }
+
+                const rg = (typeof activeRanges === 'function') ? activeRanges() : null;
+                const tOpt = { unit: '°C', digits: 1, minSpan: 1.0, min: rg && rg.t ? rg.t.min : null, max: rg && rg.t ? rg.t.max : null, ideal: rg && rg.t ? rg.t.ideal : null };
+                const hOpt = { unit: '%', digits: 0, minSpan: 10, min: rg && rg.rh ? rg.rh.min : null, max: rg && rg.rh ? rg.rh.max : null, ideal: rg && rg.rh ? rg.rh.ideal : null, clamp: [0, 100] };
+
+                const drawTemp = function (hx) {
+                    const s = drawLineChart(document.getElementById('chartTempMain'), series.points, function (p) { return p.temp; }, tOpt, hx);
+                    const el = document.getElementById('chartTempStats'); if (el) el.textContent = chartStatsText(s, '°C', 1, tOpt.min != null);
+                };
+                const drawHum = function (hx) {
+                    const s = drawLineChart(document.getElementById('chartHumMain'), series.points, function (p) { return p.rh; }, hOpt, hx);
+                    const el = document.getElementById('chartHumStats'); if (el) el.textContent = chartStatsText(s, '%', 0, hOpt.min != null);
+                };
+                const drawPower = function (hx) {
+                    const s = drawPowerChart(document.getElementById('chartPowerMain'), series.points, hx);
+                    const el = document.getElementById('chartPowerStats');
+                    if (el) el.textContent = s ? 'grzałka śr. ' + s.avg.toFixed(0) + '%, maks. ' + s.max.toFixed(0) + '% · dyfuzory włączone ' + s.onPct + '% czasu, ok. ' + s.switches + ' włączeń' : '';
+                };
+                bindChart('chartTempMain', drawTemp);
+                bindChart('chartHumMain', drawHum);
+                bindChart('chartPowerMain', drawPower);
+                drawTemp(null); drawHum(null); drawPower(null);
+                const rangeNote = document.getElementById('chartBandNote');
+                if (rangeNote) rangeNote.textContent = (tOpt.min != null || hOpt.min != null)
+                    ? 'Zielone pasmo to zakres dopuszczalny bieżącego etapu programu, linia przerywana to wartość idealna. Czerwone odcinki są poza zakresem.'
+                    : 'Brak aktywnego programu: wykresy bez pasma zakresu.';
+            }
+
+            window.setChartRange = function (range) {
+                if (!RANGE_HOURS[range]) return;
+                chartRange = range;
+                document.querySelectorAll('#chartRangeSeg [data-range]').forEach(function (b) {
+                    b.classList.toggle('active', b.getAttribute('data-range') === range);
+                });
+                renderCharts(true);
             };
+
+// ============================================================
+            //  ZAKRESY AKTYWNEGO PROGRAMU: wartość idealna i granice dopuszczalne
+            //  Przy kilku aktywnych tacach bierzemy część wspólną zakresów. Gdy jej nie ma
+            //  (np. różne gatunki), pokazujemy sumę zakresów i oznaczamy konflikt.
+            // ============================================================
+            function activeRanges() {
+                const res = { t: null, rh: null, conflict: false, source: 'brak' };
+                const phases = [];
+                if (trayData && trayData.trays) {
+                    trayData.trays.slice(0, 2).forEach(function (tray) {
+                        if (!tray || tray.active === false) return;
+                        const ph = getPhaseForDay(tray.species_id, tray.current_day || 1);
+                        if (ph && ph.tmin != null) phases.push(ph);
+                    });
+                }
+                if (!phases.length) {
+                    if (statusData && isFinite(statusData.target_temp)) {
+                        res.t = { ideal: statusData.target_temp, min: statusData.target_temp - 0.5, max: statusData.target_temp + 0.5 };
+                        res.source = 'urządzenie';
+                    }
+                    return res;
+                }
+                res.source = 'program';
+                const combine = function (items, idealKey, minKey, maxKey) {
+                    if (!items.length) return null;
+                    let ideal = 0, lo = -Infinity, hi = Infinity, uLo = Infinity, uHi = -Infinity;
+                    items.forEach(function (p) {
+                        ideal += p[idealKey];
+                        lo = Math.max(lo, p[minKey]); hi = Math.min(hi, p[maxKey]);
+                        uLo = Math.min(uLo, p[minKey]); uHi = Math.max(uHi, p[maxKey]);
+                    });
+                    ideal /= items.length;
+                    if (lo > hi) { res.conflict = true; return { ideal: ideal, min: uLo, max: uHi }; }
+                    return { ideal: ideal, min: lo, max: hi };
+                };
+                res.t = combine(phases, 'temp', 'tmin', 'tmax');
+                res.rh = combine(phases.filter(function (p) { return p.rh != null && p.rhmin != null; }), 'rh', 'rhmin', 'rhmax');
+                return res;
+            }
+
+            // ============================================================
+            //  KAFELKI STATUSU: wartość, zakres dopuszczalny i wskaźnik w zakresie
+            // ============================================================
+            const MODE_NAMES = ['prosty (histereza)', 'adaptacyjny z uczeniem', 'PI'];
+
+            function rangeState(v, r) {
+                if (!r || !isFinite(v)) return 'na';
+                if (v >= r.min && v <= r.max) return 'ok';
+                const span = Math.max(r.max - r.min, 0.001);
+                const d = v < r.min ? r.min - v : v - r.max;
+                return d <= span ? 'warn' : 'err';
+            }
+
+            function fillGauge(prefix, v, r, digits, unit) {
+                const tile = document.getElementById(prefix + 'Tile');
+                const val = document.getElementById(prefix + 'Val');
+                if (!tile || !val) return;
+                val.textContent = isFinite(v) ? v.toFixed(digits) : '--';
+                const st = rangeState(v, r);
+                tile.setAttribute('data-state', st);
+                const band = document.getElementById(prefix + 'Band');
+                const ideal = document.getElementById(prefix + 'Ideal');
+                const mark = document.getElementById(prefix + 'Mark');
+                const sub = document.getElementById(prefix + 'Sub');
+                if (!r) {
+                    if (band) band.style.display = 'none';
+                    if (ideal) ideal.style.display = 'none';
+                    if (mark) mark.style.display = 'none';
+                    if (sub) sub.textContent = 'Brak aktywnego programu: nie ma zakresu do porównania.';
+                    return;
+                }
+                const span = Math.max(r.max - r.min, 0.3);
+                const lo = r.min - span * 1.5, hi = r.max + span * 1.5;
+                const pos = function (x) { return Math.max(0, Math.min(100, (x - lo) / (hi - lo) * 100)); };
+                if (band) { band.style.display = ''; band.style.left = pos(r.min) + '%'; band.style.width = (pos(r.max) - pos(r.min)) + '%'; }
+                if (ideal) { ideal.style.display = ''; ideal.style.left = pos(r.ideal) + '%'; }
+                if (mark) { mark.style.display = isFinite(v) ? '' : 'none'; mark.style.left = pos(v) + '%'; }
+                if (sub) {
+                    sub.textContent = 'idealnie ' + r.ideal.toFixed(digits) + ' ' + unit + ' · dopuszczalnie ' + r.min.toFixed(digits) + '–' + r.max.toFixed(digits) + ' ' + unit;
+                }
+            }
+
+            function updateTiles() {
+                if (!statusData) return;
+                const rg = activeRanges();
+                const t = statusData.control_temp != null ? statusData.control_temp : statusData.temp_chamber;
+                fillGauge('tileTemp', t, rg.t, 1, '°C');
+                fillGauge('tileRh', statusData.humidity, rg.rh, 0, '%');
+
+                // nastawa urządzenia a wartość idealna programu
+                const note = document.getElementById('tileTempNote');
+                if (note) {
+                    const sp = statusData.setpoint_temp != null ? statusData.setpoint_temp : statusData.target_temp;
+                    if (rg.t && rg.source === 'program' && isFinite(sp) && Math.abs(sp - rg.t.ideal) > 0.15) {
+                        note.textContent = 'Uwaga: nastawa urządzenia to ' + sp.toFixed(1) + ' °C, a program zaleca ' + rg.t.ideal.toFixed(1) + ' °C.';
+                        note.style.display = '';
+                    } else { note.style.display = 'none'; }
+                }
+                const conflict = document.getElementById('tilesConflict');
+                if (conflict) conflict.style.display = rg.conflict ? '' : 'none';
+
+                // grzałka
+                const hv = document.getElementById('tileHeatVal');
+                if (hv) hv.textContent = statusData.heater_pct != null ? Math.round(statusData.heater_pct) : '--';
+                const heat = document.getElementById('tileHeatSub');
+                if (heat) {
+                    const mode = MODE_NAMES[statusData.control_mode] || 'prosty (histereza)';
+                    const sensor = statusData.control_sensor != null ? 'DS' + (statusData.control_sensor + 1) + (statusData.control_on_shell ? ' (skorupa)' : ' (powietrze)') : '';
+                    heat.textContent = 'regulator: ' + mode + (sensor ? ' · czujnik ' + sensor : '');
+                }
+                const sw = document.getElementById('diffuserSwitches');
+                if (sw) sw.textContent = statusData.diffuser_switches != null ? statusData.diffuser_switches + ' włączeń od startu' : '';
+            }
+
+            // ============================================================
+            //  KLUCIE: data, odliczanie i następne ważne zdarzenia dla każdej tacy
+            // ============================================================
+            function plDays(n) { return n === 1 ? 'dzień' : 'dni'; }
+            function dateShort(d) { return d.toLocaleDateString('pl-PL', { weekday: 'short', day: '2-digit', month: '2-digit' }); }
+
+            function updateTrayMeta() {
+                for (let i = 0; i < 2; i++) {
+                    const el = document.getElementById('trayMeta' + (i + 1));
+                    if (!el) continue;
+                    const tray = trayData && trayData.trays ? trayData.trays[i] : null;
+                    if (!tray || tray.active === false) { el.innerHTML = '<div class="muted">Taca nieaktywna</div>'; continue; }
+                    const info = getSpeciesInfo(tray.species_id);
+                    const day = tray.current_day || 1;
+                    const total = tray.total_days || info.days;
+                    const left = Math.max(0, total - day);
+                    const rows = [];
+                    const endWord = info.category === 'ptaki' ? 'Klucie' : 'Koniec programu';
+                    if (tray.start_unix > 0) {
+                        const end = new Date((tray.start_unix + total * 86400) * 1000);
+                        rows.push('<b>' + endWord + ':</b> ' + dateShort(end) + ' · ' + (left === 0 ? 'w każdej chwili' : 'za ' + left + ' ' + plDays(left)));
+                    } else {
+                        rows.push('<b>' + endWord + ':</b> za ' + left + ' ' + plDays(left) + ' (ustaw datę startu, aby zobaczyć termin)');
+                    }
+                    const now = dayAlerts(info, day).filter(function (a) { return a.level !== 'info'; })
+                        .sort(function (a, b) { return (LEVEL_RANK[b.level] || 0) - (LEVEL_RANK[a.level] || 0); })[0];
+                    rows.push(now
+                        ? '<span class="phase ' + now.level + '">' + LEVEL_ICON[now.level] + ' ' + escapeHtml(now.title) + '</span>'
+                        : '<span class="phase ok">✓ Etap bez szczególnych zaleceń</span>');
+                    for (let d = day + 1; d <= total; d++) {
+                        const nx = dayAlerts(info, d).filter(function (a) { return a.level !== 'info'; })[0];
+                        if (nx) { rows.push('Następnie: ' + escapeHtml(nx.title) + ' (za ' + (d - day) + ' ' + plDays(d - day) + ')'); break; }
+                    }
+                    el.innerHTML = rows.map(function (r) { return '<div>' + r + '</div>'; }).join('');
+                }
+            }
+
+            // ============================================================
+            //  BLOKADA STEROWANIA: ekran Status jest tylko do odczytu, a elementy zmieniające
+            //  stan urządzenia działają po świadomym odblokowaniu (przytrzymanie kłódki).
+            // ============================================================
+            const LOCK_AUTO_MS = 3 * 60 * 1000;
+            const LOCK_HOLD_MS = 1200;
+            const RISKY_SELECTORS = [
+                '#view-hatch button[onclick*="applyToTray"]', '#view-hatch button[onclick*="resetTray"]',
+                '#view-hatch button[onclick*="Calibration"]', '#view-hatch button[onclick*="Learning"]',
+                '#view-calibrate button', '#view-calibrate input', '#view-calibrate select',
+                '#view-esp button', '#view-esp input', '#view-esp select',
+                '#view-settings button', '#view-settings input', '#view-settings select',
+                '#view-logs button', '#view-journal button', '#view-charts button[onclick*="clearHistory"]'
+            ];
+            let locked = true;
+            let unlockUntil = 0;
+            let holdTimer = null;
+
+            function markRisky() {
+                document.querySelectorAll(RISKY_SELECTORS.join(',')).forEach(function (el) { el.setAttribute('data-risky', '1'); });
+            }
+
+            function renderLock() {
+                document.body.classList.toggle('locked', locked);
+                const btn = document.getElementById('btnLock');
+                if (!btn) return;
+                btn.classList.toggle('open', !locked);
+                const ico = document.getElementById('lockIcon'), lab = document.getElementById('lockLabel');
+                if (locked) {
+                    ico.textContent = '🔒';
+                    lab.textContent = '';
+                    btn.title = 'Sterowanie zablokowane. Przytrzymaj, aby odblokować.';
+                } else {
+                    const s = Math.max(0, Math.ceil((unlockUntil - Date.now()) / 1000));
+                    ico.textContent = '🔓';
+                    lab.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+                    btn.title = 'Sterowanie odblokowane. Kliknij, aby zablokować (samo zablokuje się za ' + lab.textContent + ').';
+                }
+            }
+
+            function lockNow() { locked = true; renderLock(); }
+            function unlockNow() { locked = false; unlockUntil = Date.now() + LOCK_AUTO_MS; renderLock(); notify('Sterowanie odblokowane na 3 minuty.', 'info'); }
+
+            function initLock() {
+                markRisky();
+                const guard = function (ev) {
+                    if (!locked) return;
+                    const el = ev.target && ev.target.closest ? ev.target.closest('[data-risky]') : null;
+                    if (!el) return;
+                    if (ev.type === 'keydown' && ev.key !== 'Enter' && ev.key !== ' ') return;
+                    ev.preventDefault();
+                    ev.stopImmediatePropagation();
+                    if (ev.type === 'click' || ev.type === 'keydown') notify('Sterowanie jest zablokowane. Przytrzymaj kłódkę u góry, aby odblokować.', 'warn');
+                };
+                ['click', 'pointerdown', 'mousedown', 'touchstart', 'keydown', 'change', 'input'].forEach(function (type) {
+                    document.addEventListener(type, guard, { capture: true, passive: false });
+                });
+                // aktywność użytkownika przedłuża odblokowanie
+                ['pointerdown', 'keydown'].forEach(function (type) {
+                    document.addEventListener(type, function () { if (!locked) unlockUntil = Date.now() + LOCK_AUTO_MS; }, true);
+                });
+                const btn = document.getElementById('btnLock');
+                if (btn) {
+                    const startHold = function (ev) {
+                        if (!locked) return;
+                        ev.preventDefault();
+                        btn.classList.add('holding');
+                        clearTimeout(holdTimer);
+                        holdTimer = setTimeout(function () { btn.classList.remove('holding'); btn.__heldOk = true; unlockNow(); }, LOCK_HOLD_MS);
+                    };
+                    const endHold = function () { btn.classList.remove('holding'); clearTimeout(holdTimer); };
+                    btn.addEventListener('pointerdown', startHold);
+                    ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (t) { btn.addEventListener(t, endHold); });
+                    btn.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+                    btn.addEventListener('click', function (ev) {
+                        if (btn.__heldOk) { btn.__heldOk = false; return; }
+                        if (!locked) { lockNow(); notify('Sterowanie zablokowane.', 'info'); return; }
+                        if (ev.detail === 0) {                       // klawiatura: bez przytrzymania, więc potwierdzenie
+                            if (confirm('Odblokować sterowanie na 3 minuty?')) unlockNow();
+                        } else {
+                            notify('Przytrzymaj kłódkę przez około sekundę, aby odblokować.', 'info');
+                        }
+                    });
+                }
+                setInterval(function () {
+                    if (!locked && Date.now() >= unlockUntil) { lockNow(); notify('Sterowanie zablokowane automatycznie.', 'info'); }
+                    else if (!locked) renderLock();
+                }, 1000);
+                document.addEventListener('visibilitychange', function () { if (document.hidden && !locked) lockNow(); });
+                renderLock();
+            }
+
+            // ============================================================
+            //  MOTYW: automatyczny (noc 21:00-6:00), ciemny, nocny (przygaszony, ciepłe barwy) i jasny
+            // ============================================================
+            const THEMES = ['auto', 'dark', 'night', 'light'];
+            const THEME_LABEL = { auto: 'Auto', dark: 'Ciemny', night: 'Noc', light: 'Jasny' };
+            const THEME_ICON = { auto: '🌓', dark: '🌙', night: '🌑', light: '☀️' };
+            let themePref = 'auto';
+            try { const s = localStorage.getItem('inkubator.theme'); if (THEMES.indexOf(s) !== -1) themePref = s; } catch (e) { /* brak pamięci */ }
+
+            function resolveTheme() {
+                if (themePref !== 'auto') return themePref;
+                const h = new Date().getHours();
+                return (h >= 21 || h < 6) ? 'night' : 'dark';
+            }
+
+            function applyTheme() {
+                const theme = resolveTheme();
+                document.documentElement.setAttribute('data-theme', theme);
+                const ico = document.getElementById('themeIcon'), btn = document.getElementById('btnTheme');
+                if (ico) ico.textContent = THEME_ICON[themePref];
+                if (btn) btn.title = 'Motyw: ' + THEME_LABEL[themePref] + (themePref === 'auto' ? ' (teraz ' + THEME_LABEL[theme].toLowerCase() + ')' : '') + '. Kliknij, aby zmienić.';
+                setTimeout(function () { try { draw(); drawTrend(); renderCharts(); } catch (e) { /* ekran jeszcze się ładuje */ } }, 30);
+            }
+
+            window.cycleTheme = function () {
+                themePref = THEMES[(THEMES.indexOf(themePref) + 1) % THEMES.length];
+                try { localStorage.setItem('inkubator.theme', themePref); } catch (e) { /* ignorujemy */ }
+                applyTheme();
+                notify('Motyw: ' + THEME_LABEL[themePref] + (themePref === 'auto' ? ' (noc od 21:00 do 6:00)' : ''), 'info');
+            };
+
+            // ============================================================
+            //  DZIENNIK: wpisy rzeczywiste i testowe są przechowywane osobno (pamięć przeglądarki)
+            // ============================================================
+            function journalKey() { return 'inkubator.journal.' + dataSource; }
+
+            function loadJournal() {
+                try { journalEntries = JSON.parse(localStorage.getItem(journalKey()) || '[]'); } catch (e) { journalEntries = []; }
+                if (!Array.isArray(journalEntries)) journalEntries = [];
+            }
+
+            function saveJournal() {
+                try { localStorage.setItem(journalKey(), JSON.stringify(journalEntries.slice(0, 500))); } catch (e) { /* brak miejsca */ }
+            }
+
+            function journalPush(text) {
+                const now = new Date();
+                journalEntries.unshift({ id: Date.now(), date: now.toLocaleDateString('pl-PL'), time: now.toLocaleTimeString('pl-PL'), text: text });
+                saveJournal();
+                renderJournal();
+            }
+
+            window.journalAdd = function () {
+                const text = prompt('Wpis do dziennika (np. prześwietlanie, obrócenie jaj, uzupełnienie wody):');
+                if (!text || !text.trim()) return;
+                journalPush(text.trim().slice(0, 300));
+                addLog('cmd', 'Dodano wpis do dziennika');
+            };
+
+            window.journalAddTest = function () {
+                journalPush('Testowy wpis ' + Math.random().toString(36).substring(2, 8));
+                addLog('cmd', '[TEST] Dodano testowy wpis do dziennika');
+            };
+
+            window.journalClear = function () {
+                if (!confirm('Wyczyścić dziennik (' + (dataSource === 'test' ? 'testowy' : 'rzeczywisty') + ')?')) return;
+                journalEntries = [];
+                saveJournal();
+                renderJournal();
+                addLog('cmd', 'Wyczyszczono dziennik');
+            };
+
+            function renderJournal() {
+                const list = document.getElementById('journalList');
+                if (!list) return;
+                if (!journalEntries.length) { list.innerHTML = '<div class="journal-empty">Brak wpisów.</div>'; return; }
+                list.innerHTML = journalEntries.map(function (e) {
+                    return '<div class="journal-row"><span>' + escapeHtml(e.date) + ' ' + escapeHtml(e.time) + '</span><span>' + escapeHtml(e.text) + '</span></div>';
+                }).join('');
+            }
+
+            // ============================================================
+            //  ZASTOSOWANIE PROGRAMU DO TACY: tylko na urządzeniu (po potwierdzeniu) albo symulowane w trybie testowym
+            // ============================================================
+            const FIRMWARE_SPECIES = { CHICKEN: 'chicken', GOOSE: 'goose', QUAIL: 'quail', GUINEA: 'guinea_fowl', PHEASANT: 'pheasant' };
+
+            async function postForm(url, fields) {
+                const resp = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams(fields).toString()
+                });
+                let body = null;
+                try { body = await resp.json(); } catch (e) { /* brak treści */ }
+                if (!resp.ok) throw new Error((body && body.error) ? body.error : 'HTTP ' + resp.status);
+                return body;
+            }
+
+            window.applyToTray = async function () {
+                const tray = parseInt(document.getElementById('traySelect').value);
+                const key = document.getElementById('speciesSelect').value;
+                const day = parseInt(document.getElementById('dayInput').value) || 1;
+                const info = getSpeciesInfo(key);
+                const badge = document.getElementById('previewBadge');
+                const flash = function (text) {
+                    badge.textContent = text;
+                    setTimeout(function () { badge.textContent = 'Aktywna'; }, 2200);
+                };
+                if (dataSource === 'test') {
+                    flash('Test T' + (tray + 1));
+                    notify('Tryb testowy: zmiana nie trafia do urządzenia.', 'warn');
+                    addLog('cmd', '[TEST] Zastosowano do tacy ' + (tray + 1) + ': ' + info.shortName + ', dzień ' + day);
+                    return;
+                }
+                const fw = FIRMWARE_SPECIES[key];
+                if (!fw) {
+                    notify('Ten program jest na razie tylko podglądem. Urządzenie obsługuje: kura, gęś, przepiórka, perliczka, bażant.', 'warn');
+                    return;
+                }
+                if (!confirm('Zastosować do TACY ' + (tray + 1) + ':\n' + info.shortName + ', dzień ' + day + '?\n\nTo zmienia ustawienia urządzenia.')) return;
+                try {
+                    await postForm('/api/tray/set-species', { tray: tray, species: fw });
+                    await postForm('/api/tray/set-day', { tray: tray, day: day });
+                    flash('Zapisano T' + (tray + 1));
+                    notify('Zapisano w urządzeniu: taca ' + (tray + 1) + ', ' + info.shortName + ', dzień ' + day + '.', 'info');
+                    addLog('cmd', 'Zastosowano do tacy ' + (tray + 1) + ': ' + info.shortName + ', dzień ' + day);
+                    fetchData();
+                } catch (e) {
+                    notify('Nie udało się zapisać w urządzeniu: ' + e.message, 'error');
+                    addLog('err', 'Zastosowanie do tacy nie powiodło się: ' + e.message);
+                }
+            };
+
+            // Funkcje demonstracyjne (losowe wartości) działają wyłącznie na danych testowych.
+            function guardDemos() {
+                ['startCalibration', 'resetCalibration', 'startLearning', 'stopLearning', 'resetLearning', 'calStart', 'calStop', 'calReset']
+                    .forEach(function (name) {
+                        const original = window[name];
+                        if (typeof original !== 'function') return;
+                        window[name] = function () {
+                            if (dataSource === 'live') {
+                                notify('To jest funkcja demonstracyjna (losowe wartości), nie jest połączona z urządzeniem. Działa tylko w trybie testowym.', 'warn');
+                                return;
+                            }
+                            return original.apply(this, arguments);
+                        };
+                    });
+            }
 
             // ============================================================
             //  ZAKŁADKA LĘG – harmonogram z kolorami wrażliwości
@@ -3084,20 +4063,6 @@
                 renderSchedule(species, Math.max(1, Math.min(getSpeciesInfo(species).days, day)));
             };
 
-            window.applyToTray = function() {
-                const tray = parseInt(document.getElementById('traySelect').value);
-                const species = document.getElementById('speciesSelect').value;
-                const day = parseInt(document.getElementById('dayInput').value) || 1;
-                const badge = document.getElementById('previewBadge');
-                badge.textContent = 'Zapisano T' + (tray + 1);
-                badge.style.borderColor = '#5a8a7a';
-                badge.style.color = '#5a9a8a';
-                setTimeout(() => { badge.textContent = 'Aktywna';
-                    badge.style.borderColor = 'rgba(57,211,95,0.2)';
-                    badge.style.color = '#5a9a8a'; }, 2000);
-                addLog('cmd', 'Zastosowano do tacy ' + (tray + 1) + ': ' + species + ' dzień ' + day);
-            };
-
             window.resetTray = function() {
                 if (!confirm('Resetować ustawienia tacy?')) return;
                 document.getElementById('dayInput').value = 1;
@@ -3206,33 +4171,6 @@
             // ============================================================
             //  JOURNAL
             // ============================================================
-            window.journalAddTest = function() {
-                const now = new Date();
-                journalEntries.unshift({
-                    id: Date.now(),
-                    date: now.toLocaleDateString('pl-PL'),
-                    time: now.toLocaleTimeString('pl-PL'),
-                    text: 'Testowy wpis — ' + Math.random().toString(36).substring(2, 8)
-                });
-                renderJournal();
-                addLog('cmd', 'Dodano wpis do dziennika');
-            };
-
-            window.journalClear = function() {
-                if (!confirm('Wyczyścić dziennik?')) return;
-                journalEntries = [];
-                renderJournal();
-                addLog('cmd', 'Wyczyszczono dziennik');
-            };
-
-            function renderJournal() {
-                const list = document.getElementById('journalList');
-                if (!journalEntries.length) { list.innerHTML = '<div class="journal-empty">Brak wpisów.</div>'; return; }
-                list.innerHTML = journalEntries.map(e =>
-                    `<div style="padding:4px 8px;border-bottom:1px solid rgba(26,30,36,0.3);font-size:11px;display:flex;justify-content:space-between;"><span>${e.date} ${e.time}</span><span style="color:#8a9aa8;">${e.text}</span></div>`
-                ).join('');
-            }
-
             // ============================================================
             //  LOGI
             // ============================================================
@@ -3305,26 +4243,31 @@
             //  EKSPORT / HISTORIA
             // ============================================================
             window.exportCSV = function() {
-                if (!history.length) { alert('Brak danych do eksportu.'); return; }
-                let csv = 'timestamp,temp,rh\n';
-                history.forEach(h => {
-                    csv += new Date(h.timestamp).toISOString() + ',' + h.temp.toFixed(2) + ',' + h.wilg.toFixed(
-                        1) + '\n';
+                loadSeries(chartRange).then(function (series) {
+                    if (!series || !series.points.length) { notify('Brak danych do eksportu.', 'warn'); return; }
+                    let csv = 'czas,temperatura_C,wilgotnosc_proc,grzalka_proc,dyfuzor\n';
+                    series.points.forEach(function (p) {
+                        csv += new Date(p.t).toISOString() + ',' + (isFinite(p.temp) ? p.temp.toFixed(2) : '') + ',' +
+                            (isFinite(p.rh) ? p.rh.toFixed(1) : '') + ',' + (isFinite(p.heater) ? p.heater.toFixed(0) : '') + ',' + (p.dif ? 1 : 0) + '\n';
+                    });
+                    const blob = new Blob([csv], { type: 'text/csv' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = 'inkubator_' + (dataSource === 'test' ? 'TEST_' : '') + chartRange + '_' +
+                        new Date().toISOString().slice(0, 19).replace(/:/g, '-') + '.csv';
+                    link.click();
+                    addLog('cmd', 'Eksport CSV (' + (dataSource === 'test' ? 'dane testowe' : 'dane z urządzenia') + ', ' + chartRange + ')');
                 });
-                const blob = new Blob([csv], { type: 'text/csv' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = 'inkubator_historia_' + new Date().toISOString().slice(0, 19).replace(/:/g, '-') +
-                    '.csv';
-                link.click();
-                addLog('cmd', 'Eksport CSV');
             };
 
             window.clearHistory = function() {
-                if (!confirm('Wyczyścić historię?')) return;
+                if (!confirm('Wyczyścić wykresy zebrane w tej przeglądarce? Historia zapisana w urządzeniu zostaje.')) return;
                 history = [];
                 trendHistory = [];
-                addLog('cmd', 'Wyczyszczono historię');
+                liveBuffer.length = 0;
+                seriesCache = {};
+                renderCharts(true);
+                addLog('cmd', 'Wyczyszczono historię panelu');
             };
 
             // ============================================================
@@ -3356,6 +4299,7 @@
                 const timeStr = h + ':' + m + ':' + s;
                 document.getElementById('clockDisplay').textContent = timeStr;
                 document.getElementById('tbClock').textContent = timeStr;
+                if (linkState === 'offline' || linkState === 'stale') renderLinkState();
             }
 
             // ============================================================
@@ -3367,6 +4311,12 @@
             setTimeout(() => {
                 resizeCanvas();
                 resizeTrend();
+                initLock();
+                guardDemos();
+                loadJournal();
+                applyTheme();
+                if (dataSource === 'test') seedTestHistory();
+                renderLinkState();
                 fetchData();
                 updateClock();
                 buildSpeciesOptions();
@@ -3375,13 +4325,11 @@
                 renderLogs();
                 document.getElementById('speciesSelect').addEventListener('change', window.updateSchedule);
                 document.getElementById('dayInput').addEventListener('change', window.updateSchedule);
-                document.querySelectorAll('#view-charts .btn-ghost').forEach((b, i) => {
-                    if (i === 0) b.classList.add('active');
-                });
             }, 100);
 
             setInterval(updateClock, 1000);
             setInterval(fetchData, 5000);
+            setInterval(function () { if (resolveTheme() !== document.documentElement.getAttribute('data-theme')) applyTheme(); }, 60000);
 
             let resizeTimeout;
             window.addEventListener('resize', () => {

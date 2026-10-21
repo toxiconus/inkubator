@@ -149,3 +149,13 @@ Panel pokazuje już wszystkie programy, ale urządzenie wykonuje tylko profile p
 5. Program użytkownika ze stałą temperaturą, wilgotnością i czasem, edytowany w panelu.
 6. Rozstrzygnięcie, którą temperaturą sterować (powietrza czy skorupy) i weryfikacja profili ptaków według tabeli z punktu 1.
 7. Przycisk „Zastosuj” w panelu zapisuje dziś tylko wpis do logu. Trzeba go połączyć z komendą do firmware.
+
+## Panel: dane rzeczywiste i testowe, blokada, motywy
+
+- **Przełącznik źródła** (pasek górny): `Rzecz.` = dane z urządzenia, `TEST` = symulacja. Tryb testowy jest oznaczony pomarańczowym paskiem, znaczkiem TEST i nigdy nie włącza się sam. Gdy urządzenie nie odpowiada, panel pokazuje baner „brak połączenia” i ostatnie prawdziwe odczyty z ich wiekiem, bez podstawiania symulacji. Adres `?source=test` otwiera od razu tryb testowy.
+- **Dziennik** jest przechowywany osobno dla danych rzeczywistych i testowych (pamięć przeglądarki).
+- **Blokada sterowania** (kłódka): ekran Status jest tylko do odczytu. Elementy zmieniające stan (Zastosuj, kalibracja, uczenie, ustawienia) odblokowuje przytrzymanie kłódki ok. 1,2 s; blokada włącza się sama po 3 min bez aktywności lub po ukryciu karty.
+- **Motywy**: Auto (noc 21:00-6:00), Ciemny, Noc (przygaszony, ciepły), Jasny.
+- **Wykresy** (1 h / 6 h / 24 h / 7 dni) pochodzą z `GET /api/history` (log CSV na LittleFS, bieżący cykl pracy od startu urządzenia): temperatura i wilgotność z pasem zakresu dopuszczalnego i linią idealną, moc grzałki oraz stany dyfuzorów.
+- **Kafelki** pokazują wartość, zakres idealny i dopuszczalny aktywnego programu, regulator i czujnik sterujący, liczbę przełączeń dyfuzorów oraz datę klucia i następne ważne zdarzenia dla każdej tacy.
+- „Zastosuj” zapisuje gatunek i dzień w urządzeniu (po potwierdzeniu); kaczka nie jest obsługiwana przez firmware (limit 11 znaków id).
