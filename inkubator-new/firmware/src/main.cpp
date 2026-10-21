@@ -271,7 +271,8 @@ void loop() {
         lastSensorRead = now;
         sensors_read(last_sensor);
         check_alarms(last_sensor);
-        
+        handle_learning_record(last_sensor);   // próbka do uczenia przy każdym nowym odczycie
+
         // CSV log co minutę
         if (now - lastCsvWrite > CSV_LOG_INTERVAL_MS) {
             lastCsvWrite = now;
@@ -513,7 +514,7 @@ void handleWebSocketMessage(uint8_t num, WStype_t type, uint8_t* payload, size_t
         if (!parseIntValue(valueText, val)) {
             webSocket.sendTXT(num, "err:setControlMode");
         } else {
-            configMgr.cfg.system.control_mode = constrain(val, 0, 1);
+            configMgr.cfg.system.control_mode = constrain(val, 0, 2);   // 0 prosty, 1 adaptacyjny, 2 PI
             configMgr.save();
             webSocket.sendTXT(num, "ok:setControlMode");
         }
@@ -930,8 +931,11 @@ void broadcastStatus() {
     doc["temp_aquarium"] = last_sensor.temp[1];
     doc["humidity"] = last_sensor.humidity;
     doc["target_temp"] = configMgr.cfg.system.target_temp;
-    doc["heater_pwm_ch0"] = (int)heater_pwm_pct * 10.23f;
-    doc["heater_pwm_ch1"] = (int)heater_pwm_pct * 10.23f;
+    // Moc w procentach (skala jednoznaczna) oraz surowa wartość w skali sprzętu (0..pwm_max)
+    doc["heater_pct"] = heater_pwm_pct;
+    doc["pwm_max"] = HEATER_PWM_MAX;
+    doc["heater_pwm_ch0"] = (int)round(heater_pwm_pct * HEATER_PWM_MAX / 100.0f);
+    doc["heater_pwm_ch1"] = (int)round(heater_pwm_pct * HEATER_PWM_MAX / 100.0f);
     doc["diffuser_0_on"] = diffuser_on;
     doc["esp_internal_temp"] = temperatureRead();
 
@@ -976,6 +980,10 @@ static const char* contentTypeForPath(const String& path) {
     return "application/octet-stream";
 }
 
+static void sendJsonError(int code, const char* message) {
+    webServer.send(code, "application/json", String("{\"error\":\"") + message + "\"}");
+}
+
 void webserver_setup() {
     webServer.on("/api/status", HTTP_GET, []() {
         StaticJsonDocument<512> doc;
@@ -983,8 +991,11 @@ void webserver_setup() {
         doc["temp_aquarium"] = last_sensor.temp[1];
         doc["humidity"] = last_sensor.humidity;
         doc["target_temp"] = configMgr.cfg.system.target_temp;
-        doc["heater_pwm_ch0"] = (int)heater_pwm_pct * 10.23f;
-        doc["heater_pwm_ch1"] = (int)heater_pwm_pct * 10.23f;
+        doc["heater_pct"] = heater_pwm_pct;
+        doc["pwm_max"] = HEATER_PWM_MAX;
+        doc["heater_pwm_ch0"] = (int)round(heater_pwm_pct * HEATER_PWM_MAX / 100.0f);
+        doc["heater_pwm_ch1"] = (int)round(heater_pwm_pct * HEATER_PWM_MAX / 100.0f);
+        doc["control_mode"] = configMgr.cfg.system.control_mode;
         doc["diffuser_0_on"] = diffuser_on;
         doc["esp_internal_temp"] = temperatureRead();
         doc["uptime_ms"] = millis();
@@ -1053,6 +1064,187 @@ void webserver_setup() {
         } else {
             webServer.send(404, "application/json", "{\"error\":\"Brak profili\"}");
         }
+    });
+
+    // ------------------------------------------------------------------------
+    //  API przeniesione z inkubator-mini: sterowanie tacami, konfiguracja,
+    //  restart i uczenie regulatora. Zmieniają stan urządzenia, więc tylko POST.
+    // ------------------------------------------------------------------------
+    webServer.on("/api/tray/set-day", HTTP_POST, []() {
+        if (!webServer.hasArg("tray") || !webServer.hasArg("day")) { sendJsonError(400, "Brak parametrów tray/day"); return; }
+        const int tray = webServer.arg("tray").toInt();
+        const int day = webServer.arg("day").toInt();
+        if (tray < 0 || tray >= MAX_TRAYS || day < 1 || day > 60) { sendJsonError(400, "Nieprawidłowe wartości"); return; }
+        if (tray_set_day(tray, day, millis())) webServer.send(200, "application/json", "{\"ok\":true}");
+        else sendJsonError(400, "Nie można ustawić dnia");
+    });
+
+    webServer.on("/api/tray/set-start", HTTP_POST, []() {
+        if (!webServer.hasArg("tray") || !webServer.hasArg("date") || !webServer.hasArg("time")) {
+            sendJsonError(400, "Brak parametrów tray/date/time");
+            return;
+        }
+        const int tray = webServer.arg("tray").toInt();
+        const String date = webServer.arg("date");   // RRRR-MM-DD
+        const String time = webServer.arg("time");   // GG:MM
+        if (tray < 0 || tray >= MAX_TRAYS) { sendJsonError(400, "Nieprawidłowy numer tacy"); return; }
+        if (date.length() != 10 || time.length() != 5) { sendJsonError(400, "Nieprawidłowy format daty lub godziny"); return; }
+        const int year = date.substring(0, 4).toInt();
+        const int month = date.substring(5, 7).toInt();
+        const int day = date.substring(8, 10).toInt();
+        const int hour = time.substring(0, 2).toInt();
+        const int minute = time.substring(3, 5).toInt();
+        if (year < 2020 || month < 1 || month > 12 || day < 1 || day > 31 || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+            sendJsonError(400, "Nieprawidłowa data lub godzina");
+            return;
+        }
+        if (!rtc_ok) { sendJsonError(400, "Brak RTC, nie można ustawić daty startu"); return; }
+        const DateTime dt(year, month, day, hour, minute, 0);
+        tray_set_start_unix(tray, dt.unixtime());
+        webServer.send(200, "application/json", "{\"ok\":true,\"start_unix\":" + String((unsigned long)dt.unixtime()) + "}");
+    });
+
+    webServer.on("/api/tray/set-species", HTTP_POST, []() {
+        if (!webServer.hasArg("tray") || !webServer.hasArg("species")) { sendJsonError(400, "Brak parametrów tray/species"); return; }
+        const int tray = webServer.arg("tray").toInt();
+        if (tray < 0 || tray >= MAX_TRAYS) { sendJsonError(400, "Nieprawidłowy numer tacy"); return; }
+        String lookup = webServer.arg("species");
+        lookup.toLowerCase();
+        if (!getSpeciesProfile(g_incubation_profiles, lookup)) { sendJsonError(404, "Nieznany gatunek"); return; }
+        tray_set_species(tray, webServer.arg("species").c_str());
+        // Nazwa gatunku w konfiguracji ma 11 znaków (np. duck_indian_runner się nie mieści)
+        if (!tray_states[tray].incubation_profile) {
+            sendJsonError(400, "Nazwa gatunku zbyt długa dla konfiguracji tacy");
+            return;
+        }
+        webServer.send(200, "application/json", "{\"ok\":true}");
+    });
+
+    webServer.on("/api/tray/set-active", HTTP_POST, []() {
+        if (!webServer.hasArg("tray") || !webServer.hasArg("active")) { sendJsonError(400, "Brak parametrów tray/active"); return; }
+        const int tray = webServer.arg("tray").toInt();
+        if (tray < 0 || tray >= MAX_TRAYS) { sendJsonError(400, "Nieprawidłowy numer tacy"); return; }
+        tray_set_active(tray, webServer.arg("active") == "true");
+        webServer.send(200, "application/json", "{\"ok\":true}");
+    });
+
+    webServer.on("/api/tray/move", HTTP_POST, []() {
+        const int tray = webServer.hasArg("tray") ? webServer.arg("tray").toInt() : 0;
+        if (tray < 0 || tray >= MAX_TRAYS) { sendJsonError(400, "Nieprawidłowy numer tacy"); return; }
+        const unsigned long duration_ms = webServer.hasArg("duration_ms") ? (unsigned long)webServer.arg("duration_ms").toInt() : 15000UL;
+        const int pwm_speed = webServer.hasArg("pwm_speed") ? webServer.arg("pwm_speed").toInt() : configMgr.cfg.trays[tray].rotation_pwm_speed;
+        if (duration_ms > 600000UL) { sendJsonError(400, "Czas poza zakresem 0-600000 ms"); return; }
+        if (pwm_speed < 0 || pwm_speed > 255) { sendJsonError(400, "PWM poza zakresem 0-255"); return; }
+        if (duration_ms == 0) {
+            tray_stop(tray, millis());
+            webServer.send(200, "application/json", "{\"ok\":true,\"stopped\":true}");
+            return;
+        }
+        if (!tray_states[tray].active) { sendJsonError(400, "Taca nieaktywna"); return; }
+        const int old_pwm = configMgr.cfg.trays[tray].rotation_pwm_speed;
+        configMgr.cfg.trays[tray].rotation_pwm_speed = pwm_speed;
+        tray_manual_move(tray, duration_ms, millis());
+        configMgr.cfg.trays[tray].rotation_pwm_speed = old_pwm;
+        webServer.send(200, "application/json",
+                       "{\"ok\":true,\"tray\":" + String(tray) + ",\"duration_ms\":" + String(duration_ms) + ",\"pwm_speed\":" + String(pwm_speed) + "}");
+    });
+
+    webServer.on("/api/tray/stop", HTTP_POST, []() {
+        if (!webServer.hasArg("tray")) { sendJsonError(400, "Brak parametru tray"); return; }
+        const int tray = webServer.arg("tray").toInt();
+        if (tray < 0 || tray >= MAX_TRAYS) { sendJsonError(400, "Nieprawidłowy numer tacy"); return; }
+        tray_stop(tray, millis());
+        webServer.send(200, "application/json", "{\"ok\":true,\"stopped\":true}");
+    });
+
+    webServer.on("/api/config", HTTP_GET, []() {
+        webServer.send(200, "application/json", configMgr.to_json());
+    });
+
+    webServer.on("/api/config", HTTP_POST, []() {
+        if (!webServer.hasArg("plain")) { sendJsonError(400, "Brak body"); return; }
+        JsonDocument doc;
+        if (deserializeJson(doc, webServer.arg("plain"))) { sendJsonError(400, "Nieprawidłowy JSON"); return; }
+        if (doc["factory_reset"].is<bool>() && doc["factory_reset"].as<bool>()) {
+            configMgr.factory_reset();
+            webServer.send(200, "application/json", "{\"ok\":true,\"restart_required\":true,\"message\":\"Ustawienia fabryczne przywrócone\"}");
+            return;
+        }
+        String json;
+        serializeJson(doc, json);
+        if (configMgr.from_json(json)) {
+            configMgr.save();
+            webServer.send(200, "application/json", "{\"ok\":true,\"restart_required\":true,\"message\":\"Konfiguracja zapisana, zmiany pinów wymagają restartu\"}");
+        } else {
+            sendJsonError(400, "Nieprawidłowa konfiguracja");
+        }
+    });
+
+    webServer.on("/api/reboot", HTTP_POST, []() {
+        webServer.send(200, "application/json", "{\"ok\":true}");
+        delay(800);
+        ESP.restart();
+    });
+
+    // Tryb regulatora grzałki: 0 prosty z histerezą, 1 adaptacyjny z uczeniem, 2 PI
+    webServer.on("/api/heater/mode", HTTP_GET, []() {
+        webServer.send(200, "application/json", "{\"control_mode\":" + String(configMgr.cfg.system.control_mode) + "}");
+    });
+
+    webServer.on("/api/heater/mode", HTTP_POST, []() {
+        if (!webServer.hasArg("mode")) { sendJsonError(400, "Brak parametru mode (0, 1 lub 2)"); return; }
+        const int mode = webServer.arg("mode").toInt();
+        if (mode < 0 || mode > 2) { sendJsonError(400, "Tryb poza zakresem 0-2"); return; }
+        configMgr.cfg.system.control_mode = mode;
+        configMgr.save();
+        webServer.send(200, "application/json", "{\"ok\":true,\"control_mode\":" + String(mode) + "}");
+    });
+
+    webServer.on("/api/heater/learning", HTTP_POST, []() {
+        if (!webServer.hasArg("mode")) { sendJsonError(400, "Brak parametru mode"); return; }
+        const String mode = webServer.arg("mode");
+        if (mode == "on") {
+            learning_mode = true;
+            if (webServer.hasArg("profile") && webServer.arg("profile").length() > 0) set_heater_profile(webServer.arg("profile"));
+            learning_profile = heater_profile_name;
+            configMgr.save_learning_data();
+            webServer.send(200, "application/json", "{\"ok\":true,\"learning_mode\":true,\"profile\":\"" + learning_profile + "\"}");
+        } else if (mode == "off") {
+            learning_mode = false;
+            learning_profile = "";
+            configMgr.save_learning_data();
+            webServer.send(200, "application/json", "{\"ok\":true,\"learning_mode\":false}");
+        } else if (mode == "start_record") {
+            unsigned long duration_sec = webServer.hasArg("duration_sec") ? (unsigned long)webServer.arg("duration_sec").toInt() : 3600UL;
+            if (duration_sec == 0) duration_sec = 3600UL;
+            start_learning_record(duration_sec);
+            webServer.send(200, "application/json", "{\"ok\":true,\"learning_record_active\":true,\"duration_sec\":" + String(duration_sec) + "}");
+        } else if (mode == "stop_record") {
+            stop_learning_record();
+            webServer.send(200, "application/json", "{\"ok\":true,\"learning_record_active\":false}");
+        } else {
+            sendJsonError(400, "Niepoprawny tryb. Użyj on, off, start_record lub stop_record");
+        }
+    });
+
+    webServer.on("/api/heater/learning", HTTP_GET, []() {
+        String out = "{\"learning_mode\":" + String(learning_mode ? "true" : "false") +
+                     ",\"learning_profile\":\"" + learning_profile + "\"" +
+                     ",\"learning_record_active\":" + String(is_learning_record_active() ? "true" : "false") +
+                     ",\"learning_record_elapsed_sec\":" + String(learning_record_elapsed_sec()) +
+                     ",\"learning_record_samples\":" + String(learning_record_samples_count()) +
+                     ",\"has_value\":" + String(configMgr.learning_state.has_value ? "true" : "false") +
+                     ",\"learned_pwm_pct\":" + String(configMgr.learning_state.learned_pwm_pct, 1) +
+                     ",\"learned_target_temp\":" + (isnan(configMgr.learning_state.learned_target_temp) ? String("null") : String(configMgr.learning_state.learned_target_temp, 2)) + "}";
+        webServer.send(200, "application/json", out);
+    });
+
+    webServer.on("/api/heater/learning/reset", HTTP_POST, []() {
+        clear_learning_state();
+        configMgr.clear_learning_data();
+        learning_mode = false;
+        learning_profile = "";
+        webServer.send(200, "application/json", "{\"ok\":true,\"message\":\"Dane uczenia wyczyszczone\"}");
     });
 
     webServer.onNotFound([]() {

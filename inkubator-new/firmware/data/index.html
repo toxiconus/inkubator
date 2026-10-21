@@ -2604,10 +2604,13 @@
                 document.getElementById('rhRow').className = 'hud-row' + (rAlarm ? ' alarm' : rWarn ? ' warn' : '');
                 document.getElementById('drRow').className = 'hud-row' + (rAlarm ? ' alarm' : rWarn ? ' warn' : '');
 
-                const pwm0 = statusData.heater_pwm_ch0 ?? 0;
-                const pwm1 = statusData.heater_pwm_ch1 ?? 0;
-                const pct0 = Math.min(100, (pwm0 / 4095) * 100);
-                const pct1 = Math.min(100, (pwm1 / 4095) * 100);
+                // Moc grzałek: firmware wysyła procenty (heater_pct) i skalę sprzętu (pwm_max, 10 bitów = 1023).
+                // Starszy firmware wysyłał tylko surową wartość 0..1023, więc nie dzielimy już przez 4095.
+                const pwmMax = statusData.pwm_max || 1023;
+                const pctFrom = (raw) => Math.min(100, Math.max(0, ((raw ?? 0) / pwmMax) * 100));
+                const hasPct = statusData.heater_pct != null;
+                const pct0 = hasPct ? Math.min(100, Math.max(0, statusData.heater_pct)) : pctFrom(statusData.heater_pwm_ch0);
+                const pct1 = hasPct ? Math.min(100, Math.max(0, statusData.heater_pct)) : pctFrom(statusData.heater_pwm_ch1);
                 document.getElementById('heaterFill0').style.width = pct0 + '%';
                 document.getElementById('heaterFill1').style.width = pct1 + '%';
                 document.getElementById('heaterVal0').textContent = Math.round(pct0) + '%';
@@ -2698,8 +2701,8 @@
                         target_humidity: 60.0,
                         humidity_target_min: 55,
                         humidity_target_max: 65,
-                        heater_pwm_ch0: 1500 + Math.random() * 1000,
-                        heater_pwm_ch1: 800 + Math.random() * 800,
+                        heater_pct: 45 + Math.random() * 25,
+                        pwm_max: 1023,
                         diffuser_0_on: Math.random() > 0.5,
                         esp_internal_temp: 42 + Math.random() * 6
                     };

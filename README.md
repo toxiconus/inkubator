@@ -11,7 +11,6 @@ Sterownik inkubatora z panelem WWW. Jedno repozytorium zamiast wielu kopii na dy
 | `inkubator-new/docs/` | Dokumentacja bieżąca |
 | `inkubator-new/docs/archiwum/` | Starsza dokumentacja projektowa i firmware (zachowana dla kontekstu) |
 | `inkubator-new/tools/` | Narzędzia, np. `build_webui.py` |
-| `inkubator-mini/` | Mniejszy wariant firmware z dodatkowymi funkcjami (historia CSV, uczenie PWM, kąt tacy, upload LittleFS) |
 | `hardware/` | BOM, lista elementów z odzysku, schematy, projekt KiCad `inkubator_v1`, instrukcje okablowania |
 | `narzedzia/` | Skrypty pomocnicze: diagnostyka portów COM, test MPU6050, czyszczenie cache VS Code |
 
