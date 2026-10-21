@@ -32,9 +32,58 @@ void heater_write_pct(int ch, float pct) {
     ledcWrite(ch, duty);
 }
 
+// ----------------------------------------------------------------------------
+//  Czujnik sterujący i nastawy
+//  Można wskazać, który DS18B20 steruje grzałką (control_sensor_index), także taki,
+//  który dotyka skorupy jaj (control_sensor_on_shell). Wtedy nastawą jest temperatura
+//  skorupy z profilu dnia, a dla czujnika powietrza temperatura powietrza z profilu.
+//  Nastawy z profilu są używane tylko przy use_program_setpoint = true.
+// ----------------------------------------------------------------------------
+float control_temperature_value(const SensorData& data) {
+    const SensorConfig& sc = configMgr.cfg.sensors;
+    int idx = constrain(sc.control_sensor_index, 0, MAX_SENSORS - 1);
+    if (idx >= sc.ds18b20_count) idx = 0;
+    return data.temp[idx];
+}
+
+float control_setpoint_temp() {
+    const float fallback = configMgr.cfg.system.target_temp;
+    if (!configMgr.cfg.system.use_program_setpoint) return fallback;
+    const bool shell = configMgr.cfg.sensors.control_sensor_on_shell;
+    float sum = 0.0f;
+    int n = 0;
+    for (int i = 0; i < MAX_TRAYS; i++) {
+        const TrayState& st = tray_states[i];
+        if (!st.active || !st.incubation_profile) continue;
+        const float v = shell ? st.current_day_data.shell_temp : st.current_day_data.air_temp_target;
+        if (v > 30.0f && v < 42.0f) { sum += v; n++; }
+    }
+    return n > 0 ? sum / n : fallback;
+}
+
+// Zakres wilgotności: wartość idealna oraz granice dopuszczalne (z konfiguracji lub z profilu dnia).
+static void control_humidity_band(float& ideal, float& lo, float& hi) {
+    ideal = configMgr.cfg.system.target_humidity;
+    const float hyst = max(0.5f, configMgr.cfg.system.humidity_hysteresis);
+    lo = ideal - hyst;
+    hi = ideal + hyst;
+    if (!configMgr.cfg.system.use_program_setpoint) return;
+    float si = 0.0f, sl = 0.0f, sh = 0.0f;
+    int n = 0;
+    for (int i = 0; i < MAX_TRAYS; i++) {
+        const TrayState& st = tray_states[i];
+        if (!st.active || !st.incubation_profile) continue;
+        const IncubationDay& d = st.current_day_data;
+        if (d.humidity_set > 0.0f && d.humidity_max > d.humidity_min) {
+            si += d.humidity_set; sl += d.humidity_min; sh += d.humidity_max; n++;
+        }
+    }
+    if (n > 0) { ideal = si / n; lo = sl / n; hi = sh / n; }
+}
+
 static void heaters_control_simple(const SensorData& data) {
-    float target = configMgr.cfg.system.target_temp;
-    float current = data.temp[0];
+    float target = control_setpoint_temp();
+    float current = control_temperature_value(data);
     if (current < -50 || current > 80) { heater_pwm_pct = 0; return; }
     float diff = target - current;
     float hyst = configMgr.cfg.system.temp_hysteresis;
@@ -307,10 +356,12 @@ void handle_learning_record(const SensorData& data) {
     if (learning_record.last_sample_ms == 0) learning_record.last_sample_ms = now;
     if (now - learning_record.last_sample_ms < learning_record.interval_ms) return;
 
-    float target = configMgr.cfg.system.target_temp;
-    float hum_target = configMgr.cfg.system.target_humidity;
+    float target = control_setpoint_temp();
+    float hum_ideal, hum_lo, hum_hi;
+    control_humidity_band(hum_ideal, hum_lo, hum_hi);
+    float hum_target = hum_ideal;
     int pwm_raw = (int)round(constrain(heater_pwm_pct, 0.0f, 100.0f) * 10.23f);
-    record_temp_sample(data.temp[0], target, pwm_raw);
+    record_temp_sample(control_temperature_value(data), target, pwm_raw);
     if (data.humidity >= 0.0f) record_hum_sample(data.humidity, hum_target);
     learning_record.sample_count++;
     learning_record.last_sample_ms = now;
@@ -321,15 +372,21 @@ void handle_learning_record(const SensorData& data) {
 }
 
 static void heaters_control_adaptive(const SensorData& data) {
-    const float temp_lower = data.temp[0];
-    const float target = configMgr.cfg.system.target_temp;
+    const float temp_lower = control_temperature_value(data);
+    const float target = control_setpoint_temp();
 
-    // Drugi czujnik traktujemy jako górny czujnik komory tylko wtedy, gdy jest skonfigurowany
-    // i nie jest czujnikiem akwarium. W przeciwnym razie regulator pracuje na jednym czujniku.
-    const bool has_upper = configMgr.cfg.sensors.ds18b20_count >= 2 && configMgr.cfg.sensors.aquarium_sensor_index != 1;
+    // Drugi czujnik traktujemy jako górny czujnik komory tylko wtedy, gdy jest skonfigurowany,
+    // nie jest czujnikiem akwarium i czujnik sterujący nie leży na skorupie jaj. W przeciwnym
+    // razie regulator pracuje na jednym czujniku.
+    const int control_idx = (configMgr.cfg.sensors.control_sensor_index >= configMgr.cfg.sensors.ds18b20_count)
+                                ? 0 : constrain(configMgr.cfg.sensors.control_sensor_index, 0, MAX_SENSORS - 1);
+    const int other_idx = (control_idx == 0) ? 1 : 0;
+    const bool has_upper = configMgr.cfg.sensors.ds18b20_count >= 2 &&
+                           configMgr.cfg.sensors.aquarium_sensor_index != other_idx &&
+                           !configMgr.cfg.sensors.control_sensor_on_shell;
     const bool lower_ok = temp_lower > -50.0f && temp_lower < 80.0f;
-    const bool upper_ok = !has_upper || (data.temp[1] > -50.0f && data.temp[1] < 80.0f);
-    const float temp_upper = has_upper ? data.temp[1] : temp_lower;
+    const bool upper_ok = !has_upper || (data.temp[other_idx] > -50.0f && data.temp[other_idx] < 80.0f);
+    const float temp_upper = has_upper ? data.temp[other_idx] : temp_lower;
 
     // Bezpieczeństwo: błędny odczyt wyłącza grzałki
     if (!lower_ok || !upper_ok) {
@@ -451,8 +508,8 @@ static float pi_integral = 0.0f;
 static unsigned long pi_last_ms = 0;
 
 static void heaters_control_pi(const SensorData& data) {
-    const float temp = data.temp[0];
-    const float target = configMgr.cfg.system.target_temp;
+    const float temp = control_temperature_value(data);
+    const float target = control_setpoint_temp();
 
     if (!(temp > -50.0f && temp < 80.0f)) {
         heater_pwm_pct = 0.0f;
@@ -542,16 +599,16 @@ static void diffusers_band_control(const SensorData& data) {
 
     if (data.humidity < 0.0f) return;   // brak odczytu: stan bez zmian
 
-    const float ideal = configMgr.cfg.system.target_humidity;
-    const float hyst = max(0.5f, configMgr.cfg.system.humidity_hysteresis);
-    const float rh_min = ideal - hyst;                       // dolna granica dopuszczalna
+    float ideal, rh_min, rh_max;                             // idealna oraz granice dopuszczalne
+    control_humidity_band(ideal, rh_min, rh_max);
+    const float hyst = max(0.5f, (rh_max - rh_min) / 2.0f);
     const unsigned long now = millis();
     const unsigned long min_on = max(1UL, (unsigned long)dc.on_time_sec) * 1000UL;
     const unsigned long min_off = max(1UL, (unsigned long)dc.off_time_sec) * 1000UL;
 
     bool want_on = diffuser_on;
     if (!diffuser_on && data.humidity <= rh_min) want_on = true;
-    else if (diffuser_on && data.humidity >= ideal + 0.5f * hyst) want_on = false;
+    else if (diffuser_on && data.humidity >= ideal + 0.5f * (rh_max - ideal)) want_on = false;
 
     const unsigned long since = now - diffuser_change_ms;
     const bool may_change = !diffuser_state_known || since >= (diffuser_on ? min_on : min_off);

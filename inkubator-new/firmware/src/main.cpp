@@ -925,8 +925,8 @@ void handleCalibrationCommand(uint8_t num, const String& cmd) {
 //  BROADCAST STATUS
 // ============================================================================
 void broadcastStatus() {
-    DynamicJsonDocument doc(1536);
-    
+    JsonDocument doc;
+
     doc["temp_chamber"] = last_sensor.temp[0];
     doc["temp_aquarium"] = last_sensor.temp[1];
     doc["humidity"] = last_sensor.humidity;
@@ -936,6 +936,10 @@ void broadcastStatus() {
     doc["pwm_max"] = HEATER_PWM_MAX;
     doc["heater_pwm_ch0"] = (int)round(heater_pwm_pct * HEATER_PWM_MAX / 100.0f);
     doc["heater_pwm_ch1"] = (int)round(heater_pwm_pct * HEATER_PWM_MAX / 100.0f);
+    doc["control_temp"] = control_temperature_value(last_sensor);
+    doc["setpoint_temp"] = control_setpoint_temp();
+    doc["control_sensor"] = configMgr.cfg.sensors.control_sensor_index;
+    doc["control_on_shell"] = configMgr.cfg.sensors.control_sensor_on_shell;
     doc["diffuser_switches"] = diffuser_switch_count;
     doc["diffuser_count"] = configMgr.cfg.diffusers.count;
     doc["diffuser_0_on"] = diffuser_on && (diffuser_active_idx < 0 || diffuser_active_idx == 0);
@@ -989,7 +993,7 @@ static void sendJsonError(int code, const char* message) {
 
 void webserver_setup() {
     webServer.on("/api/status", HTTP_GET, []() {
-        StaticJsonDocument<512> doc;
+        JsonDocument doc;
         doc["temp_chamber"] = last_sensor.temp[0];
         doc["temp_aquarium"] = last_sensor.temp[1];
         doc["humidity"] = last_sensor.humidity;
@@ -999,6 +1003,10 @@ void webserver_setup() {
         doc["heater_pwm_ch0"] = (int)round(heater_pwm_pct * HEATER_PWM_MAX / 100.0f);
         doc["heater_pwm_ch1"] = (int)round(heater_pwm_pct * HEATER_PWM_MAX / 100.0f);
         doc["control_mode"] = configMgr.cfg.system.control_mode;
+        doc["control_temp"] = control_temperature_value(last_sensor);
+        doc["setpoint_temp"] = control_setpoint_temp();
+        doc["control_sensor"] = configMgr.cfg.sensors.control_sensor_index;
+        doc["control_on_shell"] = configMgr.cfg.sensors.control_sensor_on_shell;
         doc["diffuser_switches"] = diffuser_switch_count;
         doc["diffuser_count"] = configMgr.cfg.diffusers.count;
         doc["diffuser_0_on"] = diffuser_on && (diffuser_active_idx < 0 || diffuser_active_idx == 0);

@@ -195,6 +195,8 @@ String ConfigManager::to_json() {
     sensors["door_sensor_pin"] = cfg.sensors.door_sensor_pin;
     sensors["aquarium_sensor_index"] = cfg.sensors.aquarium_sensor_index;
     sensors["aquarium_target_temp"] = cfg.sensors.aquarium_target_temp;
+    sensors["control_sensor_index"] = cfg.sensors.control_sensor_index;
+    sensors["control_sensor_on_shell"] = cfg.sensors.control_sensor_on_shell;
     sensors["bmp180_enabled"] = cfg.sensors.bmp180_enabled;
     sensors["bmp180_sda_pin"] = cfg.sensors.bmp180_sda_pin;
     sensors["bmp180_scl_pin"] = cfg.sensors.bmp180_scl_pin;
@@ -214,6 +216,7 @@ String ConfigManager::to_json() {
     sys["alarm_min_humidity"] = cfg.system.alarm_min_humidity;
     sys["humidity_calibration"] = cfg.system.humidity_calibration;
     sys["log_interval_sec"] = cfg.system.log_interval_sec;
+    sys["use_program_setpoint"] = cfg.system.use_program_setpoint;
     JsonObject dif = doc["diffusers"].to<JsonObject>();
     dif["count"] = cfg.diffusers.count;
     dif["on_time_sec"] = cfg.diffusers.on_time_sec;
@@ -300,6 +303,10 @@ bool ConfigManager::from_json(const String& json) {
         if (cfg.sensors.aquarium_sensor_index < 0) cfg.sensors.aquarium_sensor_index = 0;
         if (cfg.sensors.aquarium_sensor_index >= MAX_SENSORS) cfg.sensors.aquarium_sensor_index = MAX_SENSORS - 1;
         cfg.sensors.aquarium_target_temp = sensors["aquarium_target_temp"] | cfg.sensors.aquarium_target_temp;
+        cfg.sensors.control_sensor_index = sensors["control_sensor_index"] | cfg.sensors.control_sensor_index;
+        if (cfg.sensors.control_sensor_index < 0) cfg.sensors.control_sensor_index = 0;
+        if (cfg.sensors.control_sensor_index >= MAX_SENSORS) cfg.sensors.control_sensor_index = MAX_SENSORS - 1;
+        cfg.sensors.control_sensor_on_shell = sensors["control_sensor_on_shell"] | cfg.sensors.control_sensor_on_shell;
         cfg.sensors.bmp180_enabled = sensors["bmp180_enabled"] | cfg.sensors.bmp180_enabled;
         cfg.sensors.bmp180_sda_pin = sensors["bmp180_sda_pin"] | cfg.sensors.bmp180_sda_pin;
         cfg.sensors.bmp180_scl_pin = sensors["bmp180_scl_pin"] | cfg.sensors.bmp180_scl_pin;
@@ -315,6 +322,7 @@ bool ConfigManager::from_json(const String& json) {
         cfg.system.temp_calibration = sys["temp_calibration"] | cfg.system.temp_calibration;
         cfg.system.control_mode = sys["control_mode"] | cfg.system.control_mode;
         cfg.system.fan_delay_sec = sys["fan_delay_sec"] | cfg.system.fan_delay_sec;
+        cfg.system.use_program_setpoint = sys["use_program_setpoint"] | cfg.system.use_program_setpoint;
         cfg.system.target_humidity = sys["target_humidity"] | cfg.system.target_humidity;
         cfg.system.humidity_hysteresis = sys["humidity_hysteresis"] | cfg.system.humidity_hysteresis;
         cfg.system.alarm_max_humidity = sys["alarm_max_humidity"] | cfg.system.alarm_max_humidity;

@@ -41,6 +41,8 @@ struct SensorConfig {
     int door_sensor_pin = -1;
     int aquarium_sensor_index = 0;
     float aquarium_target_temp = 25.0f;
+    int control_sensor_index = 0;          // który DS18B20 steruje grzałką (0..ds18b20_count-1)
+    bool control_sensor_on_shell = false;  // czujnik dotyka skorupy: nastawa to temperatura skorupy z profilu
     bool bmp180_enabled = false;
     int bmp180_sda_pin = 4;
     int bmp180_scl_pin = 5;
@@ -77,6 +79,7 @@ struct SystemConfig {
     float alarm_min_humidity = 30.0;
     float humidity_calibration = 0.0;
     int log_interval_sec = 60;
+    bool use_program_setpoint = false;     // nastawy temperatury i wilgotności z profilu aktywnych tac (domyślnie stałe target_*)
 };
 
 struct IncubatorConfig {

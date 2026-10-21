@@ -12,7 +12,7 @@ na urządzenie ani testowany na sprzęcie. Nowe tryby sterowania są domyślnie 
 
 | Funkcja | Gdzie | Uwagi |
 | --- | --- | --- |
-| Regulator adaptacyjny z uczeniem (moc nauczona, adaptacja do różnicy dwóch czujników, uczenie cyklu dyfuzora) | `src/controller.cpp`, tryb 1 | Dostosowany do `new`: zakres wilgotności z konfiguracji, górny czujnik tylko gdy skonfigurowany i nie jest czujnikiem akwarium |
+| Regulator adaptacyjny z uczeniem (moc nauczona, adaptacja do różnicy dwóch czujników) | `src/controller.cpp`, tryb 1 | Dostosowany do `new`: górny czujnik tylko gdy skonfigurowany, nie jest czujnikiem akwarium i czujnik sterujący nie leży na skorupie. Uczenie cyklu dyfuzora tylko obserwuje, nie wymusza przełączania (patrz punkt 7) |
 | Nagrywanie próbek do uczenia | `handle_learning_record()` w pętli głównej | W `new` te funkcje były pustymi stubami |
 | Sterowanie tacami przez HTTP | `POST /api/tray/set-day`, `set-start`, `set-species`, `set-active`, `move`, `stop` | Wrappery na istniejące `tray_*`; `set-species` sprawdza, czy profil istnieje |
 | Konfiguracja przez HTTP | `GET/POST /api/config` | `POST` z `{"factory_reset":true}` przywraca ustawienia fabryczne; po zapisie potrzebny restart |
@@ -72,6 +72,61 @@ Włączenie: `POST /api/heater/mode` z `mode=2` albo komenda `setControlMode:2`.
   mocy warto ograniczyć maksymalne wypełnienie lub użyć mocy dobranej do potrzeb.
 - **Położenie czujnika.** Czujnik blisko grzałki reaguje szybko, ale pokazuje temperaturę grzałki, a nie komory.
   Do regulacji lepszy jest czujnik w komorze, na wysokości jaj.
+
+## 4a. Sterowanie dyfuzorami (ochrona styków)
+
+Dyfuzory są włączane zwykłymi włącznikami, które się zużywają, więc sterowanie jest zakresowe i oszczędne.
+Ta sama zasada działa we wszystkich trybach regulatora (0, 1 i 2):
+
+- w zakresie dopuszczalnym wilgotności nic się nie dzieje,
+- poniżej dolnej granicy dyfuzor się włącza, a wyłącza w połowie drogi między wartością idealną a górną granicą,
+- minimalny czas pracy i przerwy: `diffusers.on_time_sec` (domyślnie 30 s) i `off_time_sec` (domyślnie 120 s), wcześniej nieużywane,
+- dwa dyfuzory włączają się na przemian, a oba naraz tylko przy dużym niedoborze wilgotności,
+- status zawiera `diffuser_switches` (liczba przełączeń od startu), `diffuser_0_on` i `diffuser_1_on`.
+
+Poprawiony błąd: przeniesiony z `mini` tryb uczenia wymuszał cykl 3 s włączony i 7 s wyłączony, czyli przełączanie co 10 sekund.
+Teraz uczenie tylko obserwuje naturalne cykle.
+
+Ocena na prostym modelu komory (założenia: wilgotność ucieka do 40% ze stałą 20 min, dyfuzor dodaje 1,5%/min; nie jest to
+test na sprzęcie): uczenie z `mini` dawało ok. 600 przełączeń na godzinę, poprzednie sterowanie zakresowe 4–8, a obecne
+6–12 na godzinę, z wilgotnością bliżej wartości idealnej. Wyłączanie dopiero przy wartości idealnej dawało 10–19 przełączeń
+na godzinę, więc jest kompromis: im bliżej ideału, tym więcej przełączeń.
+
+Czujnik wilgotności w konfiguracji to DHT11 (typowo ±5% RH, rozdzielczość 1%). Przy wąskich zakresach (np. 54–59%)
+to za mało, żeby pewnie rozstrzygać o włączeniu. Lepszy jest SHT31 lub SHT45.
+
+## 4b. Wartość idealna i zakres dopuszczalny
+
+Temperatura i wilgotność mają w programach dwie wartości:
+
+- **idealna**: do niej dąży regulator,
+- **dopuszczalna** (zakres, który nie szkodzi): po jego przekroczeniu panel pokazuje alert dla tacy.
+
+Dla ptaków zakres temperatury to tolerancja ±0,3 °C (½ °F według MSU Extension), a zakres wilgotności pochodzi z tabeli wet-bulb.
+Dla nasion zakres temperatury to „optimum range” z Oregon State Extension. Zakresy wilgotności nasion i dane fermentacji są orientacyjne.
+
+Temperatura jest sterowana ciągle (PWM, w trybie 2 z członem całkującym), więc dąży do ideału. Wilgotność jest sterowana zakresem,
+bo dyfuzory mają tylko stan włączony lub wyłączony.
+
+## 4c. Wybór czujnika sterującego i nastawa z programu
+
+Konfiguracja (`GET/POST /api/config`):
+
+| Pole | Domyślnie | Znaczenie |
+| --- | --- | --- |
+| `sensors.control_sensor_index` | 0 | Który DS18B20 steruje grzałką |
+| `sensors.control_sensor_on_shell` | false | Ten czujnik dotyka skorupy jaj |
+| `system.use_program_setpoint` | false | Nastawy z profilu aktywnych tac zamiast stałych `target_temp` i `target_humidity` |
+
+Przy `use_program_setpoint = true`:
+
+- czujnik na skorupie: nastawą jest `shell_temp` z profilu dnia, a czujnik powietrza: `air_temp_target`,
+- wilgotność: wartość idealna to `humidity_set`, a granice dopuszczalne to `humidity_min` i `humidity_max` z profilu,
+- przy dwóch aktywnych tacach nastawy są uśredniane.
+
+Domyślnie wszystko działa jak dotąd (czujnik 0 i stałe nastawy). Wartości `shell_temp` w obecnych profilach (rosnące do 38,4 °C)
+nie wynikają z przytoczonych źródeł, więc przed włączeniem nastawy z programu dla czujnika na skorupie warto je zweryfikować.
+Status (`/api/status`) pokazuje `control_temp`, `setpoint_temp`, `control_sensor` i `control_on_shell`.
 
 ## 5. Czego nie przeniesiono
 
