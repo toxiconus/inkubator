@@ -13,7 +13,6 @@ Sterownik inkubatora z panelem WWW. Jedno repozytorium zamiast wielu kopii na dy
 | `inkubator-new/tools/` | Narzędzia, np. `build_webui.py` |
 | `inkubator-mini/` | Mniejszy wariant firmware z dodatkowymi funkcjami (historia CSV, uczenie PWM, kąt tacy, upload LittleFS) |
 | `hardware/` | BOM, lista elementów z odzysku, schematy, projekt KiCad `inkubator_v1`, instrukcje okablowania |
-| `prototyp-kasa/` | Pierwszy prototyp: symulator i projekt Wokwi |
 | `narzedzia/` | Skrypty pomocnicze: diagnostyka portów COM, test MPU6050, czyszczenie cache VS Code |
 
 ## Panel WWW
