@@ -95,5 +95,11 @@ void check_alarms(const SensorData& data) {
         msg = "Możliwa awaria grzałki: temperatura nie rośnie mimo grzania";
     }
 
-    set_alarm(code, msg);
+    // Histereza czasowa: alarm włącza się po 3 kolejnych odczytach (ok. 15 s) i wyłącza po 3 odczytach bez niego,
+    // żeby wartość kołysząca się na granicy nie zalewała dziennika zdarzeń ani nie migała na ekranie.
+    static int streak = 0;
+    static char pending[20] = "";
+    if (strcmp(pending, code) == 0) { if (streak < 100) streak++; }
+    else { strncpy(pending, code, sizeof(pending) - 1); pending[sizeof(pending) - 1] = '\0'; streak = 1; }
+    if (streak >= 3 || strcmp(g_alarm_code, code) == 0) set_alarm(code, msg);
 }

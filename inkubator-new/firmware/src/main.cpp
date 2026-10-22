@@ -1468,6 +1468,22 @@ void webserver_setup() {
         webServer.send(200, "application/json", out);
     });
 
+    // Ustawienie zegara RTC z telefonu. Czas to lokalny czas ścienny (urządzenie nie ma internetu, więc nie ma NTP).
+    // Zmiana zegara przesuwa liczenie dni tac, bo start tacy jest zapisany jako znacznik czasu.
+    webServer.on("/api/time", HTTP_POST, []() {
+        if (!webServer.hasArg("date") || !webServer.hasArg("time")) { sendJsonError(400, "Brak parametrów date/time"); return; }
+        const String date = webServer.arg("date");   // RRRR-MM-DD
+        const String time = webServer.arg("time");   // GG:MM:SS
+        if (date.length() != 10 || time.length() != 8) { sendJsonError(400, "Nieprawidłowy format daty lub godziny"); return; }
+        const int year = date.substring(0, 4).toInt(), month = date.substring(5, 7).toInt(), day = date.substring(8, 10).toInt();
+        const int hour = time.substring(0, 2).toInt(), minute = time.substring(3, 5).toInt(), second = time.substring(6, 8).toInt();
+        if (year < 2024 || year > 2099 || month < 1 || month > 12 || day < 1 || day > 31 || hour > 23 || minute > 59 || second > 59) { sendJsonError(400, "Nieprawidłowa data lub godzina"); return; }
+        if (!rtc_set_time(year, month, day, hour, minute, second)) { sendJsonError(500, "Brak RTC"); return; }
+        tray_update_days_from_rtc();
+        event_log("clock", "ustawiono zegar " + date + " " + time);
+        webServer.send(200, "application/json", "{\"ok\":true,\"now_unix\":" + String(rtc_get_unix_time()) + "}");
+    });
+
     // Dziennik zdarzeń: restarty, alarmy, drzwi. Zwraca najnowsze `limit` wpisów (od najstarszego).
     webServer.on("/api/events", HTTP_GET, []() {
         const int limit = constrain(webServer.hasArg("limit") ? webServer.arg("limit").toInt() : 100, 1, 300);
