@@ -1808,6 +1808,14 @@
             body.printing-report .dlg-body { overflow: visible; }
         }
 
+        /* ===== SYMULACJA LĘGÓW ===== */
+        .sim-controls { display: flex; flex-wrap: wrap; gap: 10px 14px; }
+        .sim-controls .fld { flex: 1 1 180px; }
+        .sim-day { display: flex; align-items: center; gap: 12px; margin: 10px 0; }
+        .sim-day input[type="range"] { flex: 1; accent-color: var(--accent); }
+        .sim-strip { width: 100%; height: 22px; display: block; margin-top: 8px; }
+        #view-sim .chart-canvas { height: 170px; }
+
         @media (prefers-reduced-motion: reduce) {
             * { transition: none !important; animation: none !important; }
         }
@@ -1826,6 +1834,7 @@
                     <button class="tab active" data-tab="status" onclick="showTab('status')">Status</button>
                     <button class="tab" data-tab="batches" onclick="showTab('batches')">Partie</button>
                     <button class="tab" data-tab="hatch" onclick="showTab('hatch')">Programy</button>
+                    <button class="tab" data-tab="sim" onclick="showTab('sim')">Symulacja</button>
                     <button class="tab" data-tab="charts" onclick="showTab('charts')">Wykresy</button>
                     <button class="tab" data-tab="schedule" onclick="showTab('schedule')">Harmonogram</button>
                     <button class="tab" data-tab="journal" onclick="showTab('journal')">Dziennik</button>
@@ -2053,6 +2062,11 @@
                 </div>
             </div>
 
+            <!-- ===== ZAKŁADKA SYMULACJA LĘGÓW ===== -->
+            <div id="view-sim" class="view">
+                <div id="simRoot"></div>
+            </div>
+
             <!-- ===== ZAKŁADKA LĘG ===== -->
             <div id="view-hatch" class="view">
                 <div class="hatch-controls">
@@ -2277,7 +2291,7 @@
                         <a href="/humidity.html" class="btn btn-primary">💧 Wilgotność</a>
                         <a href="/turner.html" class="btn btn-primary">🔄 Obrót</a>
                         <a href="/incubation.html" class="btn btn-primary">🐣 Inkubacja</a>
-                        <a href="/symulacja_legow.html" class="btn btn-primary">🐣 Symulacja lęgów</a>
+                        <button type="button" class="btn btn-primary" onclick="showTab('sim')">🐣 Symulacja lęgów</button>
                         <a href="/alarms.html" class="btn btn-primary">🔔 Alarmy</a>
                         <a href="/wifi.html" class="btn btn-primary">📶 Wi-Fi</a>
                         <a href="/various.html" class="btn btn-primary">⚙ Różne</a>
@@ -2361,7 +2375,7 @@
                     ink: g('--ink'), dim: g('--dim'), faint: g('--faint'), grid: g('--grid'), axis: g('--axis'), panel: g('--bg'),
                     tipBg: g('--tip-bg'), tipInk: g('--tip-ink'), tipLine: g('--tip-line'), cross: g('--cross'),
                     temp: g('--c-temp'), rh: g('--c-rh'), pow: g('--c-pow'), dif: g('--c-dif'),
-                    ok: g('--ok'), okFill: g('--ok-fill'), okLine: g('--ok-line'), warn: g('--warn'), err: g('--err')
+                    accent: g('--accent'), ok: g('--ok'), okFill: g('--ok-fill'), okLine: g('--ok-line'), warn: g('--warn'), err: g('--err')
                 };
             }
             readPalette();
@@ -5596,6 +5610,311 @@
                 c.restore();
             }
 
+// ============================================================
+            //  SYMULACJA LĘGÓW: porównanie dwóch programów w jednym inkubatorze
+            //  Odpowiada na pytania: czy da się wyklucać dwa gatunki naraz, jak daleko przesunąć start
+            //  drugiej partii, jakie są dni konfliktu i co się stanie przy odchyleniu temperatury lub wilgotności.
+            // ============================================================
+            const simState = { a: 'CHICKEN', b: 'TURKEY', off: 3, day: 10, chamberT: null, chamberRh: null };
+            const SIM_COMPAT_COLOR = { ok: 'ok', rh: 'warn', temp: 'err', both: 'err', single: 'dim' };
+
+            function simDayData(key, day) {
+                const info = getSpeciesInfo(key);
+                if (day < 1 || day > info.days) return null;
+                const ph = info.phases.find(function (p) { return day >= p.start && day <= p.end; }) || info.phases[info.phases.length - 1];
+                return { info: info, day: day, ph: ph, sens: getSensitivity(key, day) };
+            }
+
+            // zgodność programów A i B w dniu t osi czasu A (B startuje o `off` dni później)
+            function simCompat(A, B, off, t) {
+                const a = simDayData(A, t), b = simDayData(B, t - off);
+                if (!a || !b) return { state: 'single', a: a, b: b };
+                const tlo = Math.max(a.ph.tmin, b.ph.tmin), thi = Math.min(a.ph.tmax, b.ph.tmax);
+                const rlo = Math.max(a.ph.rhmin, b.ph.rhmin), rhi = Math.min(a.ph.rhmax, b.ph.rhmax);
+                const tOk = tlo <= thi, rOk = rlo <= rhi;
+                return { state: tOk && rOk ? 'ok' : (!tOk && !rOk ? 'both' : (tOk ? 'rh' : 'temp')), a: a, b: b, tRange: [tlo, thi], rRange: [rlo, rhi], tOk: tOk, rOk: rOk };
+            }
+
+            function simSpan(A, B, off) { return Math.max(getSpeciesInfo(A).days, off + getSpeciesInfo(B).days); }
+
+            function simConflictDays(A, B, off) {
+                let n = 0, overlap = 0;
+                const span = simSpan(A, B, off);
+                for (let t = 1; t <= span; t++) {
+                    const c = simCompat(A, B, off, t);
+                    if (c.state !== 'single') { overlap++; if (c.state !== 'ok') n++; }
+                }
+                return { conflict: n, overlap: overlap };
+            }
+
+            function simOptionsHtml(sel) { return speciesOptionsHtml(sel); }
+
+            function simFromTrays() {
+                const trays = trayList().filter(function (t) { return t && t.active !== false && t.species_id; });
+                if (trays.length < 2) { notify('Potrzebne są dwie aktywne tace z programem.', 'warn'); return; }
+                let [x, y] = trays;
+                if ((y.current_day || 1) > (x.current_day || 1)) { const tmp = x; x = y; y = tmp; }
+                const keyOf = function (tray) {
+                    const raw = String(tray.species_id), k = SPECIES[raw] ? raw : (SPECIES_ALIASES[raw] || SPECIES_ALIASES[raw.toLowerCase()]);
+                    return SPECIES[k] ? k : 'CHICKEN';
+                };
+                simState.a = keyOf(x); simState.b = keyOf(y);
+                simState.off = Math.max(0, (x.current_day || 1) - (y.current_day || 1));
+                simState.day = Math.min(simSpan(simState.a, simState.b, simState.off), x.current_day || 1);
+                renderSim();
+            }
+
+            function simBuild() {
+                const view = document.getElementById('simRoot');
+                if (!view) return;
+                const A = simState.a, B = simState.b, span = simSpan(A, B, simState.off);
+                simState.day = Math.max(1, Math.min(span, simState.day));
+                view.innerHTML =
+                    '<div class="card"><div class="sim-controls">' +
+                    fld('Program A (startuje pierwszy)', '<select data-sim="a">' + simOptionsHtml(A) + '</select>') +
+                    fld('Program B', '<select data-sim="b">' + simOptionsHtml(B) + '</select>') +
+                    fld('B startuje później o [dni]', '<input type="number" data-sim="off" min="0" max="60" value="' + simState.off + '">') +
+                    '</div><div class="sim-day"><span class="muted">Dzień osi czasu</span><input type="range" data-sim="day" min="1" max="' + span + '" value="' + simState.day + '"><b id="simDayLabel">' + simState.day + '</b></div>' +
+                    '<div class="btn-group"><button type="button" class="btn" data-simact="trays">Wczytaj z tac</button><button type="button" class="btn" data-simact="csv">Eksport CSV</button></div></div>' +
+                    '<div class="card"><div class="card-header"><span class="card-title">Temperatura: zakresy dopuszczalne i idealne</span><span class="chart-stats" id="simLegendT"></span></div><canvas id="simChartT" class="chart-canvas"></canvas>' +
+                    '<div class="card-header" style="margin-top:10px"><span class="card-title">Wilgotność</span></div><canvas id="simChartR" class="chart-canvas"></canvas>' +
+                    '<canvas id="simStrip" class="sim-strip"></canvas><div class="chart-note" id="simStripNote"></div></div>' +
+                    '<div class="card"><div class="card-header"><span class="card-title">Kiedy wstawić drugą partię</span></div><div id="simOffsets"></div></div>' +
+                    '<div class="grid-2" id="simCards"></div>' +
+                    '<div class="card"><div class="card-header"><span class="card-title">Co jeśli: odchylenie w komorze</span></div><div id="simScenario"></div></div>';
+                simUpdate();
+            }
+
+            function simBands(key, shift, span) {
+                const info = getSpeciesInfo(key), out = [];
+                for (let t = 1; t <= span; t++) {
+                    const d = t - shift;
+                    if (d < 1 || d > info.days) { out.push(null); continue; }
+                    const ph = info.phases.find(function (p) { return d >= p.start && d <= p.end; }) || info.phases[info.phases.length - 1];
+                    out.push(ph);
+                }
+                return out;
+            }
+
+            function simDrawChart(canvasId, kind, A, B, off, span) {
+                const canvas = document.getElementById(canvasId);
+                if (!canvas) return;
+                const c = canvas.getContext('2d'), rect = canvas.getBoundingClientRect();
+                const w = Math.round(rect.width) || 400, h = Math.round(rect.height) || 170, dpr = window.devicePixelRatio || 1;
+                canvas.width = w * dpr; canvas.height = h * dpr;
+                c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+                const bandsA = simBands(A, 0, span), bandsB = simBands(B, off, span);
+                const lo = function (p) { return kind === 'temp' ? p.tmin : p.rhmin; }, hi = function (p) { return kind === 'temp' ? p.tmax : p.rhmax; }, id = function (p) { return kind === 'temp' ? p.temp : p.rh; };
+                let mn = Infinity, mx = -Infinity;
+                bandsA.concat(bandsB).forEach(function (p) { if (p) { mn = Math.min(mn, lo(p)); mx = Math.max(mx, hi(p)); } });
+                const pad = kind === 'temp' ? 0.3 : 5;
+                mn -= pad; mx += pad;
+                const m = { top: 8, bottom: 20, left: 40, right: 10 }, plotW = w - m.left - m.right, plotH = h - m.top - m.bottom;
+                const x0 = function (t) { return m.left + (t - 1) / span * plotW; }, x1 = function (t) { return m.left + t / span * plotW; };
+                const y = function (v) { return m.top + plotH - (v - mn) / (mx - mn) * plotH; };
+                c.font = '11px ' + CANVAS_FONT; c.textAlign = 'right'; c.textBaseline = 'middle';
+                for (let i = 0; i <= 3; i++) {
+                    const v = mn + (mx - mn) * i / 3;
+                    c.strokeStyle = PAL.grid; c.beginPath(); c.moveTo(m.left, y(v)); c.lineTo(w - m.right, y(v)); c.stroke();
+                    c.fillStyle = PAL.dim; c.fillText(v.toFixed(kind === 'temp' ? 1 : 0), m.left - 5, y(v));
+                }
+                c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+                const step = Math.max(1, Math.round(span / 8));
+                for (let t = 1; t <= span; t += step) { c.fillStyle = PAL.dim; c.fillText(String(t), (x0(t) + x1(t)) / 2, h - 5); }
+                const colA = PAL.accent, colB = PAL.pow;
+                const draw = function (bands, color) {
+                    c.globalAlpha = 0.22; c.fillStyle = color;
+                    bands.forEach(function (p, i) { if (p) c.fillRect(x0(i + 1), y(hi(p)), x1(i + 1) - x0(i + 1), y(lo(p)) - y(hi(p))); });
+                    c.globalAlpha = 1; c.strokeStyle = color; c.lineWidth = 2; c.beginPath();
+                    let pen = false;
+                    bands.forEach(function (p, i) {
+                        if (!p) { pen = false; return; }
+                        if (!pen) { c.moveTo(x0(i + 1), y(id(p))); pen = true; } else c.lineTo(x0(i + 1), y(id(p)));
+                        c.lineTo(x1(i + 1), y(id(p)));
+                    });
+                    c.stroke();
+                };
+                draw(bandsA, colA); draw(bandsB, colB);
+                // część wspólna zakresów (kompromis)
+                for (let t = 1; t <= span; t++) {
+                    const cp = simCompat(A, B, off, t);
+                    if (cp.state === 'single') continue;
+                    const r = kind === 'temp' ? cp.tRange : cp.rRange, ok = kind === 'temp' ? cp.tOk : cp.rOk;
+                    if (ok) { c.fillStyle = PAL.okFill; c.fillRect(x0(t), y(r[1]), x1(t) - x0(t), y(r[0]) - y(r[1])); c.strokeStyle = PAL.okLine; c.lineWidth = 1; c.strokeRect(x0(t), y(r[1]), x1(t) - x0(t), y(r[0]) - y(r[1])); }
+                }
+                // wybrany dzień
+                const sx = (x0(simState.day) + x1(simState.day)) / 2;
+                c.strokeStyle = PAL.cross; c.lineWidth = 1; c.setLineDash([3, 3]); c.beginPath(); c.moveTo(sx, m.top); c.lineTo(sx, h - m.bottom); c.stroke(); c.setLineDash([]);
+                // początek klucia (koniec obrotów) obu programów
+                [[A, 0, colA], [B, off, colB]].forEach(function (e) {
+                    const info = getSpeciesInfo(e[0]), t = info.stopAfter + 1 + e[1];
+                    if (t <= span) { const x = x0(t); c.fillStyle = e[2]; c.beginPath(); c.moveTo(x, h - m.bottom - 2); c.lineTo(x + 5, h - m.bottom - 11); c.lineTo(x - 5, h - m.bottom - 11); c.closePath(); c.fill(); }
+                });
+                const lg = document.getElementById('simLegendT');
+                if (lg && kind === 'temp') lg.innerHTML = '<span style="color:' + colA + '">■ A: ' + escapeHtml(getSpeciesInfo(A).shortName) + '</span> · <span style="color:' + colB + '">■ B: ' + escapeHtml(getSpeciesInfo(B).shortName) + '</span> · zielone ramki: zakres wspólny · ▲ początek klucia';
+            }
+
+            function simDrawStrip(A, B, off, span) {
+                const canvas = document.getElementById('simStrip');
+                if (!canvas) return;
+                const c = canvas.getContext('2d'), rect = canvas.getBoundingClientRect(), w = Math.round(rect.width) || 400, h = 22, dpr = window.devicePixelRatio || 1;
+                canvas.width = w * dpr; canvas.height = h * dpr; canvas.style.height = h + 'px';
+                c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+                const left = 40, plotW = w - left - 10;
+                const col = { ok: PAL.ok, rh: PAL.warn, temp: PAL.err, both: PAL.err, single: PAL.axis };
+                let conflicts = 0;
+                for (let t = 1; t <= span; t++) {
+                    const cp = simCompat(A, B, off, t);
+                    c.fillStyle = col[cp.state];
+                    c.fillRect(left + (t - 1) / span * plotW + 0.5, 2, plotW / span - 1, h - 4);
+                    if (cp.state !== 'ok' && cp.state !== 'single') conflicts++;
+                }
+                c.fillStyle = PAL.dim; c.font = '10px ' + CANVAS_FONT; c.textAlign = 'right'; c.textBaseline = 'middle'; c.fillText('zgodność', left - 4, h / 2);
+                const note = document.getElementById('simStripNote');
+                if (note) note.textContent = 'Pasek zgodności: zielony = oba programy mają wspólny zakres, bursztynowy = rozbieżna wilgotność, czerwony = rozbieżna temperatura, szary = działa tylko jeden program. Dni konfliktu: ' + conflicts + '.';
+            }
+
+            function simUpdate() {
+                const A = simState.a, B = simState.b, off = simState.off, span = simSpan(A, B, off);
+                const lbl = document.getElementById('simDayLabel'); if (lbl) lbl.textContent = simState.day;
+                simDrawChart('simChartT', 'temp', A, B, off, span);
+                simDrawChart('simChartR', 'rh', A, B, off, span);
+                simDrawStrip(A, B, off, span);
+                simRenderOffsets(); simRenderCards();
+            }
+
+            function simRenderOffsets() {
+                const box = document.getElementById('simOffsets');
+                if (!box) return;
+                const A = simState.a, B = simState.b, rows = [];
+                let best = null;
+                for (let o = 0; o <= 40; o++) {
+                    const r = simConflictDays(A, B, o);
+                    rows.push({ o: o, conflict: r.conflict, overlap: r.overlap });
+                    if (!best || r.conflict < best.conflict) best = { o: o, conflict: r.conflict, overlap: r.overlap };
+                }
+                const noOverlap = rows.find(function (r) { return r.overlap === 0; });
+                const shown = rows.filter(function (r) { return r.o <= 14 || r.o === best.o || (noOverlap && r.o === noOverlap.o); });
+                const cur = simConflictDays(A, B, simState.off);
+                let html = '<div class="note-line ' + (cur.conflict === 0 ? 'ok' : 'warn') + '">Dla przesunięcia ' + simState.off + ' dni: ' + cur.conflict + ' z ' + cur.overlap + ' dni wspólnej pracy ma rozbieżne zakresy.</div>';
+                html += '<div class="note-line info">Najmniej konfliktów (' + best.conflict + ') daje przesunięcie ' + best.o + ' dni.' + (noOverlap ? ' Bez żadnego nakładania: start B po ' + noOverlap.o + ' dniach, czyli po kluciu A.' : '') + '</div>';
+                html += '<table class="schedule-table"><thead><tr><th>B później o [dni]</th><th>Dni wspólnej pracy</th><th>Dni konfliktu</th><th></th></tr></thead><tbody>' + shown.map(function (r) {
+                    return '<tr' + (r.o === simState.off ? ' class="active"' : '') + '><td>' + r.o + '</td><td>' + r.overlap + '</td><td>' + r.conflict + '</td><td><button type="button" class="btn" data-simact="off" data-off="' + r.o + '">Wybierz</button></td></tr>';
+                }).join('') + '</tbody></table>';
+                box.innerHTML = html;
+            }
+
+            function simPhaseText(d) {
+                return d.ph.turn ? 'obroty tak' : 'bez obrotów (klucie)';
+            }
+
+            function simRenderCards() {
+                const box = document.getElementById('simCards');
+                if (!box) return;
+                const A = simState.a, B = simState.b, t = simState.day, cp = simCompat(A, B, simState.off, t);
+                const card = function (tag, col, d, key, dayNo) {
+                    if (!d) return '<div class="card"><div class="card-header"><span class="card-title" style="color:' + col + '">' + tag + ': ' + escapeHtml(getSpeciesInfo(key).shortName) + '</span></div><div class="muted">' + (dayNo < 1 ? 'Jeszcze nie wystartował (dzień ' + dayNo + ').' : 'Program zakończony.') + '</div></div>';
+                    const sens = { CRITICAL: 'krytyczna', HIGH: 'podwyższona', MEDIUM: 'normalna' }[d.sens];
+                    const al = dayAlerts(d.info, d.day).filter(function (a) { return a.level !== 'info'; }).slice(0, 2);
+                    return '<div class="card"><div class="card-header"><span class="card-title" style="color:' + col + '">' + tag + ': ' + escapeHtml(d.info.shortName) + '</span><span class="chip">dzień ' + d.day + '/' + d.info.days + '</span></div>' +
+                        '<div class="esp-row"><span class="esp-key">Temperatura</span><span class="esp-val">' + d.ph.temp.toFixed(1) + ' °C (' + d.ph.tmin.toFixed(1) + '–' + d.ph.tmax.toFixed(1) + ')</span></div>' +
+                        '<div class="esp-row"><span class="esp-key">Wilgotność</span><span class="esp-val">' + d.ph.rh + '% (' + d.ph.rhmin + '–' + d.ph.rhmax + ')</span></div>' +
+                        '<div class="esp-row"><span class="esp-key">Wrażliwość</span><span class="esp-val">' + sens + '</span></div>' +
+                        '<div class="esp-row"><span class="esp-key">Obracanie</span><span class="esp-val">' + simPhaseText(d) + '</span></div>' +
+                        al.map(function (a) { return '<div class="note-line ' + a.level + '"><b>' + escapeHtml(a.title) + '</b>: ' + escapeHtml(a.text) + '</div>'; }).join('') + '</div>';
+                };
+                let comp;
+                if (cp.state === 'single') {
+                    comp = '<div class="muted">W tym dniu działa tylko jeden program, więc nie ma kompromisu.</div>';
+                } else {
+                    comp = '<div class="esp-row"><span class="esp-key">Temperatura</span><span class="esp-val">' + (cp.tOk ? cp.tRange[0].toFixed(1) + '–' + cp.tRange[1].toFixed(1) + ' °C' : 'brak wspólnego zakresu') + '</span></div>' +
+                        '<div class="esp-row"><span class="esp-key">Wilgotność</span><span class="esp-val">' + (cp.rOk ? cp.rRange[0] + '–' + cp.rRange[1] + '%' : 'brak wspólnego zakresu') + '</span></div>' +
+                        '<div class="note-line ' + (cp.state === 'ok' ? 'ok' : (cp.state === 'rh' ? 'warn' : 'critical')) + '">' + (cp.state === 'ok' ? 'Oba programy mieszczą się w jednej nastawie.' : (cp.state === 'rh' ? 'Wilgotność jest rozbieżna: jedna partia będzie schła za mocno albo druga stanie się wilgotna. Jedna z nich dostanie nieoptymalne warunki.' : 'Zakresy temperatury się nie przecinają. Nie da się dobrze prowadzić obu partii w jednej komorze.')) + '</div>';
+                    if (cp.a.sens === 'CRITICAL' || cp.b.sens === 'CRITICAL' || !cp.a.ph.turn || !cp.b.ph.turn) comp += '<div class="note-line warn">Jedna z partii jest w fazie krytycznej lub klucia: prześwietlanie i otwieranie drugiej partii w tym dniu jest ryzykowne.</div>';
+                }
+                box.innerHTML = card('A', PAL.accent, cp.a || simDayData(A, t), A, t) + card('B', PAL.pow, cp.b || simDayData(B, t - simState.off), B, t - simState.off) +
+                    '<div class="card" style="grid-column:1/-1"><div class="card-header"><span class="card-title">Kompromis w dniu ' + t + '</span></div>' + comp + '</div>';
+                simRenderScenario(cp);
+            }
+
+            function simRenderScenario(cp) {
+                const box = document.getElementById('simScenario');
+                if (!box) return;
+                const A = simState.a, B = simState.b, t = simState.day;
+                const da = simDayData(A, t), db = simDayData(B, t - simState.off);
+                const ref = (cp.state !== 'single' && cp.tOk && cp.rOk) ? { t: (cp.tRange[0] + cp.tRange[1]) / 2, r: (cp.rRange[0] + cp.rRange[1]) / 2 } : { t: (da || db).ph.temp, r: (da || db).ph.rh };
+                if (simState.chamberT == null) simState.chamberT = +ref.t.toFixed(1);
+                if (simState.chamberRh == null) simState.chamberRh = Math.round(ref.r);
+                const scen = [['Norma', 0, 0], ['Upał', 0.6, -6], ['Chłód', -0.6, 4], ['Sucho', 0.1, -10], ['Wilgotno', -0.1, 10]];
+                box.innerHTML = '<div class="btn-group">' + scen.map(function (s) { return '<button type="button" class="btn" data-simact="scen" data-dt="' + s[1] + '" data-dr="' + s[2] + '">' + s[0] + '</button>'; }).join('') + '</div>' +
+                    '<div class="fld-row" style="margin-top:8px">' + fld('Temperatura komory [°C]', '<input type="number" step="0.1" data-sim="chamberT" value="' + simState.chamberT + '">') + fld('Wilgotność komory [%]', '<input type="number" step="1" data-sim="chamberRh" value="' + simState.chamberRh + '">') + '</div>' +
+                    '<div id="simVerdict"></div>';
+                box.setAttribute('data-ref', ref.t + ',' + ref.r);
+                simRenderVerdict();
+            }
+
+            function simRenderVerdict() {
+                const out = document.getElementById('simVerdict');
+                if (!out) return;
+                const t = simState.day, da = simDayData(simState.a, t), db = simDayData(simState.b, t - simState.off);
+                const verdict = function (d, tag) {
+                    if (!d) return '';
+                    const tOk = simState.chamberT >= d.ph.tmin && simState.chamberT <= d.ph.tmax, rOk = simState.chamberRh >= d.ph.rhmin && simState.chamberRh <= d.ph.rhmax;
+                    const lvl = tOk && rOk ? 'ok' : ((!tOk && Math.abs(simState.chamberT - d.ph.temp) > 0.6) ? 'critical' : 'warn');
+                    const txt = tOk && rOk ? 'w zakresie' : (!tOk ? 'temperatura poza zakresem ' + d.ph.tmin.toFixed(1) + '–' + d.ph.tmax.toFixed(1) + ' °C' : '') + (!tOk && !rOk ? ', ' : '') + (!rOk ? 'wilgotność poza zakresem ' + d.ph.rhmin + '–' + d.ph.rhmax + '%' : '');
+                    return '<div class="note-line ' + lvl + '"><b>' + tag + ' (' + escapeHtml(d.info.shortName) + ')</b>: ' + txt + '</div>';
+                };
+                out.innerHTML = verdict(da, 'A') + verdict(db, 'B') + (!da && !db ? '<div class="muted">W tym dniu żaden program nie działa.</div>' : '');
+            }
+
+            function simExportCsv() {
+                const A = simState.a, B = simState.b, off = simState.off, span = simSpan(A, B, off);
+                const rows = [['dzień osi', 'A dzień', 'A temp', 'A temp min', 'A temp maks', 'A RH', 'A RH min', 'A RH maks', 'B dzień', 'B temp', 'B temp min', 'B temp maks', 'B RH', 'B RH min', 'B RH maks', 'zgodność']];
+                const f = function (d, k) { return d ? d.ph[k] : ''; };
+                for (let t = 1; t <= span; t++) {
+                    const cp = simCompat(A, B, off, t), a = cp.a || simDayData(A, t), b = cp.b || simDayData(B, t - off);
+                    rows.push([t, a ? a.day : '', f(a, 'temp'), f(a, 'tmin'), f(a, 'tmax'), f(a, 'rh'), f(a, 'rhmin'), f(a, 'rhmax'), b ? b.day : '', f(b, 'temp'), f(b, 'tmin'), f(b, 'tmax'), f(b, 'rh'), f(b, 'rhmin'), f(b, 'rhmax'), { ok: 'zgodne', rh: 'rozbieżna wilgotność', temp: 'rozbieżna temperatura', both: 'rozbieżne', single: 'jeden program' }[cp.state]]);
+                }
+                const text = rows.map(function (r) { return r.join(';'); }).join('\r\n');
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(new Blob(['﻿' + text], { type: 'text/csv' }));
+                link.download = 'symulacja_' + A + '_' + B + '_przesuniecie' + off + '.csv';
+                link.click();
+            }
+
+            function renderSim() { simBuild(); }
+
+            function initSim() {
+                const root = document.getElementById('simRoot');
+                if (!root) return;
+                const onInput = function (ev) {
+                    const el = ev.target.closest('[data-sim]');
+                    if (!el) return;
+                    const k = el.getAttribute('data-sim');
+                    if (k === 'a' || k === 'b') { simState[k] = el.value; renderSim(); }
+                    else if (k === 'off') { simState.off = Math.max(0, Math.min(60, parseInt(el.value, 10) || 0)); simState.chamberT = simState.chamberRh = null; if (ev.type === 'change') renderSim(); }
+                    else if (k === 'day') { simState.day = parseInt(el.value, 10) || 1; simState.chamberT = simState.chamberRh = null; simUpdate(); }
+                    else if (k === 'chamberT') { simState.chamberT = numOrNull(el.value); simRenderVerdict(); }
+                    else if (k === 'chamberRh') { simState.chamberRh = numOrNull(el.value); simRenderVerdict(); }
+                };
+                root.addEventListener('input', onInput);
+                root.addEventListener('change', onInput);
+                root.addEventListener('click', function (ev) {
+                    const el = ev.target.closest('[data-simact]');
+                    if (!el) return;
+                    const act = el.getAttribute('data-simact');
+                    if (act === 'trays') simFromTrays();
+                    else if (act === 'csv') simExportCsv();
+                    else if (act === 'off') { simState.off = parseInt(el.getAttribute('data-off'), 10); simState.chamberT = simState.chamberRh = null; renderSim(); }
+                    else if (act === 'scen') {
+                        const ref = (document.getElementById('simScenario').getAttribute('data-ref') || '37.8,57').split(',').map(Number);
+                        simState.chamberT = +(ref[0] + parseFloat(el.getAttribute('data-dt'))).toFixed(1);
+                        simState.chamberRh = Math.round(ref[1] + parseFloat(el.getAttribute('data-dr')));
+                        simRenderScenario(simCompat(simState.a, simState.b, simState.off, simState.day));
+                    }
+                });
+            }
+
             // ============================================================
             //  ZAKŁADKA LĘG – harmonogram z kolorami wrażliwości
             // ============================================================
@@ -5971,6 +6290,7 @@
                 if (name === 'logs') { renderLogs(); }
                 if (name === 'journal') { renderJournal(); }
                 if (name === 'batches') { renderBatches(); }
+                if (name === 'sim') { renderSim(); }
                 if (name === 'logs') { refreshEvents(); }
                 if (name === 'calibrate') { loadConfig().then(renderCalibration); }
             };
@@ -6000,7 +6320,7 @@
                 resizeTrend();
                 initLock();
                 guardDemos();
-                initBatchView(); initTasks(); initAlertBanner(); initCalibration(); initPrefsUI(); initCustomPrograms();
+                initSim(); initBatchView(); initTasks(); initAlertBanner(); initCalibration(); initPrefsUI(); initCustomPrograms();
                 storeLoadAll();
                 refreshEvents();
                 applyTheme();
@@ -6027,7 +6347,9 @@
                 resizeTimeout = setTimeout(() => { resizeCanvas();
                     resizeTrend();
                     const chartsView = document.getElementById('view-charts');
-                    if (chartsView && chartsView.classList.contains('active')) renderCharts(); }, 200);
+                    if (chartsView && chartsView.classList.contains('active')) renderCharts();
+                    const simView = document.getElementById('view-sim');
+                    if (simView && simView.classList.contains('active')) simUpdate(); }, 200);
             });
 
             addLog('info', 'Panel uruchomiony ' + new Date().toLocaleString('pl-PL'));
