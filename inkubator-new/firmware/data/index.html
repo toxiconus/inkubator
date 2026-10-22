@@ -1767,7 +1767,7 @@
                 <span class="tb-clock">
                     <span class="time" id="tbClock">--:--:--</span>
                 </span>
-                <button type="button" class="tb-tool src" id="btnSource" onclick="setDataSource(dataSource === 'test' ? 'live' : 'test')" title="Źródło danych">
+                <button type="button" class="tb-tool src" id="btnSource" onclick="toggleDataSource()" title="Źródło danych">
                     <span class="tool-dot"></span><span id="srcLabel">Rzecz.</span>
                 </button>
                 <button type="button" class="tb-tool" id="btnTheme" onclick="cycleTheme()" title="Motyw"><span id="themeIcon">🌓</span></button>
@@ -3246,6 +3246,8 @@
                     banner.hidden = true;
                 }
             }
+
+            window.toggleDataSource = function () { window.setDataSource(dataSource === 'test' ? 'live' : 'test'); };
 
             window.setDataSource = function (mode) {
                 if (mode !== 'live' && mode !== 'test') return;
