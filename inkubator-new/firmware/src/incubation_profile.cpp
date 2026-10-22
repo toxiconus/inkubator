@@ -11,12 +11,21 @@ bool loadAllProfiles(const char* path, IncubationProfiles& profiles) {
     File file = LittleFS.open(path, "r");
     if (!file) return false;
 
-    String jsonStr;
-    while (file.available()) jsonStr += (char)file.read();
-    file.close();
+    // Czytamy strumieniowo i pomijamy pola, których firmware nie używa (opisy dni), żeby plik z wieloma
+    // programami nie zajmował pamięci RAM.
+    JsonDocument filter;
+    filter["sensitivity_colors"] = true;
+    JsonObject fsp = filter["species"]["*"].to<JsonObject>();
+    fsp["id"] = true; fsp["common_name"] = true; fsp["incubation_days"] = true; fsp["description"] = true;
+    fsp["reference"] = true; fsp["turning_frequency_per_day"] = true;
+    JsonObject fday = fsp["day_by_day"][0].to<JsonObject>();
+    fday["day"] = true; fday["shell_temp"] = true; fday["air_temp_target"] = true; fday["humidity_set"] = true;
+    fday["humidity_range"] = true; fday["turning"] = true; fday["misting"] = true; fday["sensitivity"] = true;
 
     JsonDocument doc;
-    if (deserializeJson(doc, jsonStr)) return false;
+    const DeserializationError err = deserializeJson(doc, file, DeserializationOption::Filter(filter));
+    file.close();
+    if (err) return false;
 
     JsonObject colors = doc["sensitivity_colors"].as<JsonObject>();
     if (colors) {
@@ -51,6 +60,8 @@ bool loadAllProfiles(const char* path, IncubationProfiles& profiles) {
             profile.days[i].shell_temp = dayObj["shell_temp"] | 37.8f;
             profile.days[i].air_temp_target = dayObj["air_temp_target"] | 37.5f;
             profile.days[i].humidity_set = dayObj["humidity_set"] | 50;
+            profile.days[i].humidity_min = 0;
+            profile.days[i].humidity_max = 0;
             if (dayObj["humidity_range"].is<JsonArray>()) {
                 JsonArray range = dayObj["humidity_range"].as<JsonArray>();
                 profile.days[i].humidity_min = range[0] | 40;

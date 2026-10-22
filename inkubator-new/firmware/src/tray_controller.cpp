@@ -10,6 +10,8 @@ unsigned long long global_start_millis = 0;
 extern IncubationProfiles g_incubation_profiles;
 extern bool rtc_ok;
 extern unsigned long rtc_get_unix_time();
+extern float angle_sensor_deg();
+extern bool angle_sensor_present();
 
 static void tray_update_day_from_rtc(int tray_idx, unsigned long long now_unix);
 
@@ -359,6 +361,8 @@ String tray_status_json(unsigned long long now_millis) {
         t["should_rotate"] = st.should_rotate;
         t["in_lockdown"] = st.in_lockdown;
         t["start_unix"] = configMgr.cfg.trays[i].start_unix;
+        t["has_angle_sensor"] = configMgr.cfg.trays[i].has_angle_sensor;
+        if (configMgr.cfg.trays[i].has_angle_sensor && angle_sensor_present()) { const float a = angle_sensor_deg(); if (!isnan(a)) t["angle_deg"] = a; }
         t["has_last_rotation"] = st.has_last_rotation;
         if (st.has_last_rotation) {
             t["last_rotation_day"] = st.last_rotation_day;

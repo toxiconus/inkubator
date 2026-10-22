@@ -40,20 +40,20 @@ void check_alarms(const SensorData& data) {
     if (isnan(temp) || temp < -50 || temp > 80) {
         code = "sensor";
         msg = "Błąd czujnika temperatury";
-    } else if (temp > configMgr.cfg.system.alarm_max_temp) {
+    } else if (temp > effective_alarm_max_temp()) {
         code = "temp_high";
         msg = "Temperatura zbyt wysoka (" + String(temp, 1) + " °C)";
-    } else if (temp < configMgr.cfg.system.alarm_min_temp) {
+    } else if (temp < effective_alarm_min_temp()) {
         code = "temp_low";
         msg = "Temperatura zbyt niska (" + String(temp, 1) + " °C)";
     }
 
     // === ALARMY WILGOTNOŚCI ===
     if (!code[0] && !isnan(hum) && hum >= 0 && hum <= 100) {
-        if (hum > configMgr.cfg.system.alarm_max_humidity) {
+        if (hum > effective_alarm_max_humidity()) {
             code = "hum_high";
             msg = "Wilgotność zbyt wysoka (" + String(hum, 0) + " %)";
-        } else if (hum < configMgr.cfg.system.alarm_min_humidity) {
+        } else if (hum < effective_alarm_min_humidity()) {
             code = "hum_low";
             msg = "Wilgotność zbyt niska (" + String(hum, 0) + " %)";
         }

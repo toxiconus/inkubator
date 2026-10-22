@@ -42,6 +42,11 @@ void heaters_control(const SensorData& data);
 void diffusers_control(const SensorData& data);
 float control_temperature_value(const SensorData& data);   // odczyt czujnika sterującego grzałką
 float control_setpoint_temp();                              // nastawa temperatury dla tego czujnika
+float control_humidity_ideal();                             // idealna wilgotność (0 = program bez regulacji wilgotności)
+float effective_alarm_max_temp();                           // progi alarmów podążają za programem tac
+float effective_alarm_min_temp();
+float effective_alarm_max_humidity();
+float effective_alarm_min_humidity();
 bool set_heater_profile(const String& mode);
 bool set_diffuser_profile(const String& mode);
 void reset_learning_state();
