@@ -4,8 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>INKUBATOR · PANEL STEROWANIA</title>
-    <script src="/ws-utils.js"></script>
-    <style>
+        <style>
         /* ===== RESET I PODSTAWY ===== */
         * {
             margin: 0;
@@ -1816,6 +1815,10 @@
         .sim-strip { width: 100%; height: 22px; display: block; margin-top: 8px; }
         #view-sim .chart-canvas { height: 170px; }
 
+        /* ===== USTAWIENIA URZĄDZENIA ===== */
+        .set-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px 14px; }
+        #deviceSettings .card { margin-bottom: 10px; }
+
         @media (prefers-reduced-motion: reduce) {
             * { transition: none !important; animation: none !important; }
         }
@@ -2265,6 +2268,7 @@
 
             <!-- ===== ZAKŁADKA SETTINGS ===== -->
             <div id="view-settings" class="view">
+                <div id="deviceSettings"></div>
                 <div class="card">
                     <div class="card-header"><span class="card-title">Powiadomienia w panelu</span></div>
                     <div id="prefsNotify"></div>
@@ -2282,18 +2286,6 @@
                         <button type="button" class="btn btn-primary" onclick="exportBackup()">Pobierz kopię (JSON)</button>
                         <label class="btn" data-risky="1" style="cursor:pointer;">Wczytaj kopię<input type="file" accept="application/json,.json" style="display:none" onchange="importBackup(this)"></label>
                         <a class="btn" href="/api/log" download>Log pomiarów (CSV)</a>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-header"><span class="card-title">Ustawienia</span></div>
-                    <div class="grid-2" style="gap: 10px;">
-                        <a href="/temperature.html" class="btn btn-primary">🌡️ Temperatura</a>
-                        <a href="/humidity.html" class="btn btn-primary">💧 Wilgotność</a>
-                        <a href="/turner.html" class="btn btn-primary">🔄 Obrót</a>
-                        <a href="/incubation.html" class="btn btn-primary">🐣 Inkubacja</a>
-                        <button type="button" class="btn btn-primary" onclick="showTab('sim')">🐣 Symulacja lęgów</button>
-                        <a href="/alarms.html" class="btn btn-primary">🔔 Alarmy</a>
-                        <a href="/various.html" class="btn btn-primary">⚙ Różne</a>
                     </div>
                 </div>
             </div>
@@ -3442,6 +3434,7 @@
                 fetchData();
                 storeLoadAll();
                 refreshEvents();
+                if (document.getElementById('view-settings').classList.contains('active')) renderDeviceSettings();
             };
 
             // ============================================================
@@ -5978,6 +5971,180 @@
                 });
             }
 
+// ============================================================
+            //  USTAWIENIA URZĄDZENIA (zastępują dawne osobne strony: temperatura, wilgotność, obrót, inkubacja, alarmy, różne)
+            //  Konfiguracja jest pobierana z urządzenia, zmieniana w jednym polu i odsyłana w całości.
+            // ============================================================
+            const CTRL_MODES = ['Prosty (histereza)', 'Adaptacyjny z uczeniem', 'PI (zalecany)'];
+
+            function getPath(obj, path) {
+                return path.split('.').reduce(function (o, k) { return o == null ? undefined : o[k]; }, obj);
+            }
+            function setPath(obj, path, value) {
+                const keys = path.split('.');
+                let o = obj;
+                for (let i = 0; i < keys.length - 1; i++) { if (o[keys[i]] == null) o[keys[i]] = {}; o = o[keys[i]]; }
+                o[keys[keys.length - 1]] = value;
+            }
+
+            function cfgInput(cfg, path, label, opts) {
+                const o = opts || {};
+                const v = getPath(cfg, path);
+                const shown = o.scale ? (v / o.scale) : v;
+                if (o.type === 'checkbox') return '<label class="fld chk"><input type="checkbox" data-cfg="' + path + '"' + (v ? ' checked' : '') + '><span>' + label + '</span></label>';
+                if (o.type === 'select') return fld(label, '<select data-cfg="' + path + '" data-int="1">' + o.options.map(function (t, i) { return '<option value="' + i + '"' + (+v === i ? ' selected' : '') + '>' + escapeHtml(t) + '</option>'; }).join('') + '</select>', o.hint);
+                return fld(label, '<input type="number" data-cfg="' + path + '"' + (o.scale ? ' data-scale="' + o.scale + '"' : '') + ' step="' + (o.step || 1) + '" min="' + o.min + '" max="' + o.max + '" value="' + (shown == null ? '' : shown) + '">', o.hint);
+            }
+
+            function deviceCard(title, id, bodyHtml, note, extraButtons) {
+                return '<div class="card" id="devcard-' + id + '"><div class="card-header"><span class="card-title">' + title + '</span></div>' +
+                    (note ? '<div class="muted small" style="margin-bottom:8px">' + note + '</div>' : '') + '<div class="set-grid">' + bodyHtml + '</div>' +
+                    '<div class="btn-group" style="margin-top:10px"><button type="button" class="btn btn-primary" data-devsave="' + id + '">Zapisz w urządzeniu</button>' + (extraButtons || '') + '</div></div>';
+            }
+
+            async function renderDeviceSettings() {
+                const box = document.getElementById('deviceSettings');
+                if (!box) return;
+                if (dataSource !== 'live') { box.innerHTML = '<div class="card"><div class="muted">Tryb testowy: ustawienia urządzenia są niedostępne. Przełącz na dane z urządzenia.</div></div>'; return; }
+                const cfg = await loadConfig();
+                if (!cfg || !cfg.system) { box.innerHTML = '<div class="card"><div class="muted">Nie udało się pobrać konfiguracji urządzenia.</div><div class="btn-group" style="margin-top:8px"><button type="button" class="btn" data-devact="reload">Spróbuj ponownie</button></div></div>'; return; }
+                const nSens = Math.max(1, Math.min(4, (cfg.sensors && cfg.sensors.ds18b20_count) || 1));
+                const sensorNames = Array.from({ length: nSens }, function (_, i) { return 'DS' + (i + 1) + (cfg.sensors.ds18b20_labels && cfg.sensors.ds18b20_labels[i] ? ' (' + cfg.sensors.ds18b20_labels[i] + ')' : ''); });
+
+                const temp = deviceCard('Regulacja temperatury', 'temp',
+                    cfgInput(cfg, 'system.control_mode', 'Regulator grzałki', { type: 'select', options: CTRL_MODES, hint: 'PI trzyma temperaturę najrówniej. Prosty włącza i wyłącza wg histerezy.' }) +
+                    cfgInput(cfg, 'sensors.control_sensor_index', 'Czujnik sterujący', { type: 'select', options: sensorNames, hint: 'Ten czujnik reguluje grzałkę.' }) +
+                    cfgInput(cfg, 'sensors.control_sensor_on_shell', 'Czujnik dotyka skorupy jaja (nastawa to temperatura skorupy)', { type: 'checkbox' }) +
+                    cfgInput(cfg, 'system.use_program_setpoint', 'Nastawy z programu aktywnych tac', { type: 'checkbox' }) +
+                    cfgInput(cfg, 'system.target_temp', 'Nastawa stała [°C]', { min: 30, max: 42, step: 0.1, hint: 'Używana, gdy nastawy z programu są wyłączone.' }) +
+                    cfgInput(cfg, 'system.temp_hysteresis', 'Histereza [°C]', { min: 0.1, max: 2, step: 0.05, hint: 'Dotyczy regulatora prostego.' }) +
+                    cfgInput(cfg, 'system.alarm_min_temp', 'Alarm: temperatura poniżej [°C]', { min: 30, max: 40, step: 0.1 }) +
+                    cfgInput(cfg, 'system.alarm_max_temp', 'Alarm i odcięcie grzałki powyżej [°C]', { min: 38, max: 41, step: 0.1, hint: 'Powyżej tej wartości grzałka jest wyłączana. Dopuszczalne do 41 °C.' }),
+                    'Kalibracja czujników jest w zakładce Kalibracja.');
+
+                const hum = deviceCard('Wilgotność i dyfuzory', 'hum',
+                    cfgInput(cfg, 'system.target_humidity', 'Nastawa stała [%]', { min: 20, max: 95, step: 1, hint: 'Używana, gdy nastawy z programu są wyłączone.' }) +
+                    cfgInput(cfg, 'system.humidity_hysteresis', 'Zakres wokół nastawy ± [%]', { min: 0.5, max: 15, step: 0.5, hint: 'Dyfuzor włącza się dopiero poza tym zakresem, więc pracuje rzadko.' }) +
+                    cfgInput(cfg, 'system.alarm_min_humidity', 'Alarm: wilgotność poniżej [%]', { min: 10, max: 90, step: 1 }) +
+                    cfgInput(cfg, 'system.alarm_max_humidity', 'Alarm: wilgotność powyżej [%]', { min: 30, max: 99, step: 1 }) +
+                    cfgInput(cfg, 'diffusers.on_time_sec', 'Minimalny czas pracy dyfuzora [s]', { min: 1, max: 600, step: 1, hint: 'Chroni styki przekaźnika przed zbyt częstym przełączaniem.' }) +
+                    cfgInput(cfg, 'diffusers.off_time_sec', 'Minimalna przerwa dyfuzora [s]', { min: 1, max: 1800, step: 1 }));
+
+                const trayCard = function (i) {
+                    const t = cfg.trays[i] || {};
+                    return deviceCard('Taca ' + (i + 1) + ': obracanie', 'tray' + i,
+                        cfgInput(cfg, 'trays.' + i + '.active', 'Taca aktywna', { type: 'checkbox' }) +
+                        cfgInput(cfg, 'trays.' + i + '.rotations_per_day', 'Obrotów na dobę', { min: 0, max: 24, step: 1 }) +
+                        cfgInput(cfg, 'trays.' + i + '.rotation_duration_ms', 'Czas jednego obrotu [s]', { min: 1, max: 120, step: 1, scale: 1000 }) +
+                        cfgInput(cfg, 'trays.' + i + '.rotation_pwm_speed', 'Siła silnika (0–255)', { min: 20, max: 255, step: 1, hint: 'Zbyt mała nie ruszy tacy, zbyt duża szarpie jajami.' }),
+                        '', '<button type="button" class="btn" data-devact="move" data-tray="' + i + '">Obróć teraz</button><button type="button" class="btn" data-devact="stop" data-tray="' + i + '">Stop</button>');
+                };
+
+                const startCard = function (i) {
+                    const t = cfg.trays[i] || {};
+                    const day = (trayData && trayData.trays && trayData.trays[i]) ? trayData.trays[i].current_day || 1 : 1;
+                    return '<div class="card"><div class="card-header"><span class="card-title">Taca ' + (i + 1) + ': dzień i start inkubacji</span></div>' +
+                        '<div class="set-grid">' + fld('Numer dnia', '<input type="number" id="devDay' + i + '" min="1" max="60" value="' + day + '">', 'Ustawia bieżący dzień programu.') +
+                        fld('Data i godzina włożenia jaj', '<input type="datetime-local" id="devStart' + i + '">', 'Zegar urządzenia to czas lokalny.') + '</div>' +
+                        '<div class="btn-group" style="margin-top:10px"><button type="button" class="btn" data-devact="setday" data-tray="' + i + '">Ustaw dzień</button><button type="button" class="btn" data-devact="setstart" data-tray="' + i + '">Ustaw start</button><button type="button" class="btn danger" data-devact="resetday" data-tray="' + i + '">Reset do dnia 1</button></div></div>';
+                };
+
+                const dev = '<div class="card"><div class="card-header"><span class="card-title">Urządzenie</span></div>' +
+                    '<div class="set-grid">' + cfgInput(cfg, 'system.log_interval_sec', 'Zapis pomiarów co [s]', { min: 10, max: 3600, step: 10, hint: 'Wykresy wymagają zapisu co minutę (60).' }) + '</div>' +
+                    '<div class="btn-group" style="margin-top:10px"><button type="button" class="btn btn-primary" data-devsave="dev">Zapisz</button><button type="button" class="btn" data-devact="reboot">Restart urządzenia</button><button type="button" class="btn danger" data-devact="factory">Przywróć ustawienia fabryczne</button></div>' +
+                    '<div class="muted small" style="margin-top:8px">Restart nie zmienia dni inkubacji ani zapisanych partii. Ustawienia fabryczne czyszczą konfigurację (nie czyszczą partii ani dziennika).</div></div>';
+
+                box.innerHTML = temp + hum + trayCard(0) + trayCard(1) + startCard(0) + startCard(1) + dev;
+            }
+
+            function devValidate(id, vals) {
+                const g = function (p) { return vals[p]; };
+                if (id === 'temp') {
+                    if (!(g('system.alarm_min_temp') < g('system.target_temp') && g('system.target_temp') < g('system.alarm_max_temp'))) return 'Nastawa musi leżeć między progami alarmu (dolny < nastawa < górny).';
+                    if (g('system.alarm_max_temp') > 41) return 'Górny próg alarmu nie może być wyższy niż 41 °C.';
+                }
+                if (id === 'hum' && !(g('system.alarm_min_humidity') < g('system.target_humidity') && g('system.target_humidity') < g('system.alarm_max_humidity'))) return 'Nastawa wilgotności musi leżeć między progami alarmu.';
+                return null;
+            }
+
+            async function devSave(id) {
+                const vals = {};
+                const scope = document.querySelector('[data-devsave="' + id + '"]').closest('.card');
+                scope.querySelectorAll('[data-cfg]').forEach(function (el) {
+                    const p = el.getAttribute('data-cfg');
+                    if (el.type === 'checkbox') vals[p] = el.checked;
+                    else {
+                        let v = parseFloat(String(el.value).replace(',', '.'));
+                        if (!isFinite(v)) return;
+                        if (el.getAttribute('data-scale')) v = Math.round(v * parseFloat(el.getAttribute('data-scale')));
+                        else if (el.getAttribute('data-int')) v = Math.round(v);
+                        vals[p] = v;
+                    }
+                });
+                const err = devValidate(id, vals);
+                if (err) { notify(err, 'warn'); return; }
+                try {
+                    await saveConfigChange(function (c) { Object.keys(vals).forEach(function (p) { setPath(c, p, vals[p]); }); });
+                    notify('Zapisano w urządzeniu.', 'info');
+                    addLog('cmd', 'Zapisano ustawienia urządzenia (' + id + ')');
+                    fetchData();
+                } catch (e) { notify('Nie udało się zapisać: ' + e.message, 'error'); }
+                renderDeviceSettings();
+            }
+
+            async function devAction(act, tray) {
+                try {
+                    if (act === 'reload') { renderDeviceSettings(); return; }
+                    if (act === 'move') {
+                        const cfg = cfgCache || await loadConfig();
+                        const ms = cfg && cfg.trays[tray] ? cfg.trays[tray].rotation_duration_ms : 15000;
+                        await postForm('/api/tray/move', { tray: tray, duration_ms: ms });
+                        notify('Taca ' + (tray + 1) + ' obraca się (' + Math.round(ms / 1000) + ' s).', 'info');
+                    } else if (act === 'stop') {
+                        await postForm('/api/tray/stop', { tray: tray });
+                        notify('Zatrzymano tacę ' + (tray + 1) + '.', 'info');
+                    } else if (act === 'setday') {
+                        const day = parseInt(document.getElementById('devDay' + tray).value, 10);
+                        if (!(day >= 1 && day <= 60)) { notify('Dzień musi być w zakresie 1–60.', 'warn'); return; }
+                        if (!confirm('Ustawić dzień ' + day + ' dla tacy ' + (tray + 1) + '?')) return;
+                        await postForm('/api/tray/set-day', { tray: tray, day: day });
+                        notify('Ustawiono dzień ' + day + '.', 'info');
+                    } else if (act === 'resetday') {
+                        if (!confirm('Wrócić tacę ' + (tray + 1) + ' do dnia 1? Zegar dni tacy zacznie się od nowa.')) return;
+                        await postForm('/api/tray/set-day', { tray: tray, day: 1 });
+                        notify('Taca ' + (tray + 1) + ' wróciła do dnia 1.', 'info');
+                    } else if (act === 'setstart') {
+                        const v = document.getElementById('devStart' + tray).value;
+                        if (!v) { notify('Wybierz datę i godzinę.', 'warn'); return; }
+                        if (!confirm('Ustawić start inkubacji tacy ' + (tray + 1) + ' na ' + v.replace('T', ' ') + '?')) return;
+                        await postForm('/api/tray/set-start', { tray: tray, date: v.slice(0, 10), time: v.slice(11, 16) });
+                        notify('Ustawiono start inkubacji.', 'info');
+                    } else if (act === 'reboot') {
+                        if (!confirm('Zrestartować urządzenie? Wróci za ok. 20 sekund. Grzanie na ten czas się wyłączy.')) return;
+                        await postForm('/api/reboot', {});
+                        notify('Restart: urządzenie wróci za ok. 20 s.', 'warn');
+                    } else if (act === 'factory') {
+                        if (!confirm('Przywrócić ustawienia fabryczne urządzenia? Konfiguracja (progi, czujniki, tace, poprawki kalibracji) wróci do domyślnej.')) return;
+                        if (!confirm('Na pewno? Tego nie da się cofnąć.')) return;
+                        const r = await fetch('/api/config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ factory_reset: true }) });
+                        if (!r.ok) throw new Error('HTTP ' + r.status);
+                        notify('Przywrócono ustawienia fabryczne. Zrestartuj urządzenie.', 'warn');
+                    }
+                    fetchData();
+                } catch (e) { notify('Nie udało się wykonać: ' + e.message, 'error'); }
+            }
+
+            function initDeviceSettings() {
+                const box = document.getElementById('deviceSettings');
+                if (!box) return;
+                box.addEventListener('click', function (ev) {
+                    const s = ev.target.closest('[data-devsave]');
+                    if (s) { devSave(s.getAttribute('data-devsave')); return; }
+                    const a = ev.target.closest('[data-devact]');
+                    if (a) devAction(a.getAttribute('data-devact'), parseInt(a.getAttribute('data-tray'), 10));
+                });
+            }
+
             // ============================================================
             //  ZAKŁADKA LĘG – harmonogram z kolorami wrażliwości
             // ============================================================
@@ -6356,6 +6523,7 @@
                 if (name === 'sim') { renderSim(); }
                 if (name === 'logs') { refreshEvents(); }
                 if (name === 'calibrate') { loadConfig().then(renderCalibration); }
+                if (name === 'settings') { renderDeviceSettings(); renderClockCard(); }
             };
 
             // ============================================================
@@ -6383,7 +6551,7 @@
                 resizeTrend();
                 initLock();
                 guardDemos();
-                initSim(); initBatchView(); initTasks(); initAlertBanner(); initCalibration(); initPrefsUI(); initCustomPrograms();
+                initSim(); initDeviceSettings(); initBatchView(); initTasks(); initAlertBanner(); initCalibration(); initPrefsUI(); initCustomPrograms();
                 storeLoadAll();
                 refreshEvents();
                 applyTheme();
