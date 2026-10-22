@@ -32,7 +32,7 @@ Zalecenia ogólne ze strony:
 | Program | Dni | Temp. [°C] | RH ustawienia [%] | RH klucia [%] | Ostatni dzień obracania | Szersza wentylacja od dnia |
 | --- | --- | --- | --- | --- | --- | --- |
 | Kura | 21 | 37,8 | 57 (54–59) | 68 | 18 | 18 |
-| Indyk | 28 | 37,2 | 57 (54–59) | 70 | 25 | 25 |
+| Indyk | 28 | 37,5 | 57 (54–59) | 70 | 25 | 25 |
 | Kaczka | 28 | 37,8 | 56 (54–57) | 68 | 25 | 25 |
 | Kaczka piżmowa | 35–37 | 37,8 | 56 (54–57) | 68 | 31 | 30 |
 | Gęś | 28–34 | 37,2 | 62 (59–65) | 70 | 25 | 25 |
