@@ -1720,6 +1720,94 @@
         html[data-theme="light"] .view { scrollbar-color: #b3bfca transparent; }
         html[data-theme="light"] body.src-test .instrument::after { color: #fff; background: var(--warn); }
 
+        /* ===== NARZĘDZIA HODOWCY: partie, zadania, okna dialogowe, alarmy ===== */
+        .alert-banner { display: flex; flex-direction: column; gap: 6px; margin: 0 0 10px; }
+        .alert-banner[hidden], .hatch-banner[hidden] { display: none; }
+        .alert-line { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 9px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); font-size: 14px; }
+        .alert-line b { letter-spacing: 0.04em; }
+        .alert-line span { color: var(--dim); flex: 1 1 220px; }
+        .alert-line button { font: inherit; font-weight: 600; padding: 4px 12px; border-radius: 6px; cursor: pointer; color: var(--ink); background: var(--bg2); border: 1px solid var(--line); }
+        .alert-line.critical { border-color: var(--err); background: var(--err-bg); }
+        .alert-line.critical b { color: var(--err); }
+        .alert-line.warn { border-color: var(--warn); }
+        .alert-line.warn b { color: var(--warn); }
+        .alert-line.info b { color: var(--accent); }
+        .hatch-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 0 0 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--accent); background: var(--active-bg); font-size: 14px; }
+        .hatch-banner b { letter-spacing: 0.04em; color: var(--ink); }
+        .hatch-banner span { color: var(--dim); flex: 1 1 260px; }
+        .hatch-banner.low { border-color: var(--err); background: var(--err-bg); }
+        .hatch-banner.low b { color: var(--err); }
+        .hatch-banner u { color: var(--err); text-decoration: none; font-weight: 700; }
+
+        #view-status > #tasks-card { grid-column: 1 / -1; }
+        .tasks { display: flex; flex-direction: column; gap: 6px; }
+        .task { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-left-width: 4px; border-radius: 8px; cursor: pointer; background: var(--bg2); }
+        .task input { margin-top: 4px; width: 18px; height: 18px; flex: 0 0 auto; accent-color: var(--accent); }
+        .task span { display: flex; flex-direction: column; min-width: 0; }
+        .task b { font-weight: 650; color: var(--ink); }
+        .task small { color: var(--dim); font-size: 13px; line-height: 1.4; }
+        .task.info { border-left-color: var(--accent); }
+        .task.warn { border-left-color: var(--warn); }
+        .task.critical { border-left-color: var(--err); }
+        .task.done { opacity: 0.55; }
+        .task.done b { text-decoration: line-through; }
+
+        .batch-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 10px; }
+        .batch-bar .grow { flex: 1 1 auto; }
+        .batch-card { margin-bottom: 10px; }
+        .batch-chips { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+        .batch-line { font-size: 14px; color: var(--dim); margin: 4px 0; line-height: 1.45; }
+        .batch-line b { color: var(--ink); }
+        .batch-prog { height: 8px; border-radius: 4px; background: var(--bg2); border: 1px solid var(--line); margin: 8px 0 4px; overflow: hidden; }
+        .batch-prog i { display: block; height: 100%; background: var(--accent); }
+        .batch-actions { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+        .batch-card small.muted, .small { font-size: 12px; }
+        .note-line { font-size: 13px; line-height: 1.4; margin: 4px 0; padding: 6px 10px; border-radius: 6px; border-left: 3px solid var(--accent); background: var(--bg2); color: var(--dim); }
+        .note-line.ok { border-left-color: var(--ok); }
+        .note-line.warn { border-left-color: var(--warn); color: var(--ink); }
+        .note-line.critical { border-left-color: var(--err); color: var(--ink); }
+        .note-box { margin-top: 6px; }
+
+        dialog.dlg { border: 1px solid var(--line); border-radius: 12px; padding: 0; background: var(--panel); color: var(--ink); width: min(520px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); }
+        dialog.dlg.wide { width: min(760px, calc(100vw - 24px)); }
+        dialog.dlg::backdrop { background: rgba(0, 0, 0, 0.55); }
+        .dlg-form { display: flex; flex-direction: column; max-height: calc(100dvh - 24px); }
+        .dlg-form h3 { padding: 14px 18px 8px; font-size: 17px; font-weight: 650; }
+        .dlg-body { padding: 4px 18px 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; user-select: text; }
+        .dlg-body * { user-select: text; }
+        .dlg-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 12px 18px 16px; border-top: 1px solid var(--line); }
+        .fld { display: flex; flex-direction: column; gap: 4px; flex: 1 1 0; min-width: 0; font-size: 13px; color: var(--dim); }
+        .fld > span { font-weight: 600; letter-spacing: 0.02em; }
+        .fld small { font-size: 12px; color: var(--faint); }
+        .fld input, .fld select, .fld textarea { font: inherit; font-size: 15px; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg2); color: var(--ink); width: 100%; min-width: 0; }
+        .fld.chk { flex-direction: row; align-items: center; gap: 10px; }
+        .fld.chk input { width: 18px; height: 18px; accent-color: var(--accent); flex: 0 0 auto; }
+        .fld.chk span { font-weight: 500; color: var(--ink); }
+        .fld-row { display: flex; gap: 10px; }
+        .fld-row .fld input + input { margin-top: 4px; }
+
+        .calib-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+        .calib-name { display: flex; flex-direction: column; flex: 1 1 200px; font-size: 14px; }
+        .calib-row input { font: inherit; padding: 7px 10px; width: 140px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg2); color: var(--ink); }
+        .calib-new { min-width: 170px; font-size: 13px; }
+        .custom-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+        .custom-row span { flex: 1 1 240px; font-size: 13px; }
+        .report .pk { width: 46%; }
+
+        @media (max-width: 760px) {
+            .alert-line, .hatch-banner { padding: 6px 10px; font-size: 13px; }
+            .alert-line.info span { display: none; }
+            .batch-actions .btn { flex: 1 1 auto; }
+            .calib-row input { width: 100%; }
+        }
+
+        @media print {
+            body.printing-report > *:not(dialog) { display: none !important; }
+            body.printing-report dialog.dlg { position: static; width: 100%; max-height: none; border: 0; box-shadow: none; background: #fff; color: #000; }
+            body.printing-report .dlg-actions { display: none; }
+            body.printing-report .dlg-body { overflow: visible; }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             * { transition: none !important; animation: none !important; }
         }
@@ -1736,6 +1824,7 @@
                 <span class="toolbar-sep"></span>
                 <nav class="tabs">
                     <button class="tab active" data-tab="status" onclick="showTab('status')">Status</button>
+                    <button class="tab" data-tab="batches" onclick="showTab('batches')">Partie</button>
                     <button class="tab" data-tab="hatch" onclick="showTab('hatch')">Programy</button>
                     <button class="tab" data-tab="charts" onclick="showTab('charts')">Wykresy</button>
                     <button class="tab" data-tab="schedule" onclick="showTab('schedule')">Harmonogram</button>
@@ -1778,6 +1867,8 @@
         <!-- ===== CONTENT ===== -->
         <div class="content">
             <div id="srcBanner" class="src-banner" hidden></div>
+            <div id="alertBanner" class="alert-banner" hidden></div>
+            <div id="hatchBanner" class="hatch-banner" hidden></div>
 
             <!-- ===== ZAKŁADKA STATUS ===== -->
             <div id="view-status" class="view active">
@@ -1929,6 +2020,12 @@
                     </div>
                 </div>
 
+                <!-- Zadania na dziś -->
+                <div class="card" id="tasks-card">
+                    <div class="card-header"><span class="card-title">Dziś do zrobienia</span><span class="chip" id="tasksProgress"></span></div>
+                    <div id="tasks-box" class="tasks"><div class="muted">Ładowanie...</div></div>
+                </div>
+
                 <!-- Alarmy -->
                 <div class="card">
                     <div class="card-header"><span class="card-title">Alarmy</span></div>
@@ -1939,6 +2036,20 @@
                 <div class="card">
                     <div class="card-header"><span class="card-title">Wskazówki dla tac</span></div>
                     <div id="tray-advice" class="tray-advice">Brak danych o tacach.</div>
+                </div>
+            </div>
+
+            <!-- ===== ZAKŁADKA PARTIE ===== -->
+            <div id="view-batches" class="view">
+                <div class="batch-bar">
+                    <button type="button" class="btn btn-primary" onclick="batchEdit()">+ Nowa partia</button>
+                    <span class="grow"></span>
+                    <span class="chip" id="batchStoreChip"></span>
+                </div>
+                <div id="batchList"></div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Statystyki hodowli</span></div>
+                    <div id="batchSummary"></div>
                 </div>
             </div>
 
@@ -1970,6 +2081,11 @@
                     <button class="btn primary" onclick="updateSchedule()">Odśwież</button>
                     <button class="btn" onclick="applyToTray()">Zastosuj</button>
                     <button class="btn danger" onclick="resetTray()">Resetuj</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Własne programy</span><button type="button" class="btn" data-risky="1" onclick="customProgramEdit()">+ Własny program</button></div>
+                    <div id="customPrograms"></div>
                 </div>
 
                 <div id="dayAlerts" class="day-alerts"></div>
@@ -2047,6 +2163,7 @@
                     <canvas id="chartPowerMain" class="chart-canvas"></canvas>
                 </div>
                 <div class="chart-note" id="chartBandNote"></div>
+                <div class="chart-note" id="chartLegend"></div>
                 <div class="chart-note" id="chartNote"></div>
                 <div class="card">
                     <div class="card-header"><span class="card-title">Eksport</span></div>
@@ -2120,6 +2237,10 @@
             <!-- ===== ZAKŁADKA LOGS ===== -->
             <div id="view-logs" class="view">
                 <div class="card">
+                    <div class="card-header"><span class="card-title">Zdarzenia urządzenia</span></div>
+                    <div id="deviceEvents" class="log-list"><div class="journal-empty">Brak zdarzeń.</div></div>
+                </div>
+                <div class="card">
                     <div class="card-header"><span class="card-title">Logi zdarzeń</span><span class="badge" id="logCount">0</span></div>
                     <div id="logList" class="log-list"><div class="journal-empty">Brak logów.</div></div>
                     <div class="btn-group" style="margin-top:6px;">
@@ -2130,6 +2251,19 @@
 
             <!-- ===== ZAKŁADKA SETTINGS ===== -->
             <div id="view-settings" class="view">
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Powiadomienia w panelu</span></div>
+                    <div id="prefsNotify"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Dane i kopie zapasowe</span></div>
+                    <div class="muted small" style="margin-bottom:8px;">Partie, dziennik, zadania i własne programy są zapisane w urządzeniu. Kopia chroni je przed awarią pamięci urządzenia.</div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary" onclick="exportBackup()">Pobierz kopię (JSON)</button>
+                        <label class="btn" data-risky="1" style="cursor:pointer;">Wczytaj kopię<input type="file" accept="application/json,.json" style="display:none" onchange="importBackup(this)"></label>
+                        <a class="btn" href="/api/log" download>Log pomiarów (CSV)</a>
+                    </div>
+                </div>
                 <div class="card">
                     <div class="card-header"><span class="card-title">Ustawienia</span></div>
                     <div class="grid-2" style="gap: 10px;">
@@ -2150,7 +2284,21 @@
             <!-- ===== ZAKŁADKA CALIBRATE ===== -->
             <div id="view-calibrate" class="view">
                 <div class="card">
-                    <div class="card-header"><span class="card-title">Kalibracja tacy</span></div>
+                    <div class="card-header"><span class="card-title">Kalibracja czujników temperatury</span></div>
+                    <div class="muted small" style="margin-bottom:6px;">Połóż obok czujnika dokładny termometr wzorcowy (najlepiej przy 37–38 °C), odczekaj 15 minut przy stabilnej temperaturze i wpisz jego odczyt. Panel wyliczy poprawkę, a urządzenie od razu użyje jej w regulacji. Czujnik, który steruje grzałką, warto skalibrować w pierwszej kolejności.</div>
+                    <div id="calibSensors"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Kalibracja wilgotności</span></div>
+                    <div class="muted small" style="margin-bottom:6px;">Test solny: czujnik i nasycony roztwór soli kuchennej (wilgotna sól, bez zalewania) w szczelnym pojemniku na 8–12 godzin w temperaturze pokojowej. Powietrze nad solą ma ok. 75% wilgotności. Wpisz 75 jako wzorzec. Tanie czujniki DHT mają błąd kilku punktów, więc ta poprawka bywa potrzebna.</div>
+                    <div id="calibHum"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Historia kalibracji</span></div>
+                    <div id="calibHistory"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Kalibracja ruchu tacy (demo, tylko tryb testowy)</span></div>
                     <div style="font-size:12px;color:#5a6a7a;">Symulacja kalibracji — wersja demonstracyjna, działa tylko w trybie testowym.</div>
                     <div class="grid-2" style="margin-top:6px;">
                         <div>
@@ -2408,7 +2556,7 @@
                 Object.keys(CATEGORY_LABELS).forEach(function (cat) {
                     const group = document.createElement('optgroup');
                     group.label = CATEGORY_LABELS[cat];
-                    Object.keys(SPECIES).filter(function (k) { return SPECIES[k].category === cat; }).forEach(function (k) {
+                    Object.keys(SPECIES).filter(function (k) { return SPECIES[k].category === cat && !SPECIES[k].custom; }).forEach(function (k) {
                         const o = document.createElement('option');
                         o.value = k;
                         o.textContent = SPECIES[k].name;
@@ -2416,6 +2564,13 @@
                     });
                     if (group.children.length) sel.appendChild(group);
                 });
+                const customKeys = Object.keys(SPECIES).filter(function (k) { return SPECIES[k].custom; });
+                if (customKeys.length) {
+                    const cg = document.createElement('optgroup');
+                    cg.label = 'Własne programy';
+                    customKeys.forEach(function (k) { const o = document.createElement('option'); o.value = k; o.textContent = SPECIES[k].name; cg.appendChild(o); });
+                    sel.appendChild(cg);
+                }
                 if (SPECIES[current]) sel.value = current;
             }
 
@@ -3131,7 +3286,7 @@
                 const el = document.createElement('div');
                 el.className = 'panel-toast ' + (level || 'info');
                 el.textContent = message;
-                document.body.appendChild(el);
+                (document.querySelector('dialog[open]') || document.body).appendChild(el);
                 requestAnimationFrame(function () { el.classList.add('show'); });
                 setTimeout(function () { el.classList.remove('show'); setTimeout(function () { el.remove(); }, 250); }, 3600);
             }
@@ -3167,7 +3322,9 @@
                     heater_pwm_ch0: Math.round(s.heater * 10.23), heater_pwm_ch1: Math.round(s.heater * 10.23),
                     diffuser_count: 2, diffuser_switches: 18 + Math.floor((now - SIM_BOOT) / 660000),
                     diffuser_0_on: s.on && s.cyc % 2 === 0, diffuser_1_on: s.on && s.cyc % 2 === 1,
-                    esp_internal_temp: 41.2, uptime_ms: now - SIM_BOOT
+                    esp_internal_temp: 41.2, uptime_ms: now - SIM_BOOT,
+                    now_unix: Math.floor(now / 1000), clock_ok: true, alarm: false, alarm_code: '', alarm_msg: '', door_enabled: false, door_open: false,
+                    water_enabled: false, water_low: false, sensor_offsets: [0, 0, 0, 0]
                 };
             }
 
@@ -3266,6 +3423,8 @@
                 if (mode === 'test') seedTestHistory();
                 renderLinkState();
                 fetchData();
+                storeLoadAll();
+                refreshEvents();
             };
 
             // ============================================================
@@ -3327,6 +3486,9 @@
                     updateTrayMeta();
                     if (typeof updateTiles === 'function') updateTiles();
                     renderScheduleTables();
+                    renderTasks();
+                    updateHatchBanner();
+                    updateDeviceAlerts();
                 }
             }
 
@@ -3504,6 +3666,8 @@
                     ctx2.setLineDash([]);
                 }
 
+                drawMarkers(ctx2, opt.markers, mapX, m, h, w, t0, t1, hoverX);
+
                 // linia: czerwone odcinki poza zakresem dopuszczalnym
                 const inRange = function (v) { return opt.min == null || (v >= opt.min && v <= opt.max); };
                 ctx2.lineWidth = 1.8;
@@ -3553,7 +3717,7 @@
             }
 
             // Moc grzałki (linia) i praca dyfuzorów (pasy na dole)
-            function drawPowerChart(canvas, points, hoverX) {
+            function drawPowerChart(canvas, points, hoverX, markers) {
                 const ctx2 = canvas.getContext('2d');
                 const rect = canvas.getBoundingClientRect();
                 const w = Math.round(rect.width) || 400, h = Math.round(rect.height) || 170;
@@ -3595,6 +3759,7 @@
                 ctx2.fillStyle = PAL.dim;
                 ctx2.textAlign = 'right';
                 ctx2.fillText('dyfuzory', m.left - 5, stripY + 4);
+                drawMarkers(ctx2, markers, mapX, m, h, w, t0, t1, hoverX);
                 // grzałka
                 ctx2.strokeStyle = PAL.pow;
                 ctx2.lineWidth = 1.8;
@@ -3675,8 +3840,12 @@
                 if (note) { note.textContent = series.note || ''; note.style.display = series.note ? '' : 'none'; }
 
                 const rg = (typeof activeRanges === 'function') ? activeRanges() : null;
+                const markers = buildChartMarkers(series.points);
+                const legend = document.getElementById('chartLegend');
+                if (legend) legend.textContent = markers.length ? '▲ restart urządzenia · ● alarm · ◆ otwarcie drzwi (puste: domyślnie z nagłego spadku temperatury) · szare ● wpis w dzienniku. Najedź lub dotknij wykresu przy znaczniku, aby zobaczyć opis.' : '';
                 const tOpt = { color: PAL.temp, unit: '°C', digits: 1, minSpan: 1.0, min: rg && rg.t ? rg.t.min : null, max: rg && rg.t ? rg.t.max : null, ideal: rg && rg.t ? rg.t.ideal : null };
                 const hOpt = { color: PAL.rh, unit: '%', digits: 0, minSpan: 10, min: rg && rg.rh ? rg.rh.min : null, max: rg && rg.rh ? rg.rh.max : null, ideal: rg && rg.rh ? rg.rh.ideal : null, clamp: [0, 100] };
+                tOpt.markers = markers; hOpt.markers = markers;
 
                 const drawTemp = function (hx) {
                     const s = drawLineChart(document.getElementById('chartTempMain'), series.points, function (p) { return p.temp; }, tOpt, hx);
@@ -3687,7 +3856,7 @@
                     const el = document.getElementById('chartHumStats'); if (el) el.textContent = chartStatsText(s, '%', 0, hOpt.min != null);
                 };
                 const drawPower = function (hx) {
-                    const s = drawPowerChart(document.getElementById('chartPowerMain'), series.points, hx);
+                    const s = drawPowerChart(document.getElementById('chartPowerMain'), series.points, hx, markers);
                     const el = document.getElementById('chartPowerStats');
                     if (el) el.textContent = s ? 'grzałka śr. ' + s.avg.toFixed(0) + '%, maks. ' + s.max.toFixed(0) + '% · dyfuzory włączone ' + s.onPct + '% czasu, ok. ' + s.switches + ' włączeń' : '';
                 };
@@ -3850,6 +4019,7 @@
                     } else {
                         rows.push('<b>' + endWord + ':</b> za ' + left + ' ' + plDays(left) + ' (ustaw datę startu, aby zobaczyć termin)');
                     }
+                    if (tray.has_last_rotation) rows.push('Ostatni obrót: dzień ' + tray.last_rotation_day + ', ' + pad2(tray.last_rotation_hour) + ':' + pad2(tray.last_rotation_minute));
                     const now = dayAlerts(info, day).filter(function (a) { return a.level !== 'info'; })
                         .sort(function (a, b) { return (LEVEL_RANK[b.level] || 0) - (LEVEL_RANK[a.level] || 0); })[0];
                     rows.push(now
@@ -3875,7 +4045,7 @@
                 '#view-calibrate button', '#view-calibrate input', '#view-calibrate select',
                 '#view-esp button', '#view-esp input', '#view-esp select',
                 '#view-settings button', '#view-settings input', '#view-settings select',
-                '#view-logs button', '#view-journal button', '#view-charts button[onclick*="clearHistory"]'
+                '#view-logs button', '#view-journal button', '#customPrograms button', '#view-hatch button[onclick*="customProgramEdit"]', '#view-batches button[onclick*="batchEdit"]', '#view-charts button[onclick*="clearHistory"]'
             ];
             let locked = true;
             let unlockUntil = 0;
@@ -3990,15 +4160,14 @@
             // ============================================================
             //  DZIENNIK: wpisy rzeczywiste i testowe są przechowywane osobno (pamięć przeglądarki)
             // ============================================================
-            function journalKey() { return 'inkubator.journal.' + dataSource; }
-
             function loadJournal() {
-                try { journalEntries = JSON.parse(localStorage.getItem(journalKey()) || '[]'); } catch (e) { journalEntries = []; }
-                if (!Array.isArray(journalEntries)) journalEntries = [];
+                journalEntries = (storeData.journal && Array.isArray(storeData.journal.items)) ? storeData.journal.items : [];
             }
 
             function saveJournal() {
-                try { localStorage.setItem(journalKey(), JSON.stringify(journalEntries.slice(0, 500))); } catch (e) { /* brak miejsca */ }
+                if (!storeData.journal) storeData.journal = { v: 1, items: [] };
+                storeData.journal.items = journalEntries.slice(0, 500);
+                storeSave('journal');
             }
 
             function journalPush(text) {
@@ -4103,6 +4272,1290 @@
                             return original.apply(this, arguments);
                         };
                     });
+            }
+
+// ============================================================
+            //  MAGAZYN DANYCH: partie, dziennik, zadania, własne programy i ustawienia panelu.
+            //  Dane rzeczywiste zapisują się w urządzeniu (przetrwają zmianę telefonu), dane testowe
+            //  tylko w pamięci przeglądarki. Kopia lokalna zostaje zawsze jako zapas.
+            // ============================================================
+            const STORE_EMPTY = {
+                batches: function () { return { v: 1, items: [] }; },
+                journal: function () { return { v: 1, items: [] }; },
+                tasks: function () { return { v: 1, days: {} }; },
+                programs: function () { return { v: 1, items: [] }; },
+                prefs: function () { return { v: 1, notify: { sound: true, vibrate: true, browser: false }, calibrations: [] }; }
+            };
+            const storeData = {};
+            let storeLocalOnly = false;
+            const storeTimers = {};
+
+            function lsGet(key) { try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; } }
+            function lsSet(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* brak miejsca */ } }
+            function storeKey(name) { return 'inkubator.store.' + dataSource + '.' + name; }
+
+            async function storeLoadOne(name) {
+                let doc = null, deviceOk = false, needUpload = false;
+                if (dataSource === 'live') {
+                    try { doc = await fetchJson('/api/store?name=' + name, {}, 8000); deviceOk = true; }
+                    catch (e) { doc = lsGet(storeKey(name)); storeLocalOnly = true; }
+                } else {
+                    doc = lsGet(storeKey(name));
+                }
+                if (doc == null && name === 'journal') {           // przeniesienie z poprzedniej wersji panelu
+                    const legacy = lsGet('inkubator.journal.' + dataSource);
+                    if (Array.isArray(legacy) && legacy.length) { doc = { v: 1, items: legacy }; needUpload = true; }
+                }
+                if (doc == null && deviceOk) {                     // urządzenie puste, a w przeglądarce coś jest
+                    const local = lsGet(storeKey(name));
+                    if (local && typeof local === 'object') { doc = local; needUpload = true; }
+                }
+                if (!doc || typeof doc !== 'object') doc = STORE_EMPTY[name]();
+                storeData[name] = doc;
+                if (needUpload && deviceOk) storeSave(name, true);
+                return doc;
+            }
+
+            function storeSave(name, immediate) {
+                const doc = storeData[name];
+                if (!doc) return;
+                lsSet(storeKey(name), doc);
+                if (dataSource !== 'live') return;
+                clearTimeout(storeTimers[name]);
+                const run = async function () {
+                    try {
+                        const r = await fetch('/api/store?name=' + name, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(doc) });
+                        if (!r.ok) {
+                            let msg = 'HTTP ' + r.status;
+                            try { const j = await r.json(); if (j && j.error) msg = j.error; } catch (e) { /* brak treści */ }
+                            throw new Error(msg);
+                        }
+                        storeLocalOnly = false;
+                    } catch (e) {
+                        storeLocalOnly = true;
+                        notify('Nie zapisano w urządzeniu (kopia jest w przeglądarce): ' + e.message, 'warn');
+                    }
+                };
+                if (immediate) run(); else storeTimers[name] = setTimeout(run, 500);
+            }
+
+            async function storeLoadAll() {
+                storeLocalOnly = false;
+                await Promise.all(Object.keys(STORE_EMPTY).map(storeLoadOne));
+                registerCustomPrograms();
+                loadJournal();
+                renderJournal();
+                renderBatches();
+                renderTasks();
+                renderCustomPrograms();
+                renderPrefsUI();
+                renderCalibration();
+            }
+
+            // ------------------------------------------------------------
+            //  Pomocnicze: czas urządzenia i daty
+            // ------------------------------------------------------------
+            function deviceNowUnix() {
+                return (statusData && statusData.now_unix && statusData.clock_ok !== false) ? statusData.now_unix : Math.floor(Date.now() / 1000);
+            }
+            function pad2(n) { return String(n).padStart(2, '0'); }
+            function localDate(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+            function parseIsoDate(s) { if (!s) return null; const p = String(s).split('-'); return new Date(+p[0], +p[1] - 1, +p[2], 12); }
+            function daysBetween(a, b) { return Math.round((b - a) / 86400000); }
+            function fmtDateTime(ms) { return new Date(ms).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+            function fmtDay(ms) { return new Date(ms).toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
+            function plural(n, one, few, many) { const a = Math.abs(n); if (a === 1) return one; const d = a % 10, t = a % 100; return (d >= 2 && d <= 4 && !(t >= 12 && t <= 14)) ? few : many; }
+            function numOrNull(v) { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : null; }
+            function intOrZero(v) { const n = parseInt(v, 10); return isFinite(n) && n > 0 ? n : 0; }
+
+            // ------------------------------------------------------------
+            //  Okno dialogowe (natywne <dialog>)
+            // ------------------------------------------------------------
+            function openDialog(title, bodyHtml, actions, opts) {
+                const dlg = document.createElement('dialog');
+                dlg.className = 'dlg' + (opts && opts.wide ? ' wide' : '');
+                dlg.innerHTML = '<form method="dialog" class="dlg-form"><h3>' + escapeHtml(title) + '</h3><div class="dlg-body">' + bodyHtml + '</div><div class="dlg-actions"></div></form>';
+                const bar = dlg.querySelector('.dlg-actions');
+                (actions || [{ label: 'Zamknij' }]).forEach(function (a) {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'btn' + (a.primary ? ' btn-primary' : '') + (a.danger ? ' danger' : '');
+                    b.textContent = a.label;
+                    b.addEventListener('click', function () {
+                        const keep = a.onClick ? a.onClick(dlg) : false;
+                        if (keep !== true) { dlg.close(); }
+                    });
+                    bar.appendChild(b);
+                });
+                dlg.addEventListener('close', function () { setTimeout(function () { dlg.remove(); }, 50); });
+                document.body.appendChild(dlg);
+                if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+                return dlg;
+            }
+            function fld(label, inner, hint) {
+                return '<label class="fld"><span>' + label + '</span>' + inner + (hint ? '<small>' + hint + '</small>' : '') + '</label>';
+            }
+            function val(dlg, name) { const el = dlg.querySelector('[name="' + name + '"]'); return el ? el.value : ''; }
+
+            // ============================================================
+            //  PARTIE JAJ
+            // ============================================================
+            const SOURCE_LABEL = { own: 'Własne', purchased: 'Kupione' };
+            const ACCLIM_TEXT = 'Jaja przechowywane w chłodzie (lodówka, transport) wyjmij na 6–8 godzin do temperatury pokojowej przed włożeniem. Zimne jaja wkładane do ciepłego inkubatora się „pocą”, a zarodek dostaje szok.';
+
+            function batchesList() { return storeData.batches ? storeData.batches.items : []; }
+            function findBatch(id) { return batchesList().find(function (b) { return b.id === id; }); }
+
+            function speciesOptionsHtml(selected) {
+                let html = '';
+                Object.keys(SPECIES).filter(function (k) { return SPECIES[k].category === 'ptaki' && !SPECIES[k].custom; }).forEach(function (k) {
+                    html += '<option value="' + k + '"' + (k === selected ? ' selected' : '') + '>' + escapeHtml(SPECIES[k].shortName) + '</option>';
+                });
+                const customs = Object.keys(SPECIES).filter(function (k) { return SPECIES[k].custom; });
+                if (customs.length) {
+                    html += '<optgroup label="Własne programy">';
+                    customs.forEach(function (k) { html += '<option value="' + k + '"' + (k === selected ? ' selected' : '') + '>' + escapeHtml(SPECIES[k].shortName) + '</option>'; });
+                    html += '</optgroup>';
+                }
+                return html;
+            }
+
+            // wiek jaj (dni od zniesienia) w chwili włożenia albo teraz
+            function eggAge(b, refMs) {
+                const ref = refMs || (b.setUnix ? b.setUnix * 1000 : Date.now());
+                const newest = parseIsoDate(b.laidTo || b.laidFrom), oldest = parseIsoDate(b.laidFrom || b.laidTo);
+                if (!newest || !oldest) return null;
+                return { min: Math.max(0, daysBetween(newest, ref)), max: Math.max(0, daysBetween(oldest, ref)) };
+            }
+
+            function eggAgeNotes(age) {
+                const out = [];
+                if (!age) return out;
+                const txt = age.min === age.max ? age.max + ' ' + plural(age.max, 'dzień', 'dni', 'dni') : age.min + '–' + age.max + ' dni';
+                if (age.max > 14) out.push({ level: 'critical', text: 'Jaja mają do ' + age.max + ' dni. Powyżej 14 dni wylęgowość mocno spada, najstarsze jaja lepiej pominąć.' });
+                else if (age.max > 10) out.push({ level: 'critical', text: 'Wiek jaj: ' + txt + '. Po 10 dniach przechowywania wylęgowość wyraźnie spada, włóż je jak najszybciej.' });
+                else if (age.max > 7) out.push({ level: 'warn', text: 'Wiek jaj: ' + txt + '. Po 7 dniach wylęgowość zaczyna spadać. Nie zwlekaj z włożeniem.' });
+                else out.push({ level: 'ok', text: 'Wiek jaj: ' + txt + ' (do 7 dni: bez ograniczeń).' });
+                if (age.max - age.min > 4) out.push({ level: 'warn', text: 'Duży rozrzut wieku jaj (' + (age.max - age.min) + ' dni): klucie będzie rozciągnięte w czasie.' });
+                return out;
+            }
+
+            function otherBatchesOnTray(b) {
+                if (b.tray == null) return [];
+                return batchesList().filter(function (o) { return o.id !== b.id && o.tray === b.tray && o.status !== 'closed'; });
+            }
+
+            function mixNotes(b) {
+                const out = [];
+                otherBatchesOnTray(b).forEach(function (o) {
+                    if (o.species !== b.species) {
+                        out.push({ level: 'critical', text: 'Na tej tacy jest już partia „' + o.name + '” innego gatunku. Gatunki mają różne temperatury i terminy klucia, wybierz drugą tacę.' });
+                    } else if (o.setUnix && b.setUnix && Math.abs(o.setUnix - b.setUnix) > 86400) {
+                        out.push({ level: 'warn', text: 'Partia „' + o.name + '” ma inny dzień startu. Dzień klucia i faza krytyczna wypadną w różnych terminach.' });
+                    }
+                });
+                // dwie tace z gatunkami o rozłącznych zakresach: podpowiedz rozdzielenie terminów
+                if (b.tray != null) {
+                    const info = getSpeciesInfo(b.species);
+                    const other = trayData && trayData.trays ? trayData.trays[b.tray === 0 ? 1 : 0] : null;
+                    if (other && other.active !== false && other.species_id) {
+                        const oi = getSpeciesInfo(other.species_id);
+                        const gap = Math.max(info.phases[0].tmin - oi.phases[0].tmax, oi.phases[0].tmin - info.phases[0].tmax);
+                        if (gap > 0) out.push({ level: 'warn', text: 'Druga taca ma program „' + oi.shortName + '” o innym zakresie temperatury (rozbieżność ' + gap.toFixed(1) + ' °C). Lepiej wstawić tę partię po kluciu drugiej.' });
+                    }
+                }
+                return out;
+            }
+
+            async function incubatorStability() {
+                try {
+                    const series = await loadSeries('24h');
+                    const pts = series && series.points ? series.points.filter(function (p) { return isFinite(p.temp); }) : [];
+                    if (pts.length < 5) return null;
+                    const rg = activeRanges();
+                    const ideal = rg.t ? rg.t.ideal : ((statusData && statusData.setpoint_temp) || 37.8);
+                    let i = pts.length - 1;
+                    while (i >= 0 && Math.abs(pts[i].temp - ideal) <= 0.5) i--;
+                    const last = pts[pts.length - 1].t;
+                    const from = pts[Math.min(i + 1, pts.length - 1)].t;
+                    return { hours: (last - from) / 3600000, span: (last - pts[0].t) / 3600000, all: i < 0, ideal: ideal };
+                } catch (e) { return null; }
+            }
+
+            function stabilityNote(st) {
+                if (!st) return { level: 'info', text: 'Brak historii temperatury, nie da się ocenić, czy inkubator jest ustabilizowany. Przed startem wygrzewaj go 12–24 godziny.' };
+                const h = st.hours;
+                const hs = h < 1 ? Math.round(h * 60) + ' min' : h.toFixed(1).replace('.', ',') + ' h';
+                if (h >= 12 || (st.all && st.span >= 12)) return { level: 'ok', text: 'Inkubator jest stabilny od ' + (st.all ? 'co najmniej ' : '') + hs + ' (±0,5 °C od ' + st.ideal.toFixed(1) + ' °C).' };
+                if (h >= 4) return { level: 'warn', text: 'Inkubator jest stabilny dopiero od ' + hs + '. Przed włożeniem jaj warto dać mu 12–24 godziny.' };
+                return { level: 'critical', text: 'Temperatura nie jest jeszcze ustabilna (stabilna od ' + hs + '). Poczekaj z włożeniem jaj.' };
+            }
+
+            // dzień inkubacji i faza dla partii
+            function batchDay(b) {
+                if (!b.setUnix) return 0;
+                return Math.floor((deviceNowUnix() - b.setUnix) / 86400) + 1;
+            }
+            function batchPhase(b) {
+                if (b.status === 'closed') return { key: 'closed', label: 'Zakończona', cls: 'muted' };
+                if (!b.setUnix) return { key: 'planned', label: 'Planowana', cls: 'info' };
+                const info = getSpeciesInfo(b.species), d = batchDay(b);
+                if (d > info.days + 3) return { key: 'overdue', label: 'Po terminie: wpisz wyniki', cls: 'warn' };
+                if (d > info.stopAfter) return { key: 'hatching', label: 'Klucie', cls: 'critical' };
+                return { key: 'incubating', label: 'Inkubacja', cls: 'ok' };
+            }
+
+            // sumy z prześwietleń: puste i obumarłe (rosnąco z każdym prześwietleniem)
+            function candlingTotals(b) {
+                let clear = 0, dead = 0;
+                (b.candling || []).forEach(function (c) { clear += c.clear || 0; dead += c.dead || 0; });
+                return { clear: clear, dead: dead, any: (b.candling || []).length > 0 };
+            }
+
+            function batchStats(b) {
+                const eggs = +b.eggs || 0, c = candlingTotals(b);
+                const fertile = c.any ? eggs - c.clear : null;
+                const alive = c.any ? eggs - c.clear - c.dead : null;
+                const hatched = b.result ? b.result.hatched : null;
+                return {
+                    eggs: eggs, fertile: fertile, alive: alive, clear: c.clear, dead: c.dead, hatched: hatched,
+                    fertilityPct: fertile != null && eggs ? 100 * fertile / eggs : null,
+                    hatchOfSet: hatched != null && eggs ? 100 * hatched / eggs : null,
+                    hatchOfFertile: hatched != null && fertile ? 100 * hatched / fertile : null
+                };
+            }
+            function pct(v) { return v == null ? '–' : v.toFixed(0) + '%'; }
+
+            // ubytek masy jaja: ok. 12% do przeniesienia do klekotu (zakres 11–13%)
+            function weightEval(b, day, grams) {
+                if (!b.weightStart || !grams) return null;
+                const info = getSpeciesInfo(b.species);
+                const loss = 100 * (b.weightStart - grams) / b.weightStart;
+                const expected = 12 * Math.min(day, info.stopAfter) / info.stopAfter;
+                let level = 'ok', text;
+                if (day < 5) return { loss: loss, expected: expected, level: 'info', text: 'Za wcześnie na ocenę (wiarygodna po 7. dniu).' };
+                if (loss < expected - 2.5) { level = 'warn'; text = 'Jaja tracą za mało masy: wilgotność jest za wysoka. Obniż ją o 3–5 punktów.'; }
+                else if (loss > expected + 2.5) { level = 'warn'; text = 'Jaja tracą za dużo masy: wilgotność jest za niska. Podnieś ją o 3–5 punktów.'; }
+                else text = 'Ubytek masy zgodny z oczekiwanym.';
+                return { loss: loss, expected: expected, level: level, text: text };
+            }
+
+            function noteBlock(notes) {
+                return notes.map(function (n) { return '<div class="note-line ' + n.level + '">' + escapeHtml(n.text) + '</div>'; }).join('');
+            }
+
+            // ------------------------------------------------------------
+            //  Lista partii
+            // ------------------------------------------------------------
+            function batchCardHtml(b) {
+                const info = getSpeciesInfo(b.species), ph = batchPhase(b), st = batchStats(b), d = batchDay(b);
+                const parts = [];
+                parts.push('<span class="chip ' + (ph.cls === 'critical' ? 'test' : (ph.cls === 'ok' ? 'live' : '')) + '">' + ph.label + '</span>');
+                parts.push('<span class="chip">' + SOURCE_LABEL[b.source || 'own'] + (b.seller ? ': ' + escapeHtml(b.seller) : '') + '</span>');
+                if (b.tray != null) parts.push('<span class="chip">Taca ' + (b.tray + 1) + '</span>');
+                let progress = '';
+                if (b.setUnix && b.status !== 'closed') {
+                    const pc = Math.max(0, Math.min(100, 100 * d / info.days));
+                    const hatchDate = fmtDay((b.setUnix + info.days * 86400) * 1000);
+                    progress = '<div class="batch-prog"><i style="width:' + pc.toFixed(0) + '%"></i></div><div class="batch-line">Dzień <b>' + Math.max(d, 1) + '</b> z ' + info.days + ' · klucie ok. <b>' + hatchDate + '</b> · włożono ' + fmtDateTime(b.setUnix * 1000) + '</div>';
+                } else if (!b.setUnix) {
+                    progress = '<div class="batch-line">Jeszcze nie włożona do inkubatora.</div>';
+                }
+                const age = eggAge(b);
+                const ageLine = age ? '<div class="batch-line">Jaja: ' + (+b.eggs || 0) + ' szt. · wiek przy włożeniu ' + (age.min === age.max ? age.max : age.min + '–' + age.max) + ' dni' + (b.weightStart ? ' · śr. masa ' + b.weightStart + ' g' : '') + '</div>'
+                    : '<div class="batch-line">Jaja: ' + (+b.eggs || 0) + ' szt.' + (b.weightStart ? ' · śr. masa ' + b.weightStart + ' g' : '') + '</div>';
+                let resultLine = '';
+                if (st.fertile != null) {
+                    resultLine += '<div class="batch-line">Prześwietlenie: zalężone <b>' + st.fertile + '</b> (' + pct(st.fertilityPct) + '), puste ' + st.clear + ', obumarłe ' + st.dead + '</div>';
+                }
+                if (b.weights && b.weights.length) {
+                    const w = b.weights[b.weights.length - 1], ev = weightEval(b, w.day, w.g);
+                    if (ev) resultLine += '<div class="batch-line">Ubytek masy (dzień ' + w.day + '): <b>' + ev.loss.toFixed(1) + '%</b> (oczekiwane ok. ' + ev.expected.toFixed(1) + '%). ' + escapeHtml(ev.text) + '</div>';
+                }
+                if (b.result) {
+                    resultLine += '<div class="batch-line">Wyklute: <b>' + b.result.hatched + '</b> z ' + st.eggs + ' (' + pct(st.hatchOfSet) + ' z włożonych' + (st.hatchOfFertile != null ? ', ' + pct(st.hatchOfFertile) + ' z zalężonych' : '') + ')' + (b.result.culled ? ' · słabe/padłe ' + b.result.culled : '') + '</div>';
+                    resultLine += '<div class="note-line info">Pisklęta zostaw w inkubatorze, aż obeschną (12–24 h), potem do brodera (ok. 35 °C, czysta woda, starter).</div>';
+                }
+                let notes = '';
+                if (ph.key === 'planned') notes = noteBlock(eggAgeNotes(age).concat(mixNotes(b))) + '<div class="note-line info">' + ACCLIM_TEXT + '</div>';
+                else if (ph.key !== 'closed') notes = noteBlock(mixNotes(b));
+                const btn = function (act, label, cls) { return '<button type="button" class="btn ' + (cls || '') + '" data-act="' + act + '" data-id="' + b.id + '"' + ((act === 'start' || act === 'delete') ? ' data-risky="1"' : '') + '>' + label + '</button>'; };
+                const actions = [];
+                if (ph.key === 'planned') actions.push(btn('start', 'Włożyłem jaja teraz', 'btn-primary'));
+                if (b.setUnix && b.status !== 'closed') {
+                    actions.push(btn('candle', 'Prześwietlenie'));
+                    actions.push(btn('weigh', 'Waga'));
+                    actions.push(btn('hatch', ph.key === 'hatching' || ph.key === 'overdue' ? 'Wyniki klucia' : 'Klucie', ph.key === 'hatching' || ph.key === 'overdue' ? 'btn-primary' : ''));
+                }
+                actions.push(btn('report', 'Raport'));
+                actions.push(btn('edit', 'Edytuj'));
+                actions.push(btn('delete', 'Usuń', 'danger'));
+                return '<div class="card batch-card"><div class="card-header"><span class="card-title">' + escapeHtml(b.name || info.shortName) + ' <small class="muted">' + escapeHtml(info.shortName) + '</small></span><span class="batch-chips">' + parts.join('') + '</span></div>' +
+                    progress + ageLine + resultLine + notes + (b.notes ? '<div class="batch-line muted">' + escapeHtml(b.notes) + '</div>' : '') + '<div class="btn-group batch-actions">' + actions.join('') + '</div></div>';
+            }
+
+            function breedingSummaryHtml() {
+                const closed = batchesList().filter(function (b) { return b.result; });
+                if (!closed.length) return '<div class="muted">Statystyki pojawią się po zapisaniu wyników pierwszego klucia.</div>';
+                const groups = {};
+                const add = function (key, label, b) {
+                    const g = groups[key] || (groups[key] = { label: label, eggs: 0, fertile: 0, hatched: 0, n: 0, hasFertile: 0 });
+                    const st = batchStats(b);
+                    g.n++; g.eggs += st.eggs; g.hatched += st.hatched || 0;
+                    if (st.fertile != null) { g.fertile += st.fertile; g.hasFertile += st.eggs; }
+                };
+                closed.forEach(function (b) {
+                    add('s:' + (b.source || 'own') + ':' + (b.seller || ''), SOURCE_LABEL[b.source || 'own'] + (b.seller ? ' · ' + b.seller : ''), b);
+                });
+                const rows = Object.keys(groups).map(function (k) {
+                    const g = groups[k];
+                    return '<tr><td>' + escapeHtml(g.label) + '</td><td>' + g.n + '</td><td>' + g.eggs + '</td><td>' + (g.hasFertile ? pct(100 * g.fertile / g.hasFertile) : '–') + '</td><td><b>' + pct(g.eggs ? 100 * g.hatched / g.eggs : null) + '</b></td></tr>';
+                }).join('');
+                let trayRows = '';
+                [0, 1].forEach(function (t) {
+                    const arr = closed.filter(function (b) { return b.tray === t; });
+                    if (!arr.length) return;
+                    let e = 0, h = 0; arr.forEach(function (b) { e += +b.eggs || 0; h += b.result.hatched || 0; });
+                    trayRows += '<tr><td>Taca ' + (t + 1) + '</td><td>' + arr.length + '</td><td>' + e + '</td><td>–</td><td><b>' + pct(e ? 100 * h / e : null) + '</b></td></tr>';
+                });
+                return '<table class="schedule-table"><thead><tr><th>Źródło jaj / taca</th><th>Partii</th><th>Jaj</th><th>Zalężone</th><th>Wylęg</th></tr></thead><tbody>' + rows + trayRows + '</tbody></table>' +
+                    '<div class="muted small">Różnica wylęgu między tacami wskazuje nierówne grzanie. Różnica między źródłami podpowiada, od kogo kupować.</div>';
+            }
+
+            function renderBatches() {
+                const list = document.getElementById('batchList');
+                if (!list) return;
+                const items = batchesList().slice().sort(function (a, b) {
+                    const ra = a.status === 'closed' ? 1 : 0, rb = b.status === 'closed' ? 1 : 0;
+                    return ra - rb || (b.createdUnix || 0) - (a.createdUnix || 0);
+                });
+                list.innerHTML = items.length ? items.map(batchCardHtml).join('') : '<div class="card"><div class="muted">Brak partii. Dodaj pierwszą: źródło jaj, datę zniesienia i liczbę sztuk. Panel pokaże wiek jaj, terminy i policzy wylęgowość.</div></div>';
+                const sum = document.getElementById('batchSummary');
+                if (sum) sum.innerHTML = breedingSummaryHtml();
+                const chip = document.getElementById('batchStoreChip');
+                if (chip) {
+                    chip.textContent = dataSource === 'test' ? 'dane testowe (w przeglądarce)' : (storeLocalOnly ? 'tylko w przeglądarce' : 'zapis w urządzeniu');
+                    chip.className = 'chip ' + (dataSource === 'test' ? 'test' : (storeLocalOnly ? 'test' : 'live'));
+                }
+            }
+
+            // ------------------------------------------------------------
+            //  Dodawanie i edycja partii
+            // ------------------------------------------------------------
+            window.batchEdit = function (id) {
+                const b = id ? findBatch(id) : null;
+                const isNew = !b;
+                const cur = b || { species: 'CHICKEN', source: 'purchased', eggs: 12, tray: null };
+                const html = fld('Nazwa partii', '<input type="text" name="name" maxlength="40" value="' + escapeHtml(cur.name || '') + '" placeholder="np. Zielononóżki od Kowalskiego">') +
+                    '<div class="fld-row">' + fld('Gatunek', '<select name="species">' + speciesOptionsHtml(cur.species) + '</select>') +
+                    fld('Źródło', '<select name="source"><option value="purchased"' + (cur.source === 'purchased' ? ' selected' : '') + '>Kupione</option><option value="own"' + (cur.source === 'own' ? ' selected' : '') + '>Własne</option></select>') + '</div>' +
+                    fld('Sprzedawca / stado', '<input type="text" name="seller" maxlength="40" value="' + escapeHtml(cur.seller || '') + '" placeholder="od kogo, z którego stada">') +
+                    '<div class="fld-row">' + fld('Zniesione od', '<input type="date" name="laidFrom" value="' + (cur.laidFrom || '') + '">') +
+                    fld('Zniesione do', '<input type="date" name="laidTo" value="' + (cur.laidTo || '') + '">') + '</div>' +
+                    '<div class="fld-row">' + fld('Liczba jaj', '<input type="number" name="eggs" min="1" max="500" value="' + (cur.eggs || '') + '">') +
+                    fld('Śr. masa jaja [g]', '<input type="number" name="weightStart" min="1" max="300" step="0.1" value="' + (cur.weightStart || '') + '">', 'z próbki, potrzebne do oceny ubytku') + '</div>' +
+                    fld('Taca', '<select name="tray"><option value="">Jeszcze nie wiem</option><option value="0"' + (cur.tray === 0 ? ' selected' : '') + '>Taca 1</option><option value="1"' + (cur.tray === 1 ? ' selected' : '') + '>Taca 2</option></select>') +
+                    fld('Uwagi', '<textarea name="notes" rows="2" maxlength="200">' + escapeHtml(cur.notes || '') + '</textarea>') +
+                    '<div id="batchFormNotes" class="note-box"></div>';
+                const dlg = openDialog(isNew ? 'Nowa partia jaj' : 'Edycja partii', html, [
+                    { label: 'Anuluj' },
+                    { label: 'Zapisz', primary: true, onClick: function (d) {
+                        const name = val(d, 'name').trim();
+                        const eggs = intOrZero(val(d, 'eggs'));
+                        if (!eggs) { notify('Podaj liczbę jaj.', 'warn'); return true; }
+                        const trayVal = val(d, 'tray');
+                        const rec = b || { id: 'b' + Date.now().toString(36), createdUnix: deviceNowUnix(), status: 'planned', candling: [], weights: [] };
+                        rec.species = val(d, 'species');
+                        rec.name = name || (getSpeciesInfo(rec.species).shortName + ' ' + localDate(new Date()));
+                        rec.source = val(d, 'source'); rec.seller = val(d, 'seller').trim();
+                        rec.laidFrom = val(d, 'laidFrom') || null; rec.laidTo = val(d, 'laidTo') || rec.laidFrom || null;
+                        if (rec.laidFrom && rec.laidTo && rec.laidFrom > rec.laidTo) { const t = rec.laidFrom; rec.laidFrom = rec.laidTo; rec.laidTo = t; }
+                        rec.eggs = eggs; rec.weightStart = numOrNull(val(d, 'weightStart'));
+                        rec.tray = trayVal === '' ? null : parseInt(trayVal, 10);
+                        rec.notes = val(d, 'notes').trim();
+                        if (isNew) storeData.batches.items.push(rec);
+                        storeSave('batches');
+                        renderBatches(); renderTasks();
+                        return false;
+                    } }
+                ]);
+                const refresh = async function () {
+                    const tmp = {
+                        id: b ? b.id : '_new', species: val(dlg, 'species'), laidFrom: val(dlg, 'laidFrom'), laidTo: val(dlg, 'laidTo') || val(dlg, 'laidFrom'),
+                        tray: val(dlg, 'tray') === '' ? null : parseInt(val(dlg, 'tray'), 10), setUnix: b ? b.setUnix : null
+                    };
+                    const notes = eggAgeNotes(eggAge(tmp, b && b.setUnix ? b.setUnix * 1000 : Date.now())).concat(mixNotes(tmp));
+                    if (!b || !b.setUnix) notes.push({ level: 'info', text: ACCLIM_TEXT });
+                    const box = dlg.querySelector('#batchFormNotes');
+                    if (box) box.innerHTML = noteBlock(notes);
+                    if (!b || !b.setUnix) {
+                        const s = stabilityNote(await incubatorStability());
+                        const box2 = dlg.querySelector('#batchFormNotes');
+                        if (box2) box2.innerHTML = noteBlock(notes.concat([s]));
+                    }
+                };
+                dlg.addEventListener('input', refresh);
+                dlg.addEventListener('change', refresh);
+                refresh();
+            };
+
+            // ------------------------------------------------------------
+            //  Włożenie jaj: ustawia start tacy w urządzeniu (po potwierdzeniu)
+            // ------------------------------------------------------------
+            function utcDateParts(unix) {
+                const d = new Date(unix * 1000);
+                return { date: d.getUTCFullYear() + '-' + pad2(d.getUTCMonth() + 1) + '-' + pad2(d.getUTCDate()), time: pad2(d.getUTCHours()) + ':' + pad2(d.getUTCMinutes()) };
+            }
+
+            window.batchStart = async function (id) {
+                const b = findBatch(id);
+                if (!b) return;
+                const info = getSpeciesInfo(b.species);
+                const notes = eggAgeNotes(eggAge(b, Date.now())).concat(mixNotes(b));
+                const stab = stabilityNote(await incubatorStability());
+                const trayTxt = b.tray != null ? 'Taca ' + (b.tray + 1) : 'bez przypisanej tacy';
+                const fw = FIRMWARE_SPECIES[b.species];
+                const willApply = dataSource === 'live' && b.tray != null;
+                let body = '<div>Partia <b>' + escapeHtml(b.name) + '</b> (' + escapeHtml(info.shortName) + ', ' + b.eggs + ' szt.) trafia do inkubatora teraz. Zegar dni startuje od tej chwili.</div>' + noteBlock(notes.concat([stab]));
+                if (willApply) body += '<div class="note-line ' + (fw ? 'info' : 'warn') + '">' + (fw ? 'W urządzeniu zostanie ustawiony program „' + escapeHtml(info.shortName) + '” i data startu dla: ' + trayTxt + '.' : 'Urządzenie nie ma wbudowanego profilu tego gatunku, więc panel zapisze tylko partię (' + trayTxt + '), bez zmiany tacy.') + '</div>';
+                else if (dataSource === 'test') body += '<div class="note-line warn">Tryb testowy: nic nie trafi do urządzenia.</div>';
+                openDialog('Włożyłem jaja', body, [
+                    { label: 'Anuluj' },
+                    { label: 'Tak, włożyłem', primary: true, onClick: async function () {
+                        const now = deviceNowUnix();
+                        try {
+                            if (willApply && fw) {
+                                await postForm('/api/tray/set-species', { tray: b.tray, species: fw });
+                                const p = utcDateParts(now);
+                                await postForm('/api/tray/set-start', { tray: b.tray, date: p.date, time: p.time });
+                                await postForm('/api/tray/set-active', { tray: b.tray, active: 'true' });
+                            }
+                        } catch (e) {
+                            notify('Nie udało się ustawić tacy w urządzeniu: ' + e.message, 'error');
+                            addLog('err', 'Start partii: ' + e.message);
+                            return false;
+                        }
+                        b.setUnix = now; b.status = 'incubating';
+                        storeSave('batches');
+                        journalPush('Włożono jaja: ' + b.name + ' (' + b.eggs + ' szt.' + (b.tray != null ? ', taca ' + (b.tray + 1) : '') + ')');
+                        renderBatches(); renderTasks();
+                        if (willApply) fetchData();
+                        return false;
+                    } }
+                ]);
+            };
+
+            // ------------------------------------------------------------
+            //  Prześwietlenie, waga i klucie
+            // ------------------------------------------------------------
+            window.batchCandle = function (id) {
+                const b = findBatch(id);
+                if (!b) return;
+                const info = getSpeciesInfo(b.species), d = Math.max(1, batchDay(b));
+                const prev = candlingTotals(b);
+                const html = '<div class="muted small">Dni prześwietlania dla tego gatunku: ' + info.candle.join(', ') + '. Wpisz tylko jaja usunięte podczas tego prześwietlenia.</div>' +
+                    '<div class="fld-row">' + fld('Dzień', '<input type="number" name="day" min="1" max="60" value="' + d + '">') + '</div>' +
+                    '<div class="fld-row">' + fld('Puste (niezalężone)', '<input type="number" name="clear" min="0" max="500" value="0">') + fld('Obumarłe zarodki', '<input type="number" name="dead" min="0" max="500" value="0">') + '</div>' +
+                    '<div class="muted small">Dotychczas: puste ' + prev.clear + ', obumarłe ' + prev.dead + ', zostaje ' + Math.max(0, b.eggs - prev.clear - prev.dead) + ' jaj.</div>';
+                openDialog('Prześwietlenie: ' + b.name, html, [
+                    { label: 'Anuluj' },
+                    { label: 'Zapisz', primary: true, onClick: function (dlg) {
+                        const clear = intOrZero(val(dlg, 'clear')), dead = intOrZero(val(dlg, 'dead')), day = Math.max(1, intOrZero(val(dlg, 'day')));
+                        if (prev.clear + prev.dead + clear + dead > b.eggs) { notify('Suma usuniętych jaj przekracza liczbę jaj w partii.', 'warn'); return true; }
+                        b.candling = (b.candling || []).filter(function (c) { return c.day !== day; });
+                        b.candling.push({ day: day, unix: deviceNowUnix(), clear: clear, dead: dead });
+                        b.candling.sort(function (x, y) { return x.day - y.day; });
+                        storeSave('batches');
+                        journalPush('Prześwietlenie (dzień ' + day + '): ' + b.name + ', puste ' + clear + ', obumarłe ' + dead);
+                        renderBatches(); renderTasks();
+                        return false;
+                    } }
+                ]);
+            };
+
+            window.batchWeigh = function (id) {
+                const b = findBatch(id);
+                if (!b) return;
+                const d = Math.max(1, batchDay(b));
+                const html = '<div class="muted small">Zważ kilka tych samych jaj (np. 5–10) i wpisz średnią. Przy ' + (b.weightStart ? 'masie początkowej ' + b.weightStart + ' g' : 'braku masy początkowej, uzupełnij ją w edycji partii') + '.</div>' +
+                    '<div class="fld-row">' + fld('Dzień', '<input type="number" name="day" min="1" max="60" value="' + d + '">') + fld('Średnia masa [g]', '<input type="number" name="g" min="1" max="300" step="0.1">') + '</div>' +
+                    '<div id="weighOut" class="note-box"></div>';
+                const dlg = openDialog('Waga jaj: ' + b.name, html, [
+                    { label: 'Anuluj' },
+                    { label: 'Zapisz', primary: true, onClick: function (dd) {
+                        const g = numOrNull(val(dd, 'g')), day = Math.max(1, intOrZero(val(dd, 'day')));
+                        if (!g) { notify('Podaj średnią masę.', 'warn'); return true; }
+                        b.weights = (b.weights || []).filter(function (w) { return w.day !== day; });
+                        b.weights.push({ day: day, g: g });
+                        b.weights.sort(function (x, y) { return x.day - y.day; });
+                        storeSave('batches');
+                        const ev = weightEval(b, day, g);
+                        journalPush('Ważenie (dzień ' + day + '): ' + b.name + ', ' + g + ' g' + (ev ? ', ubytek ' + ev.loss.toFixed(1) + '%' : ''));
+                        renderBatches(); renderTasks();
+                        return false;
+                    } }
+                ]);
+                const upd = function () {
+                    const ev = weightEval(b, Math.max(1, intOrZero(val(dlg, 'day'))), numOrNull(val(dlg, 'g')));
+                    dlg.querySelector('#weighOut').innerHTML = ev ? noteBlock([{ level: ev.level, text: 'Ubytek ' + ev.loss.toFixed(1) + '% (oczekiwane ok. ' + ev.expected.toFixed(1) + '%). ' + ev.text }]) : '';
+                };
+                dlg.addEventListener('input', upd);
+            };
+
+            window.batchHatch = function (id) {
+                const b = findBatch(id);
+                if (!b) return;
+                const r = b.result || { hatched: 0, culled: 0 };
+                const html = '<div class="fld-row">' + fld('Wyklute pisklęta', '<input type="number" name="hatched" min="0" max="500" value="' + r.hatched + '">') +
+                    fld('Słabe lub padłe', '<input type="number" name="culled" min="0" max="500" value="' + (r.culled || 0) + '">') + '</div>' +
+                    fld('Początek klucia (pierwsze dzióbanie)', '<input type="datetime-local" name="pip" value="' + (b.pipLocal || '') + '">') +
+                    '<label class="fld chk"><input type="checkbox" name="close" checked><span>Zamknij partię (koniec klucia)</span></label>' +
+                    '<div class="muted small">Zalężone: ' + (candlingTotals(b).any ? (b.eggs - candlingTotals(b).clear) : 'brak prześwietlenia') + ' z ' + b.eggs + ' jaj.</div>';
+                openDialog('Wyniki klucia: ' + b.name, html, [
+                    { label: 'Anuluj' },
+                    { label: 'Zapisz', primary: true, onClick: function (dlg) {
+                        const hatched = intOrZero(val(dlg, 'hatched'));
+                        if (hatched > b.eggs) { notify('Wyklutych nie może być więcej niż włożonych jaj.', 'warn'); return true; }
+                        b.result = { hatched: hatched, culled: intOrZero(val(dlg, 'culled')) };
+                        b.pipLocal = val(dlg, 'pip') || null;
+                        if (dlg.querySelector('[name="close"]').checked) { b.status = 'closed'; b.closedUnix = deviceNowUnix(); }
+                        storeSave('batches');
+                        journalPush('Wyniki klucia: ' + b.name + ', wyklute ' + hatched + ' z ' + b.eggs);
+                        renderBatches(); renderTasks();
+                        return false;
+                    } }
+                ]);
+            };
+
+            window.batchDelete = function (id) {
+                const b = findBatch(id);
+                if (!b) return;
+                if (!confirm('Usunąć partię „' + b.name + '” razem z wynikami? Tego nie da się cofnąć.')) return;
+                storeData.batches.items = storeData.batches.items.filter(function (x) { return x.id !== id; });
+                storeSave('batches');
+                renderBatches(); renderTasks();
+            };
+
+            function initBatchView() {
+                const view = document.getElementById('view-batches');
+                if (!view) return;
+                view.addEventListener('click', function (ev) {
+                    const el = ev.target.closest('[data-act]');
+                    if (!el) return;
+                    const id = el.getAttribute('data-id'), act = el.getAttribute('data-act');
+                    if (act === 'start') batchStart(id);
+                    else if (act === 'candle') batchCandle(id);
+                    else if (act === 'weigh') batchWeigh(id);
+                    else if (act === 'hatch') batchHatch(id);
+                    else if (act === 'edit') batchEdit(id);
+                    else if (act === 'delete') batchDelete(id);
+                    else if (act === 'report') batchReport(id);
+                });
+            }
+
+// ============================================================
+            //  ZDARZENIA URZĄDZENIA (restarty, alarmy, drzwi) i ich czas w układzie przeglądarki
+            // ============================================================
+            let deviceEvents = { now_unix: 0, events: [], loaded: false };
+
+            function simEvents() {
+                const nowS = Math.floor(Date.now() / 1000), ev = [];
+                ev.push({ unix: nowS - 30 * 3600, ms: 0, type: 'boot', text: 'start' });
+                for (let k = Math.floor((Date.now() - SIM_BOOT) / 60000 / 420) + 1; k >= 0; k--) {
+                    const t = Date.now() - (Date.now() / 60000 - k * 420) * 60000;
+                    if (simHash(k) > 0.45 && Date.now() - t < 30 * 3600000 && t < Date.now()) { ev.push({ unix: Math.floor(t / 1000), ms: 0, type: 'door_open', text: '' }); }
+                }
+                ev.sort(function (a, b) { return a.unix - b.unix; });
+                return { now_unix: nowS, events: ev, loaded: true };
+            }
+
+            async function refreshEvents() {
+                if (dataSource === 'test') { deviceEvents = simEvents(); renderDeviceEvents(); return; }
+                try {
+                    const r = await fetchJson('/api/events?limit=200', {}, 8000);
+                    if (dataSource !== 'live' || !r || !Array.isArray(r.events)) return;
+                    deviceEvents = { now_unix: r.now_unix, events: r.events, loaded: true };
+                    renderDeviceEvents();
+                    updateDeviceAlerts();
+                } catch (e) { /* zdarzenia są dodatkiem: brak łączności pokazuje baner */ }
+            }
+
+            // czas zdarzenia w ms według zegara przeglądarki (spójny z osią wykresów)
+            function eventBrowserMs(ev) {
+                return Date.now() - (deviceEvents.now_unix - ev.unix) * 1000;
+            }
+
+            const EVENT_LABEL = {
+                boot: 'Start urządzenia', alarm_on: 'Alarm', alarm_off: 'Koniec alarmu', door_open: 'Drzwi otwarte', door_close: 'Drzwi zamknięte'
+            };
+            const ALARM_CODE_TEXT = { sensor: 'Błąd czujnika', temp_high: 'Temperatura zbyt wysoka', temp_low: 'Temperatura zbyt niska', hum_high: 'Wilgotność zbyt wysoka', hum_low: 'Wilgotność zbyt niska', heater: 'Awaria grzałki' };
+
+            function renderDeviceEvents() {
+                const box = document.getElementById('deviceEvents');
+                if (!box) return;
+                const evs = deviceEvents.events.slice().reverse().slice(0, 80);
+                if (!evs.length) { box.innerHTML = '<div class="journal-empty">Brak zdarzeń. Restarty, alarmy i otwarcia drzwi pojawią się tutaj.</div>'; return; }
+                box.innerHTML = evs.map(function (e) {
+                    const text = e.type === 'alarm_off' ? (ALARM_CODE_TEXT[e.text] || e.text) : e.text;
+                    const cls = e.type === 'alarm_on' ? 'err' : (e.type === 'boot' ? 'warn' : 'info');
+                    return '<div class="log-entry ' + cls + '"><span class="log-ts">' + fmtDateTime(eventBrowserMs(e)) + '</span><span class="log-msg">' + escapeHtml(EVENT_LABEL[e.type] || e.type) + (text ? ': ' + escapeHtml(text) : '') + '</span></div>';
+                }).join('');
+            }
+
+            // ============================================================
+            //  ZADANIA NA DZIŚ
+            // ============================================================
+            function todayKey() { return localDate(new Date()); }
+            function trayList() { return (trayData && trayData.trays ? trayData.trays : []).slice(0, 2); }
+
+            function buildTasks() {
+                const tasks = [];
+                const add = function (id, level, title, text, auto) { tasks.push({ id: id, level: level, title: title, text: text, auto: !!auto }); };
+                trayList().forEach(function (tray, i) {
+                    if (!tray || tray.active === false) return;
+                    const info = getSpeciesInfo(tray.species_id), day = tray.current_day || 0;
+                    if (info.category !== 'ptaki' || day < 1) return;
+                    const label = 'Taca ' + (i + 1) + ' (' + info.shortName + ', dzień ' + day + ')';
+                    const bs = batchesList().filter(function (b) { return b.tray === i && b.setUnix && b.status !== 'closed'; });
+                    if (info.candle.indexOf(day) !== -1) {
+                        add('t' + i + 'c' + day, 'info', 'Prześwietl jaja: ' + label, 'Szybko, jaja z powrotem w ciepło. Usuń niezalężone i obumarłe, a wynik wpisz w zakładce Partie.',
+                            bs.length > 0 && bs.every(function (b) { return (b.candling || []).some(function (c) { return c.day === day; }); }));
+                    }
+                    bs.forEach(function (b) {
+                        info.candle.forEach(function (cd) {
+                            if (cd < day && cd >= day - 2 && !(b.candling || []).some(function (c) { return c.day === cd; }) && info.candle.indexOf(day) === -1) {
+                                add('t' + i + 'm' + cd + b.id, 'warn', 'Uzupełnij wynik prześwietlenia (dzień ' + cd + '): ' + b.name, 'Wpisz liczbę pustych i obumarłych jaj, żeby statystyki wylęgu były pełne.', false);
+                            }
+                        });
+                        [7, 14, info.stopAfter].forEach(function (wd) {
+                            if (b.weightStart && wd === day) add('t' + i + 'w' + wd + b.id, 'info', 'Zważ jaja (dzień ' + wd + '): ' + b.name, 'Średnia z kilku jaj. Ubytek ok. 12% do przeniesienia do klekotu to dobry wskaźnik wilgotności.', (b.weights || []).some(function (w) { return w.day === wd; }));
+                        });
+                    });
+                    if (day === info.stopAfter) add('t' + i + 'stop', 'warn', 'Ostatni dzień obracania: ' + label, 'Jutro zaczyna się klucie. Przygotuj wilgotność ok. ' + info.rhHatch + '% i nie planuj otwierania inkubatora.', false);
+                    if (day === info.stopAfter + 1) add('t' + i + 'lock', 'critical', 'Początek klucia: ' + label, 'Wyłącz obroty, podnieś wilgotność do ok. ' + info.rhHatch + '% i nie otwieraj inkubatora do końca klucia.', false);
+                    if (day === info.ventDay) add('t' + i + 'vent', 'warn', 'Więcej powietrza: ' + label, 'Otwórz otwory wentylacyjne szerzej.', false);
+                    if (day >= info.days) add('t' + i + 'res', 'info', 'Wpisz wyniki klucia: ' + label, 'Liczba wyklutych piskląt w zakładce Partie. Pisklęta zostaw w inkubatorze, aż obeschną.',
+                        (function () { const all = batchesList().filter(function (b) { return b.tray === i; }); return all.length > 0 && all.every(function (b) { return b.status === 'closed'; }); })());
+                });
+                if (!(statusData && statusData.water_enabled)) add('water', 'info', 'Sprawdź poziom wody w zbiorniku', 'Bez wody dyfuzory pracują na sucho, a wilgotność spada. Po uzupełnieniu zapisz to w dzienniku.', false);
+                batchesList().forEach(function (b) {
+                    if (b.setUnix || b.status === 'closed') return;
+                    const age = eggAge(b, Date.now());
+                    if (age && age.max <= 20) add('p' + b.id, age.max > 7 ? 'warn' : 'info', 'Zaplanowana partia: ' + b.name, 'Jaja mają ' + (age.min === age.max ? age.max : age.min + '–' + age.max) + ' dni. Wyjmij je z chłodu 6–8 godzin przed włożeniem, a inkubator wygrzej 12–24 godziny.', false);
+                });
+                return tasks;
+            }
+
+            let tasksSig = '';
+            function renderTasks() {
+                const box = document.getElementById('tasks-box');
+                if (!box) return;
+                const tasks = buildTasks();
+                const done = (storeData.tasks && storeData.tasks.days[todayKey()] && storeData.tasks.days[todayKey()].done) || {};
+                const sig = todayKey() + '|' + tasks.map(function (t) { return t.id + (t.auto || done[t.id] ? '1' : '0'); }).join(',');
+                if (sig === tasksSig && box.children.length) return;       // bez przebudowy, gdy nic się nie zmieniło
+                tasksSig = sig;
+                if (!tasks.length) { box.innerHTML = '<div class="muted">Brak zadań na dziś.</div>'; const c0 = document.getElementById('tasksProgress'); if (c0) c0.textContent = ''; return; }
+                let ok = 0;
+                box.innerHTML = tasks.map(function (t) {
+                    const isDone = t.auto || !!done[t.id];
+                    if (isDone) ok++;
+                    return '<label class="task ' + t.level + (isDone ? ' done' : '') + '"><input type="checkbox" data-task="' + escapeHtml(t.id) + '"' + (isDone ? ' checked' : '') + (t.auto ? ' disabled' : '') + '><span><b>' + escapeHtml(t.title) + '</b><small>' + escapeHtml(t.text) + '</small></span></label>';
+                }).join('');
+                const chip = document.getElementById('tasksProgress');
+                if (chip) { chip.textContent = ok + '/' + tasks.length; chip.className = 'chip ' + (ok === tasks.length ? 'live' : ''); }
+            }
+
+            function initTasks() {
+                const box = document.getElementById('tasks-box');
+                if (!box) return;
+                box.addEventListener('change', function (ev) {
+                    const el = ev.target.closest('[data-task]');
+                    if (!el || !storeData.tasks) return;
+                    const key = todayKey(), days = storeData.tasks.days;
+                    const day = days[key] || (days[key] = { done: {} });
+                    if (el.checked) day.done[el.getAttribute('data-task')] = true; else delete day.done[el.getAttribute('data-task')];
+                    const keys = Object.keys(days).sort();
+                    while (keys.length > 45) delete days[keys.shift()];       // zostaw ok. 6 tygodni
+                    storeSave('tasks');
+                    renderTasks();
+                });
+            }
+
+            // ============================================================
+            //  BANER KLUCIA I ALARMY URZĄDZENIA
+            // ============================================================
+            function inCriticalPhase() {
+                return trayList().some(function (tray) {
+                    if (!tray || tray.active === false) return false;
+                    const info = getSpeciesInfo(tray.species_id), day = tray.current_day || 0;
+                    return info.category === 'ptaki' && (day > info.stopAfter || getSensitivity(tray.species_id, day) === 'CRITICAL');
+                });
+            }
+
+            function updateHatchBanner() {
+                const el = document.getElementById('hatchBanner');
+                if (!el) return;
+                const lines = [];
+                let low = false;
+                trayList().forEach(function (tray, i) {
+                    if (!tray || tray.active === false) return;
+                    const info = getSpeciesInfo(tray.species_id), day = tray.current_day || 0;
+                    if (info.category !== 'ptaki' || day <= info.stopAfter) return;
+                    const rh = statusData ? statusData.humidity : NaN;
+                    const need = Math.max(65, info.rhHatch - 3);
+                    if (isFinite(rh) && rh < need) low = true;
+                    lines.push('Taca ' + (i + 1) + ' (' + info.shortName + '): dzień ' + day + ' z ' + info.days + ', wilgotność ma być ok. ' + info.rhHatch + '%');
+                });
+                if (!lines.length) { el.hidden = true; return; }
+                el.hidden = false;
+                el.className = 'hatch-banner' + (low ? ' low' : '');
+                el.innerHTML = '<b>KLUCIE: nie otwieraj inkubatora</b><span>' + lines.join(' · ') + (low ? '. <u>Wilgotność jest za niska</u>, dolej wody i nie otwieraj drzwi.' : '.') + '</span>';
+            }
+
+            const alertSeen = {};
+            let doorOpenSince = 0;
+            let audioCtx = null;
+
+            function beep() {
+                try {
+                    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+                    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                    o.frequency.value = 880; g.gain.value = 0.08;
+                    o.connect(g); g.connect(audioCtx.destination);
+                    o.start(); o.stop(audioCtx.currentTime + 0.4);
+                } catch (e) { /* przeglądarka może blokować dźwięk do pierwszego kliknięcia */ }
+            }
+
+            function notifyAlarm(title, text) {
+                const p = (storeData.prefs && storeData.prefs.notify) || {};
+                if (p.sound) beep();
+                if (p.vibrate && navigator.vibrate) { try { navigator.vibrate([300, 150, 300]); } catch (e) { /* ignorujemy */ } }
+                if (p.browser && 'Notification' in window && Notification.permission === 'granted') {
+                    try { new Notification(title, { body: text }); } catch (e) { /* ignorujemy */ }
+                }
+            }
+
+            function updateDeviceAlerts() {
+                const box = document.getElementById('alertBanner');
+                if (!box || !statusData) return;
+                const items = [];
+                if (statusData.alarm) {
+                    const mins = Math.round((statusData.alarm_since_s || 0) / 60);
+                    items.push({ key: 'alarm:' + statusData.alarm_code, level: 'critical', title: 'ALARM', text: statusData.alarm_msg + (mins ? ' (od ' + mins + ' min)' : '') });
+                }
+                if (statusData.door_enabled) {
+                    if (statusData.door_open) {
+                        if (!doorOpenSince) doorOpenSince = Date.now();
+                        const secs = Math.round((Date.now() - doorOpenSince) / 1000);
+                        const crit = inCriticalPhase();
+                        if (secs >= 120 || crit) items.push({ key: 'door' + (crit ? 'c' : ''), level: crit ? 'critical' : 'warn', title: 'Drzwi otwarte', text: 'od ' + Math.floor(secs / 60) + ' min ' + (secs % 60) + ' s' + (crit ? '. Trwa faza krytyczna: zamknij jak najszybciej.' : '.') });
+                    } else doorOpenSince = 0;
+                }
+                if (statusData.water_enabled && statusData.water_low) items.push({ key: 'water', level: 'warn', title: 'Mało wody', text: 'Uzupełnij zbiornik, bez wody wilgotność spadnie.' });
+                const d1 = statusData.temp_chamber, d2 = statusData.temp_aquarium;
+                if (isFinite(d1) && isFinite(d2) && d1 > 25 && d2 > 30) {
+                    const diff = Math.abs(d1 - d2);
+                    if (diff >= 0.8 && diff <= 3) items.push({ key: 'sensors', level: 'warn', title: 'Czujniki się rozjeżdżają', text: 'DS1 i DS2 różnią się o ' + diff.toFixed(1) + ' °C. Sprawdź ich położenie albo skalibruj (zakładka Kalibracja).' });
+                }
+                if (deviceEvents.loaded) {
+                    const boots = deviceEvents.events.filter(function (e) { return e.type === 'boot'; });
+                    const last = boots[boots.length - 1];
+                    if (last) {
+                        const ageH = (deviceEvents.now_unix - last.unix) / 3600;
+                        let dismissed = false;
+                        try { dismissed = sessionStorage.getItem('inkubator.bootSeen') === String(last.unix); } catch (e) { /* ignorujemy */ }
+                        if (ageH >= 0 && ageH < 24 && !dismissed && last.text && last.text !== 'start') {
+                            items.push({ key: 'boot', level: 'info', title: 'Urządzenie uruchomiło się ponownie', text: fmtDateTime(eventBrowserMs(last)) + ': ' + last.text + '. Dni tac liczą się z zegara, więc program biegnie dalej.', dismiss: String(last.unix) });
+                        }
+                    }
+                }
+                if (statusData.clock_ok === false) items.push({ key: 'clock', level: 'warn', title: 'Zegar urządzenia', text: 'Zegar RTC nie jest ustawiony lub stracił zasilanie. Daty startu i dni tac mogą być błędne.' });
+                items.forEach(function (it) {
+                    if (!alertSeen[it.key]) {
+                        alertSeen[it.key] = true;
+                        if (it.level === 'critical') notifyAlarm(it.title, it.text);
+                    }
+                });
+                Object.keys(alertSeen).forEach(function (k) { if (!items.some(function (it) { return it.key === k; })) delete alertSeen[k]; });
+                if (!items.length) { box.hidden = true; box.innerHTML = ''; return; }
+                box.hidden = false;
+                box.innerHTML = items.map(function (it) {
+                    return '<div class="alert-line ' + it.level + '"><b>' + escapeHtml(it.title) + '</b><span>' + escapeHtml(it.text) + '</span>' +
+                        (it.dismiss ? '<button type="button" data-dismiss="' + it.dismiss + '">OK</button>' : '') + '</div>';
+                }).join('');
+            }
+
+            function initAlertBanner() {
+                const box = document.getElementById('alertBanner');
+                if (!box) return;
+                box.addEventListener('click', function (ev) {
+                    const b = ev.target.closest('[data-dismiss]');
+                    if (!b) return;
+                    try { sessionStorage.setItem('inkubator.bootSeen', b.getAttribute('data-dismiss')); } catch (e) { /* ignorujemy */ }
+                    updateDeviceAlerts();
+                });
+            }
+
+            // ============================================================
+            //  RAPORT PARTII (podgląd, CSV, wydruk)
+            // ============================================================
+            async function batchEnvironment(b) {
+                if (!b.setUnix) return null;
+                try {
+                    const series = await loadSeries('7d');
+                    const offset = Date.now() / 1000 - deviceNowUnix();
+                    const from = (b.setUnix + offset) * 1000, to = b.closedUnix ? (b.closedUnix + offset) * 1000 : Date.now();
+                    const info = getSpeciesInfo(b.species);
+                    const pts = (series && series.points ? series.points : []).filter(function (p) { return p.t >= from && p.t <= to && isFinite(p.temp); });
+                    if (pts.length < 3) return null;
+                    let sum = 0, mn = 99, mx = -99, inT = 0, inR = 0, nR = 0, heat = 0, sw = 0, prevDif = null;
+                    pts.forEach(function (p) {
+                        sum += p.temp; mn = Math.min(mn, p.temp); mx = Math.max(mx, p.temp);
+                        const day = Math.max(1, Math.floor((p.t / 1000 - offset - b.setUnix) / 86400) + 1);
+                        const ph = info.phases.find(function (x) { return day >= x.start && day <= x.end; }) || info.phases[0];
+                        if (p.temp >= ph.tmin && p.temp <= ph.tmax) inT++;
+                        if (isFinite(p.rh) && ph.rhmin != null) { nR++; if (p.rh >= ph.rhmin && p.rh <= ph.rhmax) inR++; }
+                        if (isFinite(p.heater)) heat += p.heater;
+                        if (prevDif != null && p.dif !== prevDif) sw++;
+                        prevDif = p.dif;
+                    });
+                    return {
+                        n: pts.length, avg: sum / pts.length, min: mn, max: mx, inTempPct: 100 * inT / pts.length, inRhPct: nR ? 100 * inR / nR : null,
+                        heaterAvg: heat / pts.length, diffSwitches: sw, since: pts[0].t
+                    };
+                } catch (e) { return null; }
+            }
+
+            function batchEventsDuring(b) {
+                if (!b.setUnix || !deviceEvents.loaded) return [];
+                const end = b.closedUnix || deviceNowUnix() + 60;
+                return deviceEvents.events.filter(function (e) { return e.unix >= b.setUnix && e.unix <= end && e.type !== 'alarm_off' && e.type !== 'door_close'; });
+            }
+
+            async function batchReport(id) {
+                const b = findBatch(id);
+                if (!b) return;
+                const info = getSpeciesInfo(b.species), st = batchStats(b), env = await batchEnvironment(b), evs = batchEventsDuring(b), age = eggAge(b);
+                const rows = [];
+                const csv = [['pole', 'wartość']];
+                const row = function (k, v) { rows.push('<tr><td class="pk">' + escapeHtml(k) + '</td><td class="pv">' + escapeHtml(String(v)) + '</td></tr>'); csv.push([k, v]); };
+                row('Partia', b.name); row('Gatunek', info.name); row('Źródło', SOURCE_LABEL[b.source || 'own'] + (b.seller ? ' · ' + b.seller : ''));
+                row('Liczba jaj', b.eggs);
+                if (age) row('Wiek jaj przy włożeniu [dni]', age.min === age.max ? age.max : age.min + '–' + age.max);
+                if (b.weightStart) row('Średnia masa jaja [g]', b.weightStart);
+                if (b.tray != null) row('Taca', b.tray + 1);
+                if (b.setUnix) row('Włożono', new Date(b.setUnix * 1000).toLocaleString('pl-PL'));
+                (b.candling || []).forEach(function (c) { row('Prześwietlenie, dzień ' + c.day, 'puste ' + c.clear + ', obumarłe ' + c.dead); });
+                (b.weights || []).forEach(function (w) { const ev = weightEval(b, w.day, w.g); row('Waga, dzień ' + w.day, w.g + ' g' + (ev ? ' (ubytek ' + ev.loss.toFixed(1) + '%)' : '')); });
+                if (st.fertile != null) row('Zalężone', st.fertile + ' (' + pct(st.fertilityPct) + ')');
+                if (b.result) {
+                    row('Wyklute', b.result.hatched); row('Słabe lub padłe', b.result.culled || 0);
+                    row('Wylęg z włożonych', pct(st.hatchOfSet)); if (st.hatchOfFertile != null) row('Wylęg z zalężonych', pct(st.hatchOfFertile));
+                }
+                let envHtml = '';
+                if (env) {
+                    row('Temperatura średnia [°C]', env.avg.toFixed(2)); row('Temperatura min–maks [°C]', env.min.toFixed(1) + '–' + env.max.toFixed(1));
+                    row('Czas w zakresie temperatury', env.inTempPct.toFixed(0) + '%'); if (env.inRhPct != null) row('Czas w zakresie wilgotności', env.inRhPct.toFixed(0) + '%');
+                    row('Średnia moc grzałki [%]', env.heaterAvg.toFixed(0)); row('Przełączenia dyfuzorów (w zapisanym okresie)', env.diffSwitches);
+                    envHtml = '<div class="muted small">Dane środowiska obejmują okres od ' + fmtDateTime(env.since) + ' (historia sięga ostatniego restartu urządzenia, maks. 7 dni).</div>';
+                } else if (b.setUnix) envHtml = '<div class="muted small">Brak wystarczającej historii pomiarów dla tej partii.</div>';
+                evs.forEach(function (e) { row('Zdarzenie: ' + (EVENT_LABEL[e.type] || e.type), fmtDateTime(eventBrowserMs(e)) + (e.text ? ' · ' + (ALARM_CODE_TEXT[e.text] || e.text) : '')); });
+                if (b.notes) row('Uwagi', b.notes);
+                const html = '<div class="report"><table class="schedule-table"><tbody>' + rows.join('') + '</tbody></table>' + envHtml + '</div>';
+                const dlg = openDialog('Raport: ' + b.name, html, [
+                    { label: 'Pobierz CSV', onClick: function () {
+                        const text = csv.map(function (r) { return r.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(';'); }).join('\r\n');
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(new Blob(['﻿' + text], { type: 'text/csv' }));
+                        link.download = 'raport_' + b.name.replace(/[^\wąćęłńóśźżĄĆĘŁŃÓŚŹŻ-]+/g, '_') + '.csv';
+                        link.click();
+                        return true;
+                    } },
+                    { label: 'Drukuj / PDF', onClick: function () { document.body.classList.add('printing-report'); window.print(); setTimeout(function () { document.body.classList.remove('printing-report'); }, 500); return true; } },
+                    { label: 'Zamknij', primary: true }
+                ], { wide: true });
+                return dlg;
+            }
+            window.batchReport = batchReport;
+
+// ============================================================
+            //  KALIBRACJA CZUJNIKÓW (poprawki zapisywane w urządzeniu)
+            //  Urządzenie przyjmuje tylko pełną konfigurację, więc pobieramy ją, zmieniamy jedno pole i odsyłamy.
+            // ============================================================
+            let cfgCache = null;
+
+            async function loadConfig() {
+                if (dataSource !== 'live') return null;
+                try { cfgCache = await fetchJson('/api/config', {}, 8000); } catch (e) { cfgCache = null; }
+                return cfgCache;
+            }
+
+            async function saveConfigChange(mutator) {
+                const cfg = await loadConfig();
+                if (!cfg) throw new Error('nie udało się pobrać konfiguracji urządzenia');
+                mutator(cfg);
+                const r = await fetch('/api/config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cfg) });
+                let body = null;
+                try { body = await r.json(); } catch (e) { /* brak treści */ }
+                if (!r.ok || (body && body.error)) throw new Error((body && body.error) || 'HTTP ' + r.status);
+                cfgCache = cfg;
+            }
+
+            function sensorRows() {
+                const rows = [];
+                if (!statusData) return rows;
+                const offs = statusData.sensor_offsets || [0, 0, 0, 0];
+                if (isFinite(statusData.temp_chamber) && statusData.temp_chamber > -50) rows.push({ i: 0, name: 'DS1', value: statusData.temp_chamber, off: offs[0] || 0 });
+                if (isFinite(statusData.temp_aquarium) && statusData.temp_aquarium > -50) rows.push({ i: 1, name: 'DS2', value: statusData.temp_aquarium, off: offs[1] || 0 });
+                return rows;
+            }
+
+            function renderCalibration() {
+                const box = document.getElementById('calibSensors');
+                if (!box) return;
+                const rows = sensorRows();
+                if (!rows.length) { box.innerHTML = '<div class="muted">Brak odczytu z czujników.</div>'; }
+                else {
+                    box.innerHTML = rows.map(function (r) {
+                        return '<div class="calib-row" data-i="' + r.i + '"><div class="calib-name"><b>' + r.name + '</b><span class="muted">odczyt <span class="calib-read">' + r.value.toFixed(2) + '</span> °C · poprawka ' + (r.off >= 0 ? '+' : '') + r.off.toFixed(2) + ' °C</span></div>' +
+                            '<input type="number" step="0.01" min="-5" max="60" placeholder="wzorzec [°C]" class="calib-ref" data-i="' + r.i + '"><span class="calib-new muted">nowa poprawka: –</span>' +
+                            '<button type="button" class="btn btn-primary" data-calib="' + r.i + '">Zapisz</button></div>';
+                    }).join('');
+                }
+                const hum = document.getElementById('calibHum');
+                if (hum) {
+                    const h = statusData ? statusData.humidity : NaN;
+                    hum.innerHTML = '<div class="calib-row"><div class="calib-name"><b>Wilgotność (DHT)</b><span class="muted">odczyt <span class="calib-read" id="calibHumRead">' + (isFinite(h) ? h.toFixed(1) : '--') + '</span> %</span></div>' +
+                        '<input type="number" step="0.1" min="0" max="100" placeholder="wzorzec [%]" id="calibHumRef"><span class="calib-new muted" id="calibHumNew">nowa poprawka: –</span>' +
+                        '<button type="button" class="btn btn-primary" data-calib="hum">Zapisz</button></div>';
+                }
+                const hist = document.getElementById('calibHistory');
+                if (hist) {
+                    const items = ((storeData.prefs && storeData.prefs.calibrations) || []).slice(-6).reverse();
+                    hist.innerHTML = items.length ? items.map(function (c) {
+                        return '<div class="muted small">' + fmtDateTime(c.unix * 1000) + ': ' + escapeHtml(c.what) + ', wzorzec ' + c.ref + ', poprawka ' + (c.to >= 0 ? '+' : '') + c.to.toFixed(2) + '</div>';
+                    }).join('') : '<div class="muted small">Brak zapisanych kalibracji.</div>';
+                }
+            }
+
+            function initCalibration() {
+                const view = document.getElementById('view-calibrate');
+                if (!view) return;
+                view.addEventListener('input', function (ev) {
+                    const el = ev.target;
+                    if (el.classList && el.classList.contains('calib-ref')) {
+                        const r = sensorRows().find(function (x) { return x.i === +el.getAttribute('data-i'); });
+                        const ref = numOrNull(el.value), out = el.parentElement.querySelector('.calib-new');
+                        if (r && ref != null) out.textContent = 'nowa poprawka: ' + ((r.off + ref - r.value) >= 0 ? '+' : '') + (r.off + ref - r.value).toFixed(2) + ' °C';
+                        else if (out) out.textContent = 'nowa poprawka: –';
+                    } else if (el.id === 'calibHumRef') {
+                        const ref = numOrNull(el.value), cal = cfgCache && cfgCache.system ? (cfgCache.system.humidity_calibration || 0) : 0, h = statusData ? statusData.humidity : NaN;
+                        document.getElementById('calibHumNew').textContent = (ref != null && isFinite(h)) ? 'nowa poprawka: ' + ((cal + ref - h) >= 0 ? '+' : '') + (cal + ref - h).toFixed(1) + ' %' : 'nowa poprawka: –';
+                    }
+                });
+                view.addEventListener('click', async function (ev) {
+                    const btn = ev.target.closest('[data-calib]');
+                    if (!btn) return;
+                    if (dataSource !== 'live') { notify('Tryb testowy: poprawki nie są zapisywane w urządzeniu.', 'warn'); return; }
+                    const which = btn.getAttribute('data-calib');
+                    try {
+                        if (which === 'hum') {
+                            const ref = numOrNull(document.getElementById('calibHumRef').value), h = statusData ? statusData.humidity : NaN;
+                            if (ref == null || !isFinite(h)) { notify('Wpisz wilgotność wzorca.', 'warn'); return; }
+                            await loadConfig();
+                            const old = cfgCache && cfgCache.system ? (cfgCache.system.humidity_calibration || 0) : 0, nu = old + ref - h;
+                            if (Math.abs(nu) > 15) { notify('Poprawka większa niż ±15 punktów to raczej błąd pomiaru wzorca.', 'warn'); return; }
+                            if (!confirm('Zapisać poprawkę wilgotności ' + (nu >= 0 ? '+' : '') + nu.toFixed(1) + ' punktu?')) return;
+                            await saveConfigChange(function (c) { c.system.humidity_calibration = +nu.toFixed(2); });
+                            storeData.prefs.calibrations.push({ unix: deviceNowUnix(), what: 'wilgotność', ref: ref, to: nu });
+                        } else {
+                            const i = +which, r = sensorRows().find(function (x) { return x.i === i; });
+                            const input = document.querySelector('.calib-ref[data-i="' + i + '"]'), ref = input ? numOrNull(input.value) : null;
+                            if (!r || ref == null) { notify('Wpisz odczyt termometru wzorcowego.', 'warn'); return; }
+                            if (Math.abs(ref - r.value) > 5) { notify('Wzorzec różni się od czujnika o ponad 5 °C. Sprawdź pomiar, to nie jest zwykła kalibracja.', 'warn'); return; }
+                            const nu = r.off + ref - r.value;
+                            if (!confirm('Zapisać poprawkę ' + r.name + ': ' + (nu >= 0 ? '+' : '') + nu.toFixed(2) + ' °C?\n\nPo zapisie regulator od razu używa skorygowanego odczytu.')) return;
+                            await saveConfigChange(function (c) {
+                                const arr = (c.sensors.ds18b20_offsets || [0, 0, 0, 0]).slice();
+                                while (arr.length < 4) arr.push(0);
+                                arr[i] = +nu.toFixed(2);
+                                c.sensors.ds18b20_offsets = arr;
+                            });
+                            storeData.prefs.calibrations.push({ unix: deviceNowUnix(), what: r.name, ref: ref, to: nu });
+                        }
+                        storeSave('prefs');
+                        notify('Poprawka zapisana w urządzeniu.', 'info');
+                        addLog('cmd', 'Zapisano kalibrację');
+                        fetchData();
+                    } catch (e) {
+                        notify('Nie udało się zapisać poprawki: ' + e.message, 'error');
+                    }
+                    setTimeout(renderCalibration, 1500);
+                });
+            }
+
+            // ============================================================
+            //  POWIADOMIENIA W PANELU
+            // ============================================================
+            function renderPrefsUI() {
+                const box = document.getElementById('prefsNotify');
+                if (!box || !storeData.prefs) return;
+                const n = storeData.prefs.notify || (storeData.prefs.notify = {});
+                const perm = ('Notification' in window) ? Notification.permission : 'unsupported';
+                box.innerHTML = '<label class="fld chk"><input type="checkbox" data-pref="sound"' + (n.sound ? ' checked' : '') + '><span>Sygnał dźwiękowy przy alarmie</span></label>' +
+                    '<label class="fld chk"><input type="checkbox" data-pref="vibrate"' + (n.vibrate ? ' checked' : '') + '><span>Wibracja telefonu przy alarmie</span></label>' +
+                    '<label class="fld chk"><input type="checkbox" data-pref="browser"' + (n.browser ? ' checked' : '') + (perm === 'unsupported' ? ' disabled' : '') + '><span>Powiadomienie przeglądarki' + (perm === 'denied' ? ' (zablokowane w przeglądarce)' : '') + '</span></label>' +
+                    '<div class="btn-group"><button type="button" class="btn" data-pref-test="1">Wypróbuj</button></div>' +
+                    '<div class="muted small">Urządzenie tworzy własną sieć Wi-Fi bez internetu, więc powiadomienia działają tylko, gdy panel jest otwarty (także w tle na telefonie, jeśli przeglądarka nie usypia karty). Poza zasięgiem sieci urządzenie nie może wysłać wiadomości.</div>';
+            }
+
+            function initPrefsUI() {
+                const box = document.getElementById('prefsNotify');
+                if (!box) return;
+                box.addEventListener('change', async function (ev) {
+                    const el = ev.target.closest('[data-pref]');
+                    if (!el) return;
+                    const key = el.getAttribute('data-pref');
+                    storeData.prefs.notify[key] = el.checked;
+                    if (key === 'browser' && el.checked && 'Notification' in window && Notification.permission !== 'granted') {
+                        const p = await Notification.requestPermission();
+                        if (p !== 'granted') { storeData.prefs.notify.browser = false; notify('Przeglądarka nie zezwoliła na powiadomienia.', 'warn'); }
+                    }
+                    storeSave('prefs');
+                    renderPrefsUI();
+                });
+                box.addEventListener('click', function (ev) {
+                    if (ev.target.closest('[data-pref-test]')) notifyAlarm('Test powiadomienia', 'Tak będzie wyglądał alarm z inkubatora.');
+                });
+            }
+
+            // ============================================================
+            //  KOPIE ZAPASOWE
+            // ============================================================
+            window.exportBackup = async function () {
+                const out = { app: 'inkubator-panel', version: 1, exported: new Date().toISOString(), source: dataSource };
+                Object.keys(STORE_EMPTY).forEach(function (n) { out[n] = storeData[n]; });
+                if (dataSource === 'live') { const c = await loadConfig(); if (c) out.config_info = c; }
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 1)], { type: 'application/json' }));
+                link.download = 'inkubator_kopia_' + (dataSource === 'test' ? 'TEST_' : '') + localDate(new Date()) + '.json';
+                link.click();
+                addLog('cmd', 'Pobrano kopię zapasową');
+            };
+
+            window.importBackup = function (input) {
+                const file = input.files && input.files[0];
+                input.value = '';
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function () {
+                    let data;
+                    try { data = JSON.parse(String(reader.result)); } catch (e) { notify('To nie jest poprawny plik kopii.', 'error'); return; }
+                    if (!data || data.app !== 'inkubator-panel') { notify('Plik nie pochodzi z panelu inkubatora.', 'error'); return; }
+                    const names = Object.keys(STORE_EMPTY).filter(function (n) { return data[n] && typeof data[n] === 'object'; });
+                    if (!names.length) { notify('Plik kopii jest pusty.', 'warn'); return; }
+                    if (!confirm('Zastąpić dane panelu (' + names.join(', ') + ') zawartością kopii z ' + (data.exported || '?').slice(0, 10) + '?\n\nObecne dane tych zbiorów zostaną nadpisane.')) return;
+                    names.forEach(function (n) { storeData[n] = data[n]; storeSave(n, true); });
+                    registerCustomPrograms(); loadJournal(); renderJournal(); renderBatches(); renderTasks(); renderCustomPrograms(); renderPrefsUI(); renderCalibration();
+                    notify('Wczytano kopię: ' + names.join(', ') + '.', 'info');
+                    addLog('cmd', 'Wczytano kopię zapasową');
+                };
+                reader.readAsText(file);
+            };
+
+            // ============================================================
+            //  WŁASNE PROGRAMY (kopia wbudowanego programu z własnymi liczbami)
+            // ============================================================
+            function registerCustomPrograms() {
+                Object.keys(SPECIES).filter(function (k) { return SPECIES[k].custom; }).forEach(function (k) { delete SPECIES[k]; });
+                ((storeData.programs && storeData.programs.items) || []).forEach(function (p) {
+                    const s = bird({ name: p.name, latin: 'program własny', days: +p.days, temp: +p.temp, rh: +p.rh, rhLo: +p.rhLo, rhHi: +p.rhHi, stopAfter: +p.stopAfter, rhHatch: +p.rhHatch, ventDay: +p.ventDay, candle: p.candle });
+                    s.custom = true; s.base = p.base; s.shortName = p.name; s.name = p.name + ' (własny)'; s.noRotate = [];
+                    s.source = 'Program własny, ustawiony ręcznie na bazie: ' + (SPECIES[p.base] ? SPECIES[p.base].shortName : p.base);
+                    SPECIES[p.key] = s;
+                });
+                buildSpeciesOptions();
+            }
+
+            function renderCustomPrograms() {
+                const box = document.getElementById('customPrograms');
+                if (!box) return;
+                const items = (storeData.programs && storeData.programs.items) || [];
+                box.innerHTML = items.length ? items.map(function (p) {
+                    return '<div class="custom-row"><b>' + escapeHtml(p.name) + '</b><span class="muted">na bazie: ' + escapeHtml(SPECIES[p.base] ? SPECIES[p.base].shortName : p.base) + ' · ' + p.days + ' dni · ' + (+p.temp).toFixed(1) + ' °C · RH ' + p.rh + '% · klucie ' + p.rhHatch + '%</span>' +
+                        '<button type="button" class="btn" data-cp="edit" data-id="' + p.key + '">Edytuj</button><button type="button" class="btn danger" data-cp="del" data-id="' + p.key + '">Usuń</button></div>';
+                }).join('') : '<div class="muted small">Własny program to kopia wbudowanego z Twoimi liczbami (temperatura, wilgotność, dzień obrotów). Służy do planowania partii i ostrzeżeń w panelu.</div>';
+            }
+
+            window.customProgramEdit = function (key) {
+                const existing = key ? (storeData.programs.items.find(function (p) { return p.key === key; })) : null;
+                const baseKey = existing ? existing.base : 'CHICKEN';
+                const baseInfo = SPECIES[baseKey] && !SPECIES[baseKey].custom ? SPECIES[baseKey] : SPECIES.CHICKEN;
+                const cur = existing || {
+                    name: '', base: baseKey, days: baseInfo.days, temp: baseInfo.phases[0].temp, rh: baseInfo.phases[0].rh, rhLo: baseInfo.phases[0].rhmin, rhHi: baseInfo.phases[0].rhmax,
+                    stopAfter: baseInfo.stopAfter, rhHatch: baseInfo.rhHatch, ventDay: baseInfo.ventDay, candle: baseInfo.candle
+                };
+                const num = function (n, v, min, max, step) { return '<input type="number" name="' + n + '" value="' + v + '" min="' + min + '" max="' + max + '" step="' + (step || 1) + '">'; };
+                const baseOptions = Object.keys(SPECIES).filter(function (k) { return SPECIES[k].category === 'ptaki' && !SPECIES[k].custom; }).map(function (k) { return '<option value="' + k + '"' + (k === cur.base ? ' selected' : '') + '>' + escapeHtml(SPECIES[k].shortName) + '</option>'; }).join('');
+                const html = fld('Nazwa programu', '<input type="text" name="name" maxlength="24" value="' + escapeHtml(cur.name) + '" placeholder="np. Zielononóżka">') +
+                    fld('Wbudowany program bazowy', '<select name="base"' + (existing ? ' disabled' : '') + '>' + baseOptions + '</select>', existing ? '' : 'Po zmianie bazy kliknij „Wczytaj liczby z bazy”.') +
+                    (existing ? '' : '<div class="btn-group"><button type="button" class="btn" data-fill="1">Wczytaj liczby z bazy</button></div>') +
+                    '<div class="fld-row">' + fld('Dni inkubacji', num('days', cur.days, 5, 60)) + fld('Ostatni dzień obrotów', num('stopAfter', cur.stopAfter, 1, 59)) + '</div>' +
+                    '<div class="fld-row">' + fld('Temperatura [°C]', num('temp', cur.temp, 35, 40, 0.1)) + fld('Dzień szerszej wentylacji', num('ventDay', cur.ventDay, 1, 59)) + '</div>' +
+                    '<div class="fld-row">' + fld('Wilgotność [%]', num('rh', cur.rh, 30, 80)) + fld('Zakres od–do [%]', num('rhLo', cur.rhLo, 20, 80) + num('rhHi', cur.rhHi, 30, 90)) + '</div>' +
+                    '<div class="fld-row">' + fld('Wilgotność klucia [%]', num('rhHatch', cur.rhHatch, 50, 90)) + fld('Dni prześwietlania', '<input type="text" name="candle" value="' + (cur.candle || []).join(', ') + '">') + '</div>';
+                const dlg = openDialog(existing ? 'Edycja programu własnego' : 'Nowy program własny', html, [
+                    { label: 'Anuluj' },
+                    { label: 'Zapisz', primary: true, onClick: function (d) {
+                        const p = {
+                            key: existing ? existing.key : 'CUSTOM_' + Date.now().toString(36), base: existing ? existing.base : val(d, 'base'), name: val(d, 'name').trim(),
+                            days: intOrZero(val(d, 'days')), stopAfter: intOrZero(val(d, 'stopAfter')), ventDay: intOrZero(val(d, 'ventDay')), temp: numOrNull(val(d, 'temp')),
+                            rh: intOrZero(val(d, 'rh')), rhLo: intOrZero(val(d, 'rhLo')), rhHi: intOrZero(val(d, 'rhHi')), rhHatch: intOrZero(val(d, 'rhHatch')),
+                            candle: val(d, 'candle').split(/[,; ]+/).map(function (x) { return parseInt(x, 10); }).filter(function (x) { return isFinite(x) && x > 0; })
+                        };
+                        let err = null;
+                        if (!p.name) err = 'Podaj nazwę programu.';
+                        else if (p.days < 5 || p.days > 60) err = 'Liczba dni musi być w zakresie 5–60.';
+                        else if (p.stopAfter < 1 || p.stopAfter >= p.days) err = 'Ostatni dzień obrotów musi być wcześniejszy niż koniec inkubacji.';
+                        else if (p.temp == null || p.temp < 35 || p.temp > 40) err = 'Temperatura poza zakresem 35–40 °C.';
+                        else if (!(p.rhLo <= p.rh && p.rh <= p.rhHi)) err = 'Wilgotność idealna musi mieścić się w zakresie od–do.';
+                        else if (p.rhHatch < 50 || p.rhHatch > 90) err = 'Wilgotność klucia poza zakresem 50–90%.';
+                        if (err) { notify(err, 'warn'); return true; }
+                        const list = storeData.programs.items;
+                        const at = list.findIndex(function (x) { return x.key === p.key; });
+                        if (at >= 0) list[at] = p; else list.push(p);
+                        storeSave('programs');
+                        registerCustomPrograms(); renderCustomPrograms(); renderBatches(); updateSchedule();
+                        return false;
+                    } }
+                ]);
+                const fill = dlg.querySelector('[data-fill]');
+                if (fill) fill.addEventListener('click', function () {
+                    const b = SPECIES[val(dlg, 'base')] || SPECIES.CHICKEN, ph = b.phases[0];
+                    const set = function (n, v) { const el = dlg.querySelector('[name="' + n + '"]'); if (el) el.value = v; };
+                    set('days', b.days); set('stopAfter', b.stopAfter); set('ventDay', b.ventDay); set('temp', ph.temp); set('rh', ph.rh); set('rhLo', ph.rhmin); set('rhHi', ph.rhmax); set('rhHatch', b.rhHatch); set('candle', b.candle.join(', '));
+                });
+            };
+
+            window.customProgramDelete = function (key) {
+                const p = storeData.programs.items.find(function (x) { return x.key === key; });
+                if (!p) return;
+                const used = batchesList().some(function (b) { return b.species === key; });
+                if (!confirm('Usunąć program „' + p.name + '”?' + (used ? '\n\nUżywają go partie. Wrócą do programu kury.' : ''))) return;
+                storeData.programs.items = storeData.programs.items.filter(function (x) { return x.key !== key; });
+                if (used) { batchesList().forEach(function (b) { if (b.species === key) b.species = 'CHICKEN'; }); storeSave('batches'); }
+                storeSave('programs');
+                registerCustomPrograms(); renderCustomPrograms(); renderBatches();
+            };
+
+            function initCustomPrograms() {
+                const box = document.getElementById('customPrograms');
+                if (!box) return;
+                box.addEventListener('click', function (ev) {
+                    const el = ev.target.closest('[data-cp]');
+                    if (!el) return;
+                    if (el.getAttribute('data-cp') === 'edit') customProgramEdit(el.getAttribute('data-id'));
+                    else customProgramDelete(el.getAttribute('data-id'));
+                });
+            }
+
+            // Zastosowanie programu do tacy. Własny program trafia do urządzenia jako jego program bazowy.
+            window.applyToTray = async function () {
+                const tray = parseInt(document.getElementById('traySelect').value);
+                const key = document.getElementById('speciesSelect').value;
+                const day = parseInt(document.getElementById('dayInput').value) || 1;
+                const info = getSpeciesInfo(key);
+                const badge = document.getElementById('previewBadge');
+                const flash = function (text) { badge.textContent = text; setTimeout(function () { badge.textContent = 'Aktywna'; }, 2200); };
+                if (dataSource === 'test') {
+                    flash('Test T' + (tray + 1));
+                    notify('Tryb testowy: zmiana nie trafia do urządzenia.', 'warn');
+                    addLog('cmd', '[TEST] Zastosowano do tacy ' + (tray + 1) + ': ' + info.shortName + ', dzień ' + day);
+                    return;
+                }
+                const fwKey = info.custom ? info.base : key;
+                const fw = FIRMWARE_SPECIES[fwKey];
+                if (!fw) {
+                    notify('Ten program jest na razie tylko podglądem. Urządzenie obsługuje: kura, indyk, gęś, przepiórka, perliczka, bażant.', 'warn');
+                    return;
+                }
+                const note = info.custom ? '\n\nProgram własny nie istnieje w urządzeniu, więc tacy zostanie ustawiony wbudowany program bazowy „' + SPECIES[fwKey].shortName + '”. Własne liczby (temperatura, wilgotność) działają w panelu jako zakresy i ostrzeżenia.' : '';
+                if (!confirm('Zastosować do TACY ' + (tray + 1) + ':\n' + info.shortName + ', dzień ' + day + '?\n\nTo zmienia ustawienia urządzenia.' + note)) return;
+                try {
+                    await postForm('/api/tray/set-species', { tray: tray, species: fw });
+                    await postForm('/api/tray/set-day', { tray: tray, day: day });
+                    flash('Zapisano T' + (tray + 1));
+                    notify('Zapisano w urządzeniu: taca ' + (tray + 1) + ', ' + info.shortName + ', dzień ' + day + '.', 'info');
+                    addLog('cmd', 'Zastosowano do tacy ' + (tray + 1) + ': ' + info.shortName + ', dzień ' + day);
+                    fetchData();
+                } catch (e) {
+                    notify('Nie udało się zapisać w urządzeniu: ' + e.message, 'error');
+                    addLog('err', 'Zastosowanie do tacy nie powiodło się: ' + e.message);
+                }
+            };
+
+            // ------------------------------------------------------------
+            //  Znaczniki zdarzeń na wykresach: restarty, alarmy, drzwi, wpisy dziennika
+            // ------------------------------------------------------------
+            function buildChartMarkers(points) {
+                const out = [];
+                if (!points || points.length < 2) return out;
+                const t0 = points[0].t, t1 = points[points.length - 1].t;
+                const bootTimes = [];
+                ((deviceEvents && deviceEvents.events) || []).forEach(function (e) {
+                    const t = eventBrowserMs(e);
+                    if (t < t0 || t > t1) return;
+                    if (e.type === 'boot') { bootTimes.push(t); out.push({ t: t, color: PAL.err, shape: 'tri', text: 'Start urządzenia' + (e.text && e.text !== 'start' ? ': ' + e.text : '') }); }
+                    else if (e.type === 'alarm_on') out.push({ t: t, color: PAL.warn, shape: 'dot', text: 'Alarm: ' + e.text });
+                    else if (e.type === 'door_open') out.push({ t: t, color: PAL.rh, shape: 'dia', text: 'Otwarcie drzwi' });
+                });
+                // bez czujnika drzwi zgadujemy otwarcia z nagłego spadku temperatury
+                if (!(statusData && statusData.door_enabled)) {
+                    const pts = points.filter(function (p) { return isFinite(p.temp); });
+                    let lastGuess = 0;
+                    for (let i = 4; i < pts.length; i++) {
+                        const win = pts.slice(Math.max(0, i - 8), i).map(function (p) { return p.temp; }).sort(function (a, b) { return a - b; });
+                        const base = win[Math.floor(win.length / 2)], drop = base - pts[i].temp;
+                        if (drop >= 0.35 && pts[i].t - lastGuess > 30 * 60000 && !bootTimes.some(function (bt) { return Math.abs(bt - pts[i].t) < 45 * 60000; })) {
+                            lastGuess = pts[i].t;
+                            out.push({ t: pts[i].t, color: PAL.rh, shape: 'dia', hollow: true, text: 'Prawdopodobne otwarcie drzwi (spadek o ' + drop.toFixed(1).replace('.', ',') + ' °C)' });
+                        }
+                    }
+                }
+                (journalEntries || []).forEach(function (e) {
+                    if (e.id >= t0 && e.id <= t1) out.push({ t: e.id, color: PAL.dim, shape: 'dot', text: 'Dziennik: ' + e.text });
+                });
+                return out;
+            }
+
+            function drawMarkers(c, markers, mapX, m, h, w, t0, t1, hoverX) {
+                if (!markers || !markers.length) return;
+                let near = null, nearD = 10;
+                c.save();
+                markers.forEach(function (mk) {
+                    if (mk.t < t0 || mk.t > t1) return;
+                    const x = mapX(mk.t), y = m.top + 6;
+                    c.strokeStyle = mk.color; c.globalAlpha = 0.5; c.lineWidth = 1; c.setLineDash([2, 3]);
+                    c.beginPath(); c.moveTo(x, m.top); c.lineTo(x, h - m.bottom); c.stroke();
+                    c.setLineDash([]); c.globalAlpha = 1;
+                    c.fillStyle = mk.color; c.strokeStyle = mk.color; c.lineWidth = 1.6;
+                    c.beginPath();
+                    if (mk.shape === 'tri') { c.moveTo(x, y - 5); c.lineTo(x + 5, y + 4); c.lineTo(x - 5, y + 4); c.closePath(); c.fill(); }
+                    else if (mk.shape === 'dia') { c.moveTo(x, y - 5); c.lineTo(x + 5, y); c.lineTo(x, y + 5); c.lineTo(x - 5, y); c.closePath(); if (mk.hollow) c.stroke(); else c.fill(); }
+                    else { c.arc(x, y, 3.5, 0, Math.PI * 2); c.fill(); }
+                    if (hoverX != null && Math.abs(hoverX - x) < nearD) { nearD = Math.abs(hoverX - x); near = { mk: mk, x: x }; }
+                });
+                if (near) {
+                    c.font = '600 12px ' + CANVAS_FONT;
+                    const label = near.mk.text, tw = c.measureText(label).width + 14;
+                    const bx = Math.min(w - tw - 2, Math.max(2, near.x - tw / 2)), by = h - m.bottom - 26;
+                    c.fillStyle = PAL.tipBg; c.fillRect(bx, by, tw, 20);
+                    c.strokeStyle = near.mk.color; c.lineWidth = 1; c.strokeRect(bx, by, tw, 20);
+                    c.fillStyle = PAL.tipInk; c.textAlign = 'left'; c.textBaseline = 'middle';
+                    c.fillText(label, bx + 7, by + 10);
+                }
+                c.restore();
             }
 
             // ============================================================
@@ -4479,6 +5932,9 @@
                 if (name === 'schedule') { renderScheduleTables(); }
                 if (name === 'logs') { renderLogs(); }
                 if (name === 'journal') { renderJournal(); }
+                if (name === 'batches') { renderBatches(); }
+                if (name === 'logs') { refreshEvents(); }
+                if (name === 'calibrate') { loadConfig().then(renderCalibration); }
             };
 
             // ============================================================
@@ -4506,7 +5962,9 @@
                 resizeTrend();
                 initLock();
                 guardDemos();
-                loadJournal();
+                initBatchView(); initTasks(); initAlertBanner(); initCalibration(); initPrefsUI(); initCustomPrograms();
+                storeLoadAll();
+                refreshEvents();
                 applyTheme();
                 if (dataSource === 'test') seedTestHistory();
                 renderLinkState();
@@ -4522,6 +5980,7 @@
 
             setInterval(updateClock, 1000);
             setInterval(fetchData, 5000);
+            setInterval(refreshEvents, 60000);
             setInterval(function () { if (resolveTheme() !== document.documentElement.getAttribute('data-theme')) applyTheme(); }, 60000);
 
             let resizeTimeout;

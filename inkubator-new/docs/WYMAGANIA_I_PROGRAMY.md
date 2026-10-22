@@ -159,3 +159,21 @@ Panel pokazuje już wszystkie programy, ale urządzenie wykonuje tylko profile p
 - **Wykresy** (1 h / 6 h / 24 h / 7 dni) pochodzą z `GET /api/history` (log CSV na LittleFS, bieżący cykl pracy od startu urządzenia): temperatura i wilgotność z pasem zakresu dopuszczalnego i linią idealną, moc grzałki oraz stany dyfuzorów.
 - **Kafelki** pokazują wartość, zakres idealny i dopuszczalny aktywnego programu, regulator i czujnik sterujący, liczbę przełączeń dyfuzorów oraz datę klucia i następne ważne zdarzenia dla każdej tacy.
 - „Zastosuj” zapisuje gatunek i dzień w urządzeniu (po potwierdzeniu); kaczka nie jest obsługiwana przez firmware (limit 11 znaków id).
+
+## Narzędzia hodowcy (partie jaj, zadania, kalibracja)
+
+**Zakładka Partie.** Każda partia ma źródło (własne lub kupione, sprzedawca), daty zniesienia, liczbę jaj, średnią masę i tacę. Panel ostrzega o wieku jaj (do 7 dni bez ograniczeń, po 10 dniach wyraźny spadek wylęgowości), przypomina o ogrzaniu jaj do temperatury pokojowej i sprawdza, czy inkubator jest ustabilizowany (±0,5 °C od wartości idealnej, zalecane 12–24 h). „Włożyłem jaja teraz" startuje zegar partii i (po potwierdzeniu) ustawia gatunek i datę startu tacy w urządzeniu. Wyniki prześwietlania, ważenia (ubytek masy ok. 12% do przeniesienia do klekotu) i klucia liczą zalężenie i wylęg, a statystyki grupują je wg źródła jaj i tacy. Raport partii można pobrać jako CSV albo wydrukować.
+
+**Dziś do zrobienia** (ekran Status). Lista wynika z programu każdej tacy (prześwietlenie, koniec obrotów, początek klucia, wentylacja, ważenie, wyniki klucia) oraz z partii. Zaznaczenia są zapisane w urządzeniu.
+
+**Alarmy.** Urządzenie wystawia w `/api/status` pola `alarm`, `alarm_code`, `alarm_msg`, a każdy alarm, restart i otwarcie drzwi trafia do dziennika zdarzeń (`GET /api/events`). Wykryte awarie: błąd czujnika, temperatura i wilgotność poza granicami, spadek temperatury mimo grzania oraz grzałka pracująca na ponad 95% przez 15 minut bez dojścia do nastawy. Panel pokazuje baner, sygnał dźwiękowy, wibrację i opcjonalnie powiadomienie przeglądarki (Ustawienia). Urządzenie tworzy własną sieć Wi-Fi bez internetu, więc powiadomienia działają tylko przy otwartym panelu.
+
+**Zasilanie.** Dni tac liczą się z zegara RTC, więc po zaniku zasilania program biegnie dalej. Przy starcie urządzenie zapisuje w dzienniku zdarzeń szacowaną długość przerwy (wiersze logu pomiarów mają teraz kolumnę `unix`).
+
+**Czujniki drzwi i wody.** Gdy włączone w konfiguracji (`door_sensor_enabled`, `water_level_enabled` i piny), urządzenie czyta styki (INPUT_PULLUP): drzwi otwarte = stan wysoki, woda jest = stan niski. Bez czujnika drzwi panel zaznacza na wykresach „prawdopodobne otwarcie" po nagłym spadku temperatury.
+
+**Kalibracja.** Poprawki każdego czujnika DS18B20 (`sensors.ds18b20_offsets`, ±5 °C) i wilgotności (`system.humidity_calibration`, ±15) zapisują się w urządzeniu i od razu działają w regulacji. Zakładka Kalibracja prowadzi przez porównanie z termometrem wzorcowym i test solny (ok. 75% wilgotności). Urządzenie przyjmuje tylko pełną konfigurację, więc panel pobiera ją, zmienia jedno pole i odsyła.
+
+**Dane w urządzeniu.** `GET/POST /api/store?name=batches|journal|tasks|programs|prefs` zapisuje dokument JSON (limit 40 kB) w LittleFS. Dane testowe zostają w pamięci przeglądarki. Zakładka Ustawienia ma kopię zapasową (eksport i import JSON).
+
+**Własne programy.** Kopia wbudowanego programu z własną temperaturą, wilgotnością i dniem obrotów. Służą do planowania partii i ostrzeżeń w panelu; do tacy trafia wbudowany program bazowy, bo urządzenie nie przyjmuje nowych profili.
