@@ -1,4 +1,4 @@
-(function() {
+﻿(function() {
     'use strict';
 
     const ink = window.Inkubator;
@@ -33,6 +33,12 @@
     const refreshBtn = document.getElementById('refreshBtn');
     const backBtn = document.getElementById('backBtn');
     const overallStatus = document.getElementById('alarmOverallStatus');
+
+    const requiredElements = [alarmList, saveBtn, refreshBtn, backBtn, overallStatus];
+    if (requiredElements.some(function(el) { return !el; })) {
+        console.error('[alarms.js] Brak wymaganych elementow DOM');
+        return;
+    }
 
     // ============================================================
     //  FUNKCJE POMOCNICZE
@@ -144,11 +150,23 @@
             return;
         }
 
+        if (type === 'close') {
+            ink.setStatus('Rozłączono z ESP', 'err');
+            return;
+        }
+
+        if (type === 'error') {
+            ink.setStatus('Błąd połączenia z ESP', 'err');
+            return;
+        }
+
         if (type === 'message') {
             const msg = data;
 
-            if (msg.startsWith('statusAlarmes:')) {
-                const statuses = msg.substring(14).split(',');
+            if (msg.startsWith('statusAlarmes:') || msg.startsWith('alarmsStatus:')) {
+                const statuses = msg.startsWith('statusAlarmes:')
+                    ? msg.substring(14).split(',')
+                    : msg.substring(13).split(',');
                 for (let i = 0; i < ALARM_COUNT && i < statuses.length; i++) {
                     const val = parseInt(statuses[i], 10);
                     setAlarmStatus(i, val === 1);
@@ -186,7 +204,7 @@
         }
         const msg = 'salvarAlarmes:' + states.join(',');
         if (ink.wsSend(msg)) {
-            ink.setStatus('Wysłano ustawienia alarmów', 'ok');
+            ink.setStatus('Wysłano ustawienia alarmów', 'info');
         }
     }
 
@@ -196,7 +214,7 @@
     }
 
     function goBack() {
-        window.location.href = '/';
+        window.location.href = 'index.html';
     }
 
     // ============================================================
@@ -214,7 +232,19 @@
             ink.wsSend('carregarAlarmes');
         }
 
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                goBack();
+                return;
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                saveAlarms();
+            }
+        });
+
         console.log('[alarms.js] Zainicjalizowano');
     });
 
 })();
+

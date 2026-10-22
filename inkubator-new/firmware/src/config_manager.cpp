@@ -187,6 +187,10 @@ String ConfigManager::to_json() {
     for (int i = 0; i < MAX_SENSORS; i++) {
         sensorLabels.add(cfg.sensors.ds18b20_labels[i]);
     }
+    JsonArray sensorOffsets = sensors["ds18b20_offsets"].to<JsonArray>();
+    for (int i = 0; i < MAX_SENSORS; i++) {
+        sensorOffsets.add(cfg.sensors.ds18b20_offsets[i]);
+    }
     sensors["dht11_enabled"] = cfg.sensors.dht11_enabled;
     sensors["dht11_pin"] = cfg.sensors.dht11_pin;
     sensors["water_level_enabled"] = cfg.sensors.water_level_enabled;
@@ -195,6 +199,8 @@ String ConfigManager::to_json() {
     sensors["door_sensor_pin"] = cfg.sensors.door_sensor_pin;
     sensors["aquarium_sensor_index"] = cfg.sensors.aquarium_sensor_index;
     sensors["aquarium_target_temp"] = cfg.sensors.aquarium_target_temp;
+    sensors["control_sensor_index"] = cfg.sensors.control_sensor_index;
+    sensors["control_sensor_on_shell"] = cfg.sensors.control_sensor_on_shell;
     sensors["bmp180_enabled"] = cfg.sensors.bmp180_enabled;
     sensors["bmp180_sda_pin"] = cfg.sensors.bmp180_sda_pin;
     sensors["bmp180_scl_pin"] = cfg.sensors.bmp180_scl_pin;
@@ -214,6 +220,7 @@ String ConfigManager::to_json() {
     sys["alarm_min_humidity"] = cfg.system.alarm_min_humidity;
     sys["humidity_calibration"] = cfg.system.humidity_calibration;
     sys["log_interval_sec"] = cfg.system.log_interval_sec;
+    sys["use_program_setpoint"] = cfg.system.use_program_setpoint;
     JsonObject dif = doc["diffusers"].to<JsonObject>();
     dif["count"] = cfg.diffusers.count;
     dif["on_time_sec"] = cfg.diffusers.on_time_sec;
@@ -250,6 +257,8 @@ bool ConfigManager::from_json(const String& json) {
     }
     cfg.config_version = fileVersion;
     cfg.tray_count = doc["tray_count"] | 2;
+    if (cfg.tray_count < 0) cfg.tray_count = 0;
+    if (cfg.tray_count > MAX_TRAYS) cfg.tray_count = MAX_TRAYS;
     JsonArray traysArray = doc["trays"].as<JsonArray>();
     if (!traysArray.isNull()) {
         for (int i = 0; i < MAX_TRAYS && i < (int)traysArray.size(); i++) {
@@ -276,6 +285,8 @@ bool ConfigManager::from_json(const String& json) {
     JsonObject sensors = doc["sensors"].as<JsonObject>();
     if (!sensors.isNull()) {
         cfg.sensors.ds18b20_count = sensors["ds18b20_count"] | cfg.sensors.ds18b20_count;
+        if (cfg.sensors.ds18b20_count < 0) cfg.sensors.ds18b20_count = 0;
+        if (cfg.sensors.ds18b20_count > MAX_SENSORS) cfg.sensors.ds18b20_count = MAX_SENSORS;
         JsonArray sensorPins = sensors["ds18b20_pins"].as<JsonArray>();
         for (int i = 0; i < MAX_SENSORS && i < (int)sensorPins.size(); i++) {
             cfg.sensors.ds18b20_pins[i] = sensorPins[i] | cfg.sensors.ds18b20_pins[i];
@@ -286,6 +297,11 @@ bool ConfigManager::from_json(const String& json) {
             strncpy(cfg.sensors.ds18b20_labels[i], label, sizeof(cfg.sensors.ds18b20_labels[i]) - 1);
             cfg.sensors.ds18b20_labels[i][sizeof(cfg.sensors.ds18b20_labels[i]) - 1] = '\0';
         }
+        JsonArray sensorOffsets = sensors["ds18b20_offsets"].as<JsonArray>();
+        for (int i = 0; i < MAX_SENSORS && i < (int)sensorOffsets.size(); i++) {
+            const float off = sensorOffsets[i] | cfg.sensors.ds18b20_offsets[i];
+            cfg.sensors.ds18b20_offsets[i] = constrain(off, -5.0f, 5.0f);   // poprawka większa niż 5 °C to błąd, nie kalibracja
+        }
         cfg.sensors.dht11_enabled = sensors["dht11_enabled"] | cfg.sensors.dht11_enabled;
         cfg.sensors.dht11_pin = sensors["dht11_pin"] | cfg.sensors.dht11_pin;
         cfg.sensors.water_level_enabled = sensors["water_level_enabled"] | cfg.sensors.water_level_enabled;
@@ -293,7 +309,13 @@ bool ConfigManager::from_json(const String& json) {
         cfg.sensors.door_sensor_enabled = sensors["door_sensor_enabled"] | cfg.sensors.door_sensor_enabled;
         cfg.sensors.door_sensor_pin = sensors["door_sensor_pin"] | cfg.sensors.door_sensor_pin;
         cfg.sensors.aquarium_sensor_index = sensors["aquarium_sensor_index"] | cfg.sensors.aquarium_sensor_index;
+        if (cfg.sensors.aquarium_sensor_index < 0) cfg.sensors.aquarium_sensor_index = 0;
+        if (cfg.sensors.aquarium_sensor_index >= MAX_SENSORS) cfg.sensors.aquarium_sensor_index = MAX_SENSORS - 1;
         cfg.sensors.aquarium_target_temp = sensors["aquarium_target_temp"] | cfg.sensors.aquarium_target_temp;
+        cfg.sensors.control_sensor_index = sensors["control_sensor_index"] | cfg.sensors.control_sensor_index;
+        if (cfg.sensors.control_sensor_index < 0) cfg.sensors.control_sensor_index = 0;
+        if (cfg.sensors.control_sensor_index >= MAX_SENSORS) cfg.sensors.control_sensor_index = MAX_SENSORS - 1;
+        cfg.sensors.control_sensor_on_shell = sensors["control_sensor_on_shell"] | cfg.sensors.control_sensor_on_shell;
         cfg.sensors.bmp180_enabled = sensors["bmp180_enabled"] | cfg.sensors.bmp180_enabled;
         cfg.sensors.bmp180_sda_pin = sensors["bmp180_sda_pin"] | cfg.sensors.bmp180_sda_pin;
         cfg.sensors.bmp180_scl_pin = sensors["bmp180_scl_pin"] | cfg.sensors.bmp180_scl_pin;
@@ -309,6 +331,7 @@ bool ConfigManager::from_json(const String& json) {
         cfg.system.temp_calibration = sys["temp_calibration"] | cfg.system.temp_calibration;
         cfg.system.control_mode = sys["control_mode"] | cfg.system.control_mode;
         cfg.system.fan_delay_sec = sys["fan_delay_sec"] | cfg.system.fan_delay_sec;
+        cfg.system.use_program_setpoint = sys["use_program_setpoint"] | cfg.system.use_program_setpoint;
         cfg.system.target_humidity = sys["target_humidity"] | cfg.system.target_humidity;
         cfg.system.humidity_hysteresis = sys["humidity_hysteresis"] | cfg.system.humidity_hysteresis;
         cfg.system.alarm_max_humidity = sys["alarm_max_humidity"] | cfg.system.alarm_max_humidity;
@@ -319,6 +342,8 @@ bool ConfigManager::from_json(const String& json) {
     JsonObject dif = doc["diffusers"].as<JsonObject>();
     if (!dif.isNull()) {
         cfg.diffusers.count = dif["count"] | cfg.diffusers.count;
+        if (cfg.diffusers.count < 0) cfg.diffusers.count = 0;
+        if (cfg.diffusers.count > MAX_DIFFUSERS) cfg.diffusers.count = MAX_DIFFUSERS;
         cfg.diffusers.on_time_sec = dif["on_time_sec"] | cfg.diffusers.on_time_sec;
         cfg.diffusers.off_time_sec = dif["off_time_sec"] | cfg.diffusers.off_time_sec;
         const char* profile = dif["profile"] | cfg.diffusers.profile;

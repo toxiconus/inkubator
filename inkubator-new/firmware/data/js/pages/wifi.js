@@ -1,7 +1,12 @@
-(function() {
+﻿(function() {
     'use strict';
 
     const ink = window.Inkubator;
+    if (!ink) {
+        console.error('[wifi.js] Brak wspolnego modulu Inkubator');
+        return;
+    }
+
     const ssidEl = document.getElementById('wifiSsid');
     const passEl = document.getElementById('wifiPass');
     const statusVal = document.getElementById('wifiStatus');
@@ -23,6 +28,15 @@
         if (type === 'open') {
             ink.wsSend('carregarRede');
             ink.wsSend('getWifiStatus');
+            updateWifiStatusText('Połączono', 'ok');
+            return;
+        }
+        if (type === 'close') {
+            updateWifiStatusText('Brak połączenia', 'err');
+            return;
+        }
+        if (type === 'error') {
+            updateWifiStatusText('Błąd połączenia', 'err');
             return;
         }
         if (type !== 'message') return;
@@ -80,10 +94,14 @@
     refreshBtn.addEventListener('click', function() {
         ink.wsSend('carregarRede');
         ink.wsSend('getWifiStatus');
-        ink.setStatus('Odswiezanie ustawien...', 'info');
+        ink.setStatus('Odświeżanie ustawień...', 'info');
     });
 
     backBtn.addEventListener('click', function() {
-        window.location.href = '/';
+        window.location.href = 'index.html';
     });
+
+    updateWifiStatusText(ink.wsConnected() ? 'Połączono' : 'Brak połączenia', ink.wsConnected() ? 'ok' : 'err');
 })();
+
+

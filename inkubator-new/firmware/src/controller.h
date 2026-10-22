@@ -15,6 +15,13 @@ extern bool diffuser_manual_on[2];
 extern bool diffuser_on;
 extern int diffuser_active_idx;
 extern String heater_profile_name;
+// Skala sprzętowa PWM grzałek (LEDC 10 bitów). W reszcie kodu moc jest w procentach 0..100.
+#define HEATER_PWM_MAX 1023
+void heater_write_pct(int ch, float pct);
+extern unsigned long diffuser_switch_count;   // liczba przełączeń dyfuzorów od startu (zużycie styków)
+extern bool learning_mode;
+extern String learning_profile;
+int heater_pin_for_index(int idx);
 
 struct SensorData {
     float temp[4];
@@ -33,6 +40,8 @@ struct SensorData {
 
 void heaters_control(const SensorData& data);
 void diffusers_control(const SensorData& data);
+float control_temperature_value(const SensorData& data);   // odczyt czujnika sterującego grzałką
+float control_setpoint_temp();                              // nastawa temperatury dla tego czujnika
 bool set_heater_profile(const String& mode);
 bool set_diffuser_profile(const String& mode);
 void reset_learning_state();

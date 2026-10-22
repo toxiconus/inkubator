@@ -1,4 +1,4 @@
-(function() {
+﻿(function() {
     'use strict';
 
     const ink = window.Inkubator;
@@ -53,6 +53,17 @@
     const previewBtn = document.getElementById('previewBtn');
     const refreshBtn = document.getElementById('refreshBtn');
     const backBtn = document.getElementById('backBtn');
+
+    const requiredElements = [
+        species1, species2, day1, day2, startDate1, startDate2,
+        totalDays1, totalDays2, currentDay1, currentDay2, remaining1, remaining2,
+        status1, status2, tray1Day, tray2Day, scheduleBody, scheduleInfo
+    ];
+
+    if (requiredElements.some(function(el) { return !el; })) {
+        console.error('[incubation.js] Brak wymaganych elementow DOM');
+        return;
+    }
 
     // ============================================================
     //  FUNKCJE POMOCNICZE
@@ -234,14 +245,24 @@
 
         if (!dateValue) {
             ink.setStatus('Wybierz datę startu', 'err');
+            if (input) {
+                input.setAttribute('aria-invalid', 'true');
+                input.focus();
+            }
             return;
         }
+        if (input) input.removeAttribute('aria-invalid');
 
         const date = new Date(dateValue + 'T00:00:00');
         if (isNaN(date.getTime())) {
             ink.setStatus('Nieprawidłowa data', 'err');
+            if (input) {
+                input.setAttribute('aria-invalid', 'true');
+                input.focus();
+            }
             return;
         }
+        if (input) input.removeAttribute('aria-invalid');
 
         const unix = Math.floor(date.getTime() / 1000);
         ink.wsSend('setStartDate:' + tray + ':' + unix);
@@ -274,7 +295,7 @@
     }
 
     function goBack() {
-        window.location.href = '/';
+        window.location.href = 'index.html';
     }
 
     // ============================================================
@@ -305,6 +326,17 @@
             if (e.key === 'Enter') { e.preventDefault(); applyToTray(); }
         });
 
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                goBack();
+                return;
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                applyToTray();
+            }
+        });
+
         // Jeśli WebSocket jest już połączony
         if (ink.wsConnected()) {
             ink.wsSend('getIncubationConfig');
@@ -317,3 +349,4 @@
     });
 
 })();
+

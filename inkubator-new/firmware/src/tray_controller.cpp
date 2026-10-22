@@ -13,6 +13,12 @@ extern unsigned long rtc_get_unix_time();
 
 static void tray_update_day_from_rtc(int tray_idx, unsigned long long now_unix);
 
+static inline void tray_write_pin(const TrayState& st, uint8_t level) {
+    if (st.pin >= 0) {
+        digitalWrite(st.pin, level);
+    }
+}
+
 void tray_init(unsigned long long base_start_millis) {
     global_start_millis = base_start_millis;
 
@@ -95,7 +101,7 @@ void tray_update_state(TrayState& st, unsigned long long now_millis) {
     if (!st.active) {
         st.manual_move_until_ms = 0ULL;
         st.currently_rotating = false;
-        digitalWrite(st.pin, LOW);
+        tray_write_pin(st, LOW);
         st.current_day = 0;
         st.in_lockdown = false;
         st.should_rotate = false;
@@ -128,18 +134,18 @@ void tray_update_state(TrayState& st, unsigned long long now_millis) {
     if (st.manual_move_until_ms > 0ULL) {
         if (now_millis < st.manual_move_until_ms) {
             st.currently_rotating = true;
-            digitalWrite(st.pin, HIGH);
+            tray_write_pin(st, HIGH);
             return;
         }
         st.manual_move_until_ms = 0ULL;
         st.currently_rotating = false;
-        digitalWrite(st.pin, LOW);
+        tray_write_pin(st, LOW);
         return;
     }
 
     if (!st.should_rotate || st.in_lockdown) {
         st.currently_rotating = false;
-        digitalWrite(st.pin, LOW);
+        tray_write_pin(st, LOW);
         return;
     }
 
@@ -150,35 +156,39 @@ void tray_update_state(TrayState& st, unsigned long long now_millis) {
     if (!st.currently_rotating && now_millis >= st.next_rotation_ms) {
         st.currently_rotating = true;
         st.rotation_start_ms = now_millis;
-        digitalWrite(st.pin, HIGH);
+        tray_write_pin(st, HIGH);
         st.next_rotation_ms = now_millis + interval;
     }
 
     if (st.currently_rotating && now_millis - st.rotation_start_ms >= duration) {
         st.currently_rotating = false;
-        digitalWrite(st.pin, LOW);
+        tray_write_pin(st, LOW);
     }
 }
 
 void tray_manual_move(int tray_idx, unsigned long duration_ms, unsigned long long now_millis) {
     if (tray_idx < 0 || tray_idx >= MAX_TRAYS) return;
     TrayState& st = tray_states[tray_idx];
+    if (st.pin < 0) return;
     st.manual_move_until_ms = now_millis + duration_ms;
     st.currently_rotating = true;
-    digitalWrite(st.pin, HIGH);
+    tray_write_pin(st, HIGH);
 }
 
 void tray_stop(int tray_idx, unsigned long long now_millis) {
     if (tray_idx < 0 || tray_idx >= MAX_TRAYS) return;
+    (void)now_millis;
     TrayState& st = tray_states[tray_idx];
     st.manual_move_until_ms = 0;
     st.currently_rotating = false;
-    digitalWrite(st.pin, LOW);
+    tray_write_pin(st, LOW);
 }
 
 void tray_set_species(int tray_idx, const char* species_id) {
     if (tray_idx < 0 || tray_idx >= MAX_TRAYS) return;
-    strcpy(configMgr.cfg.trays[tray_idx].species, species_id);
+    if (!species_id) return;
+    strncpy(configMgr.cfg.trays[tray_idx].species, species_id, sizeof(configMgr.cfg.trays[tray_idx].species) - 1);
+    configMgr.cfg.trays[tray_idx].species[sizeof(configMgr.cfg.trays[tray_idx].species) - 1] = '\0';
     String lookup = String(species_id);
     lookup.toLowerCase();
     tray_states[tray_idx].incubation_profile = getSpeciesProfile(g_incubation_profiles, lookup);
@@ -187,7 +197,15 @@ void tray_set_species(int tray_idx, const char* species_id) {
 
 bool tray_set_day(int tray_idx, int day, unsigned long long now_millis) {
     if (tray_idx < 0 || tray_idx >= MAX_TRAYS) return false;
-    tray_states[tray_idx].current_day = day;
+    (void)now_millis;
+    TrayState& st = tray_states[tray_idx];
+    int maxDay = 1;
+    if (st.incubation_profile) {
+        maxDay = st.incubation_profile->incubation_days;
+    }
+    if (day < 1) day = 1;
+    if (day > maxDay) day = maxDay;
+    st.current_day = day;
     return true;
 }
 
@@ -341,6 +359,12 @@ String tray_status_json(unsigned long long now_millis) {
         t["should_rotate"] = st.should_rotate;
         t["in_lockdown"] = st.in_lockdown;
         t["start_unix"] = configMgr.cfg.trays[i].start_unix;
+        t["has_last_rotation"] = st.has_last_rotation;
+        if (st.has_last_rotation) {
+            t["last_rotation_day"] = st.last_rotation_day;
+            t["last_rotation_hour"] = st.last_rotation_hour;
+            t["last_rotation_minute"] = st.last_rotation_minute;
+        }
         if (st.incubation_profile) {
             t["species_id"] = st.incubation_profile->id;
             t["species_name"] = st.incubation_profile->common_name;

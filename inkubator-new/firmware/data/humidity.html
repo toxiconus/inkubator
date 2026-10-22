@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ustawienia · Wilgotność</title>
-    <link rel="stylesheet" href="/css/style.css" />
+
+    
+    <meta name="description" content="Panel sterowania inkubatorem: konfiguracja, diagnostyka i monitoring." />
+    <meta name="theme-color" content="#101317" />
+<title>Ustawienia · Wilgotność</title>
+    <link rel="stylesheet" href="css/style.css" />
     <style>
         /* ===== STYLE SPECYFICZNE DLA WILGOTNOŚCI ===== */
         .current-value {
@@ -69,7 +73,10 @@
 </head>
 <body>
 
-    <div class="instrument">
+    <noscript><div class="noscript-banner">Do poprawnego dzialania panelu wymagany jest JavaScript.</div></noscript>
+    <div id="offlineBanner" class="offline-banner" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <main class="instrument" id="mainContent" role="main">
 
         <!-- ===== NAGŁÓWEK ===== -->
         <div class="header">
@@ -93,18 +100,18 @@
 
             <!-- Setpoint -->
             <div class="form-group">
-                <span class="label">Setpoint <span class="unit">(30 – 80 %)</span></span>
+                <label class="label" for="setpoint">Setpoint <span class="unit">(30 – 80 %)</span></label>
                 <div class="form-row">
-                    <input type="number" id="setpoint" min="30" max="80" step="1" value="55" />
+                    <input type="number" id="setpoint" min="30" max="80" step="1" value="55" inputmode="numeric" aria-label="Setpoint wilgotności" />
                     <span class="hint">%</span>
                 </div>
             </div>
 
             <!-- Histereza -->
             <div class="form-group">
-                <span class="label">Histereza <span class="unit">(1 – 20 %)</span></span>
+                <label class="label" for="hysteresis">Histereza <span class="unit">(1 – 20 %)</span></label>
                 <div class="form-row">
-                    <input type="number" id="hysteresis" min="1" max="20" step="1" value="5" />
+                    <input type="number" id="hysteresis" min="1" max="20" step="1" value="5" inputmode="numeric" aria-label="Histereza wilgotności" />
                     <span class="hint">%</span>
                 </div>
             </div>
@@ -112,17 +119,17 @@
             <!-- Alarmy -->
             <div class="hum-range">
                 <div class="form-group">
-                    <span class="label">Alarm max <span class="unit">(60 – 90 %)</span></span>
+                    <label class="label" for="alarmMax">Alarm max <span class="unit">(60 – 90 %)</span></label>
                     <div class="form-row">
-                        <input type="number" id="alarmMax" min="60" max="90" step="1" value="75" />
+                        <input type="number" id="alarmMax" min="60" max="90" step="1" value="75" inputmode="numeric" aria-label="Próg alarmu wilgotności maksymalnej" />
                         <span class="hint">%</span>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <span class="label">Alarm min <span class="unit">(10 – 40 %)</span></span>
+                    <label class="label" for="alarmMin">Alarm min <span class="unit">(10 – 40 %)</span></label>
                     <div class="form-row">
-                        <input type="number" id="alarmMin" min="10" max="40" step="1" value="30" />
+                        <input type="number" id="alarmMin" min="10" max="40" step="1" value="30" inputmode="numeric" aria-label="Próg alarmu wilgotności minimalnej" />
                         <span class="hint">%</span>
                     </div>
                 </div>
@@ -130,27 +137,27 @@
 
             <!-- Kalibracja -->
             <div class="form-group">
-                <span class="label">Kalibracja czujnika <span class="unit">(offset -10.0 – +10.0 %)</span></span>
+                <label class="label" for="calibration">Kalibracja czujnika <span class="unit">(offset -10.0 – +10.0 %)</span></label>
                 <div class="form-row">
-                    <input type="number" id="calibration" min="-10.0" max="10.0" step="0.1" value="0.0" />
+                    <input type="number" id="calibration" min="-10.0" max="10.0" step="0.1" value="0.0" inputmode="decimal" aria-label="Kalibracja czujnika wilgotności" />
                     <span class="hint">%</span>
                 </div>
             </div>
 
             <!-- Czas pracy pompy -->
             <div class="form-group">
-                <span class="label">Czas pracy pompy <span class="unit">(0 = wył., 5 – 60 s)</span></span>
+                <label class="label" for="pumpTime">Czas pracy pompy <span class="unit">(0 = wył., 5 – 60 s)</span></label>
                 <div class="form-row">
-                    <input type="number" id="pumpTime" min="0" max="60" step="1" value="30" />
+                    <input type="number" id="pumpTime" min="0" max="60" step="1" value="30" inputmode="numeric" aria-label="Czas pracy pompy" />
                     <span class="hint">sekund</span>
                 </div>
             </div>
 
             <!-- Interwał sprawdzania wody -->
             <div class="form-group">
-                <span class="label">Interwał sprawdzania wody <span class="unit">(1 – 24 h)</span></span>
+                <label class="label" for="waterInterval">Interwał sprawdzania wody <span class="unit">(1 – 24 h)</span></label>
                 <div class="form-row">
-                    <input type="number" id="waterInterval" min="1" max="24" step="1" value="12" />
+                    <input type="number" id="waterInterval" min="1" max="24" step="1" value="12" inputmode="numeric" aria-label="Interwał sprawdzania wody" />
                     <span class="hint">godzin</span>
                 </div>
             </div>
@@ -170,16 +177,22 @@
         </form>
 
         <!-- ===== STATUS BAR ===== -->
-        <div class="status-bar">
+        <div class="status-bar" role="status" aria-live="polite" aria-atomic="true">
             <span class="msg" id="statusMsg">Gotowy</span>
             <span class="ws-detail" id="wsDetail"></span>
         </div>
 
-    </div>
+    </main>
 
     <!-- ===== SKRYPTY ===== -->
-    <script src="/js/common.js"></script>
-    <script src="/js/pages/humidity.js"></script>
+    <script src="ws-utils.js"></script>
+<script src="js/common.js"></script>
+    <script src="js/pages/humidity.js"></script>
 
 </body>
 </html>
+
+
+
+
+

@@ -1,4 +1,4 @@
-(function() {
+﻿(function() {
     'use strict';
 
     const ink = window.Inkubator;
@@ -12,9 +12,19 @@
     // ============================================================
     ink.onWsEvent(function(type, ws, data) {
         if (type === 'open') {
-            ink.setStatus('Połączono', 'ok');
+            ink.setStatus('Połączono z ESP', 'ok');
             // Opcjonalnie: pobierz jakieś dane
             // ink.wsSend('carregarConfiguracao');
+            return;
+        }
+
+        if (type === 'close') {
+            ink.setStatus('Rozłączono z ESP', 'err');
+            return;
+        }
+
+        if (type === 'error') {
+            ink.setStatus('Błąd połączenia z ESP', 'err');
             return;
         }
 
@@ -43,3 +53,5 @@
     });
 
 })();
+
+

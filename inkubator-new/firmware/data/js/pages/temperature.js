@@ -1,4 +1,4 @@
-(function() {
+﻿(function() {
     'use strict';
 
     const ink = window.Inkubator;
@@ -23,6 +23,25 @@
     const clearMinMaxBtn = document.getElementById('clearMinMaxBtn');
     const resetBtn = document.getElementById('resetBtn');
     const backBtn = document.getElementById('backBtn');
+
+    const requiredElements = [
+        setpointEl,
+        hysteresisEl,
+        alarmMaxEl,
+        alarmMinEl,
+        calibrationEl,
+        controlModeEl,
+        fanDelayEl,
+        saveBtn,
+        clearMinMaxBtn,
+        resetBtn,
+        backBtn
+    ];
+
+    if (requiredElements.some(function(el) { return !el; })) {
+        console.error('[temperature.js] Brak wymaganych elementow DOM');
+        return;
+    }
 
     // ============================================================
     //  FUNKCJE POMOCNICZE
@@ -52,28 +71,46 @@
     function validateConfig(cfg) {
         if (cfg.setpoint < 36 || cfg.setpoint > 39) {
             ink.setStatus('Setpoint poza zakresem 36–39°C', 'err');
+            setpointEl.setAttribute('aria-invalid', 'true');
+            setpointEl.focus();
             return false;
         }
+        setpointEl.removeAttribute('aria-invalid');
         if (cfg.hysteresis < 0.2 || cfg.hysteresis > 1.0) {
             ink.setStatus('Histereza poza zakresem 0.2–1.0°C', 'err');
+            hysteresisEl.setAttribute('aria-invalid', 'true');
+            hysteresisEl.focus();
             return false;
         }
+        hysteresisEl.removeAttribute('aria-invalid');
         if (cfg.alarmMax <= cfg.setpoint + 1) {
             ink.setStatus('Alarm max musi być > setpoint + 1°C', 'err');
+            alarmMaxEl.setAttribute('aria-invalid', 'true');
+            alarmMaxEl.focus();
             return false;
         }
+        alarmMaxEl.removeAttribute('aria-invalid');
         if (cfg.alarmMin >= cfg.setpoint - cfg.hysteresis - 1) {
             ink.setStatus('Alarm min musi być < setpoint – histereza – 1°C', 'err');
+            alarmMinEl.setAttribute('aria-invalid', 'true');
+            alarmMinEl.focus();
             return false;
         }
+        alarmMinEl.removeAttribute('aria-invalid');
         if (cfg.calibration < -5 || cfg.calibration > 5) {
             ink.setStatus('Kalibracja poza zakresem -5..+5°C', 'err');
+            calibrationEl.setAttribute('aria-invalid', 'true');
+            calibrationEl.focus();
             return false;
         }
+        calibrationEl.removeAttribute('aria-invalid');
         if (cfg.fanDelay < 0 || cfg.fanDelay > 15) {
             ink.setStatus('Opóźnienie wentylatora 0–15s', 'err');
+            fanDelayEl.setAttribute('aria-invalid', 'true');
+            fanDelayEl.focus();
             return false;
         }
+        fanDelayEl.removeAttribute('aria-invalid');
         return true;
     }
 
@@ -243,7 +280,7 @@
         ink.wsSend('mode:' + cfg.controlMode);
         ink.wsSend('salvarVentilador:' + cfg.fanDelay);
 
-        ink.setStatus('Wysłano ustawienia', 'ok');
+        ink.setStatus('Wysłano ustawienia temperatury', 'info');
     }
 
     function clearMinMax() {
@@ -270,7 +307,7 @@
     }
 
     function goBack() {
-        window.location.href = '/';
+        window.location.href = 'index.html';
     }
 
     // ============================================================
@@ -297,7 +334,12 @@
             ink.wsSend('carregarConfiguracao');
         }
 
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') goBack();
+        });
+
         console.log('[temperature.js] Zainicjalizowano');
     });
 
 })();
+

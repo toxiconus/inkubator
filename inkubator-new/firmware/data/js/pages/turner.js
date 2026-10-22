@@ -1,4 +1,4 @@
-(function() {
+﻿(function() {
     'use strict';
 
     const ink = window.Inkubator;
@@ -33,6 +33,29 @@
     const saveBtn = document.getElementById('saveBtn');
     const refreshBtn = document.getElementById('refreshBtn');
     const backBtn = document.getElementById('backBtn');
+
+    const requiredElements = [
+        mode1,
+        workTime1,
+        restTime1,
+        pwm1,
+        mode2,
+        workTime2,
+        restTime2,
+        pwm2,
+        testTray,
+        testStartBtn,
+        testStopBtn,
+        timerDisplay,
+        saveBtn,
+        refreshBtn,
+        backBtn
+    ];
+
+    if (requiredElements.some(function(el) { return !el; })) {
+        console.error('[turner.js] Brak wymaganych elementow DOM');
+        return;
+    }
 
     // ============================================================
     //  STAN TESTU
@@ -71,16 +94,31 @@
     function validateConfig(cfg) {
         if (cfg.work1 < 10 || cfg.work1 > 60 || cfg.work2 < 10 || cfg.work2 > 60) {
             ink.setStatus('Czas pracy musi być 10–60s', 'err');
+            const target = (cfg.work1 < 10 || cfg.work1 > 60) ? workTime1 : workTime2;
+            target.setAttribute('aria-invalid', 'true');
+            target.focus();
             return false;
         }
+        workTime1.removeAttribute('aria-invalid');
+        workTime2.removeAttribute('aria-invalid');
         if (cfg.rest1 < 1 || cfg.rest1 > 4 || cfg.rest2 < 1 || cfg.rest2 > 4) {
             ink.setStatus('Czas przerwy musi być 1–4h', 'err');
+            const target = (cfg.rest1 < 1 || cfg.rest1 > 4) ? restTime1 : restTime2;
+            target.setAttribute('aria-invalid', 'true');
+            target.focus();
             return false;
         }
+        restTime1.removeAttribute('aria-invalid');
+        restTime2.removeAttribute('aria-invalid');
         if (cfg.pwm1 < 0 || cfg.pwm1 > 255 || cfg.pwm2 < 0 || cfg.pwm2 > 255) {
             ink.setStatus('PWM musi być 0–255', 'err');
+            const target = (cfg.pwm1 < 0 || cfg.pwm1 > 255) ? pwm1 : pwm2;
+            target.setAttribute('aria-invalid', 'true');
+            target.focus();
             return false;
         }
+        pwm1.removeAttribute('aria-invalid');
+        pwm2.removeAttribute('aria-invalid');
         return true;
     }
 
@@ -209,11 +247,11 @@
         ink.wsSend('setTurnerRestTime1:' + cfg.rest2);
         ink.wsSend('setTurnerPwm1:' + cfg.pwm2);
 
-        ink.setStatus('Wysłano ustawienia obrotu', 'ok');
+        ink.setStatus('Wysłano ustawienia obrotu', 'info');
     }
 
     function refreshConfig() {
-        ink.setStatus('Odświeżanie...', 'info');
+        ink.setStatus('Odświeżanie konfiguracji obrotu...', 'info');
         ink.wsSend('getTurnerConfig');
     }
 
@@ -263,7 +301,7 @@
     }
 
     function goBack() {
-        window.location.href = '/';
+        window.location.href = 'index.html';
     }
 
     // ============================================================
@@ -296,6 +334,10 @@
         updateTrayIndicator(1, 'inactive');
         updateTimerDisplay(null);
 
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') goBack();
+        });
+
         console.log('[turner.js] Zainicjalizowano');
     });
 
@@ -308,3 +350,4 @@
     });
 
 })();
+

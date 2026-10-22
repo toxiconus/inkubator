@@ -3,12 +3,19 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ustawienia · Spis</title>
-    <link rel="stylesheet" href="/css/style.css" />
+
+    
+    <meta name="description" content="Panel sterowania inkubatorem: konfiguracja, diagnostyka i monitoring." />
+    <meta name="theme-color" content="#101317" />
+<title>Ustawienia · Spis</title>
+    <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
-    <div class="instrument">
+    <noscript><div class="noscript-banner">Do poprawnego dzialania panelu wymagany jest JavaScript.</div></noscript>
+    <div id="offlineBanner" class="offline-banner" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <main class="instrument" id="mainContent" role="main">
 
         <!-- ===== NAGŁÓWEK ===== -->
         <div class="header">
@@ -22,51 +29,58 @@
         </div>
 
         <!-- ===== SIATKA USTAWIEŃ (BEZ EMOJI) ===== -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <nav aria-label="Kategorie ustawień" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
 
-            <a href="/temperature.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
+            <a href="temperature.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
                 Temperatura
             </a>
-            <a href="/humidity.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
+            <a href="humidity.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
                 Wilgotność
             </a>
-            <a href="/turner.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
+            <a href="turner.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
                 Obrót jaj
             </a>
-            <a href="/incubation.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
+            <a href="incubation.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
                 Inkubacja
             </a>
-            <a href="/alarms.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
+            <a href="alarms.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
                 Alarmy
             </a>
-            <a href="/wifi.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
+            <a href="wifi.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
                 Wi-Fi
             </a>
-            <a href="/various.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
+            <a href="various.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
                 Różne
             </a>
-            <a href="/console.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
+            <a href="console.html" class="btn btn-primary" style="text-align:center;padding:14px 12px;font-size:13px;">
                 Konsola
             </a>
 
-        </div>
+        </nav>
 
         <!-- ===== PRZYCISK POWROTU ===== -->
         <div class="btn-group">
-            <a href="/" class="btn btn-back btn-full">← Wróć do panelu</a>
+            <a href="index.html" class="btn btn-back btn-full">← Wróć do panelu</a>
         </div>
 
         <!-- ===== STATUS BAR ===== -->
-        <div class="status-bar">
+        <div class="status-bar" role="status" aria-live="polite" aria-atomic="true">
             <span class="msg" id="statusMsg">Gotowy</span>
             <span class="ws-detail" id="wsDetail"></span>
         </div>
 
-    </div>
+    </main>
 
     <!-- ===== SKRYPTY ===== -->
-    <script src="/js/common.js"></script>
-    <script src="/js/pages/ajustes.js"></script>
+    <script src="ws-utils.js"></script>
+<script src="js/common.js"></script>
+    <script src="js/pages/ajustes.js"></script>
 
 </body>
 </html>
+
+
+
+
+
+

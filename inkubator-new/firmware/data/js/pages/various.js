@@ -1,4 +1,4 @@
-(function() {
+﻿(function() {
     'use strict';
 
     const ink = window.Inkubator;
@@ -26,6 +26,25 @@
     const otaProgress = document.getElementById('otaProgress');
     const otaProgressBar = document.getElementById('otaProgressBar');
     const otaProgressText = document.getElementById('otaProgressText');
+
+    const requiredElements = [
+        rtcTime,
+        fwVersion,
+        langSelect,
+        ntpBtn,
+        rtcRefreshBtn,
+        langBtn,
+        otaBtn,
+        otaFile,
+        resetBtn,
+        rebootBtn,
+        backBtn
+    ];
+
+    if (requiredElements.some(function(el) { return !el; })) {
+        console.error('[various.js] Brak wymaganych elementow DOM');
+        return;
+    }
 
     // ============================================================
     //  FUNKCJE POMOCNICZE
@@ -64,6 +83,20 @@
         otaProgressText.textContent = clamped + '%';
     }
 
+    function resolveUpdateUrl() {
+        const query = new URLSearchParams(window.location.search);
+        const queryHost = query.get('espHost');
+        const savedHost = ink.getWsHost ? ink.getWsHost() : null;
+        const runtimeHost = window.location.hostname || window.location.host;
+        const host = queryHost || savedHost || runtimeHost;
+
+        if (!host) return '/update';
+
+        let protocol = window.location.protocol;
+        if (!protocol || protocol === 'file:') protocol = 'http:';
+        return protocol + '//' + host + '/update';
+    }
+
     // ============================================================
     //  OBSŁUGA WEBSOCKET
     // ============================================================
@@ -73,6 +106,16 @@
             ws.send('carregarRTC');
             ws.send('versaoFirmware');
             ws.send('carregarIdioma');
+            return;
+        }
+
+        if (type === 'close') {
+            ink.setStatus('Rozłączono z ESP', 'err');
+            return;
+        }
+
+        if (type === 'error') {
+            ink.setStatus('Błąd połączenia z ESP', 'err');
             return;
         }
 
@@ -155,14 +198,24 @@
     function doOTA() {
         if (!otaFile || !otaFile.files || otaFile.files.length === 0) {
             ink.setStatus('Wybierz plik .bin', 'err');
+            if (otaFile) {
+                otaFile.setAttribute('aria-invalid', 'true');
+                otaFile.focus();
+            }
             return;
         }
+        if (otaFile) otaFile.removeAttribute('aria-invalid');
 
         const file = otaFile.files[0];
         if (!file.name.endsWith('.bin')) {
             ink.setStatus('Wybierz plik .bin', 'err');
+            if (otaFile) {
+                otaFile.setAttribute('aria-invalid', 'true');
+                otaFile.focus();
+            }
             return;
         }
+        if (otaFile) otaFile.removeAttribute('aria-invalid');
 
         const formData = new FormData();
         formData.append('update', file);
@@ -171,7 +224,7 @@
         ink.setStatus('Rozpoczynam OTA...', 'info');
 
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', '/update', true);
+        xhr.open('POST', resolveUpdateUrl(), true);
 
         xhr.upload.onprogress = function(e) {
             if (e.lengthComputable) {
@@ -215,7 +268,7 @@
     }
 
     function goBack() {
-        window.location.href = '/';
+        window.location.href = 'index.html';
     }
 
     // ============================================================
@@ -237,6 +290,21 @@
             ink.wsSend('carregarIdioma');
         }
 
+        if (langSelect) {
+            langSelect.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveLanguage();
+                }
+            });
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                goBack();
+            }
+        });
+
         // Ukryj pasek postępu OTA na start
         updateOtaProgress(null);
 
@@ -244,3 +312,4 @@
     });
 
 })();
+

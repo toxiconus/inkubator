@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analiza lęgów · Porównanie v2.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            background: linear-gradient(135deg, #0a0c0e 0%, #0f1117 100%);
+            font-family: 'Courier New', 'IBM Plex Mono', monospace;
+            font-size: 16px;
+            color: #f0f6fc;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+        }
+        .instrument {
+            width: 100%;
+            max-width: 1600px;
+            background: #0c0e12;
+            border: 1px solid #1e2228;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+            max-height: 95vh;
+            overflow-y: auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #1a1e24;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: #ccdce8;
+            text-transform: uppercase;
+        }
+        .header-status {
+            font-size: 12px;
+            color: #5a6a7a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-status .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #2a3240;
+            transition: background 0.4s ease;
+        }
+        .header-status .dot.online {
+            background: #30c060;
+            box-shadow: 0 0 10px rgba(48, 192, 96, 0.4);
+        }
+        .header-status .dot.offline {
+            background: #e05050;
+            box-shadow: 0 0 10px rgba(224, 80, 80, 0.4);
+        }
+
+        /* ===== PANEL KONFIGURACJI ===== */
+        .config-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 20px;
+            padding: 12px 16px;
+            background: rgba(20, 24, 32, 0.6);
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+        .config-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .config-group label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #8a9aa8;
+        }
+        .config-group select,
+        .config-group input[type="number"],
+        .config-group input[type="range"] {
+            background: #161d24;
+            border: 1px solid #2d3744;
+            border-radius: 4px;
+            color: #e6eef8;
+            padding: 5px 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            outline: none;
+        }
+        .config-group select:focus,
+        .config-group input:focus {
+            border-color: #5a8a7a;
+            box-shadow: 0 0 8px rgba(90, 170, 122, 0.3);
+        }
+        .config-group input[type="number"] {
+            width: 50px;
+        }
+        .config-group input[type="range"] {
+            width: 140px;
+            padding: 0;
+            accent-color: #5a8a7a;
+        }
+        .config-group .day-display {
+            font-size: 16px;
+            font-weight: 700;
+            color: #70d070;
+            min-width: 45px;
+            text-align: center;
+        }
+
+        .sim-label {
+            font-weight: 700;
+            font-size: 11px;
+            padding: 3px 12px;
+            border-radius: 12px;
+        }
+        .sim-label.sim1 {
+            background: rgba(57, 170, 255, 0.25);
+            color: #4ab0ff;
+            border: 1px solid rgba(57, 170, 255, 0.4);
+        }
+        .sim-label.sim2 {
+            background: rgba(255, 100, 100, 0.25);
+            color: #ff6a6a;
+            border: 1px solid rgba(255, 100, 100, 0.4);
+        }
+
+        .btn {
+            padding: 6px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            border: 1px solid #2a3240;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.04);
+            color: #8a9aa8;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Courier New', monospace;
+        }
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #b0c8d8;
+            border-color: #3a4250;
+        }
+        .btn-primary {
+            border-color: #3a6a5a;
+            color: #5a9a8a;
+        }
+        .btn-primary:hover {
+            background: rgba(90, 170, 122, 0.1);
+            border-color: #5a8a7a;
+            color: #70d070;
+        }
+
+        /* ===== WYKRESY ===== */
+        .chart-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .chart-box {
+            background: rgba(12, 14, 18, 0.9);
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            padding: 8px 12px;
+        }
+        .chart-box .chart-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #5a6a7a;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            letter-spacing: 0.06em;
+        }
+        .chart-box canvas {
+            width: 100%;
+            height: 240px;
+            display: block;
+            background: transparent;
+            border-radius: 2px;
+        }
+
+        /* ===== TABELA DNI ===== */
+        .info-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .info-card {
+            background: rgba(20, 24, 32, 0.6);
+            border: 1px solid #1a1e24;
+            border-radius: 4px;
+            padding: 10px 12px;
+        }
+        .info-card .info-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #5a6a7a;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid rgba(26, 30, 36, 0.5);
+            padding-bottom: 6px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(26, 30, 36, 0.2);
+        }
+        .info-row .label {
+            color: #7a8a9a;
+        }
+        .info-row .value {
+            color: #b0c8d8;
+            font-weight: 600;
+        }
+        .info-row .value.critical {
+            color: #ef4444;
+            font-weight: 700;
+        }
+        .info-row .value.warning {
+            color: #f97316;
+        }
+        .info-row .value.ok {
+            color: #70d070;
+        }
+
+        .alarm-box {
+            margin-top: 6px;
+            padding: 8px 10px;
+            border-radius: 3px;
+            background: rgba(224, 80, 80, 0.1);
+            border: 1px solid rgba(224, 80, 80, 0.2);
+            color: #e05050;
+            font-size: 11px;
+            min-height: 24px;
+            display: flex;
+            align-items: center;
+        }
+        .alarm-box.ok {
+            background: rgba(48, 192, 96, 0.08);
+            border-color: rgba(48, 192, 96, 0.2);
+            color: #70d070;
+        }
+        .alarm-box.warning {
+            background: rgba(249, 115, 22, 0.08);
+            border-color: rgba(249, 115, 22, 0.2);
+            color: #f97316;
+        }
+
+        /* ===== COMPARISON CARD ===== */
+        .comparison-card {
+            background: rgba(20, 24, 32, 0.6);
+            border: 2px solid rgba(112, 208, 112, 0.3);
+            border-radius: 4px;
+            padding: 10px 12px;
+            grid-column: 1 / -1;
+        }
+        .comparison-card .card-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #70d070;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ===== STATUS BAR ===== */
+        .status-bar {
+            margin-top: 10px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #5a6a7a;
+            background: rgba(20, 24, 32, 0.4);
+            border: 1px solid #1a1e24;
+            min-height: 32px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .status-bar .msg {
+            flex: 1;
+        }
+        .status-bar .msg.ok {
+            color: #70d070;
+        }
+        .status-bar .msg.err {
+            color: #e05050;
+        }
+        .status-bar .msg.info {
+            color: #5a9a8a;
+        }
+
+        /* ===== BUTTONS ===== */
+        .button-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 1200px) {
+            .chart-container, .info-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 600px) {
+            .instrument {
+                padding: 10px;
+            }
+            .header-title {
+                font-size: 16px;
+            }
+            .config-group input[type="range"] {
+                width: 100px;
+            }
+            .chart-box canvas {
+                height: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="instrument">
+
+        <!-- ===== NAGŁÓWEK ===== -->
+        <div class="header">
+            <div class="header-title">
+                📊 Analiza lęgów · Porównanie <span style="color: #5a6a7a;">v2.0</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <a href="/" style="color:#9fb3c5;font-size:12px;text-decoration:none;border:1px solid #2a3240;border-radius:6px;padding:6px 10px;white-space:nowrap;">← Panel</a>
+                <span class="header-status">
+                    <span class="dot" id="wsDot"></span>
+                    <span id="wsStatus">Ładowanie...</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- ===== PANEL KONFIGURACJI ===== -->
+        <div class="config-panel">
+            <div class="config-group">
+                <span class="sim-label sim1">SIM1</span>
+                <label>Gatunek</label>
+                <select id="species1">
+                    <option value="chicken">🐔 Kura (21d)</option>
+                    <option value="duck_indian_runner">🦆 Kaczka Biegus (28d)</option>
+                    <option value="goose">🦢 Gęś (30d)</option>
+                    <option value="quail">🐦 Przepiórka (17d)</option>
+                </select>
+                <label>Offset</label>
+                <input type="number" id="offset1" min="0" max="10" value="0">
+                <span style="color: #5a6a7a;font-size:10px;margin-left:4px;">dni</span>
+            </div>
+
+            <div class="config-group">
+                <span class="sim-label sim2">SIM2</span>
+                <label>Gatunek</label>
+                <select id="species2">
+                    <option value="chicken">🐔 Kura (21d)</option>
+                    <option value="duck_indian_runner" selected>🦆 Kaczka Biegus (28d)</option>
+                    <option value="goose">🦢 Gęś (30d)</option>
+                    <option value="quail">🐦 Przepiórka (17d)</option>
+                </select>
+                <label>Offset</label>
+                <input type="number" id="offset2" min="0" max="10" value="5">
+                <span style="color: #5a6a7a;font-size:10px;margin-left:4px;">dni</span>
+            </div>
+
+            <div class="config-group" style="flex: 1; min-width: 250px;">
+                <label>Dzień</label>
+                <input type="range" id="daySlider" min="1" max="30" value="10">
+                <span class="day-display" id="dayDisplay">10</span>
+                <button class="btn btn-primary" id="updateBtn">⟳ Aktualizuj</button>
+            </div>
+        </div>
+
+        <!-- ===== WYKRESY ===== -->
+        <div class="chart-container">
+            <div class="chart-box">
+                <div class="chart-title">
+                    <span>Temperatura powłoki (°C)</span>
+                    <span id="tempLegend" style="font-weight:400;color:#5a6a7a;font-size:9px;">SIM1: -- | SIM2: --</span>
+                </div>
+                <canvas id="tempChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">
+                    <span>Wilgotność (%)</span>
+                    <span id="humLegend" style="font-weight:400;color:#5a6a7a;font-size:9px;">SIM1: -- | SIM2: --</span>
+                </div>
+                <canvas id="humChart"></canvas>
+            </div>
+        </div>
+
+        <!-- ===== INFORMACJE O DNIU ===== -->
+        <div class="info-panel">
+            <div class="info-card">
+                <div class="info-title"><span class="sim-label sim1">SIM1</span> <span id="info1Name">Kura</span></div>
+                <div class="info-row"><span class="label">Dzień</span><span class="value" id="info1Day">1/21</span></div>
+                <div class="info-row"><span class="label">Temp. SET</span><span class="value" id="info1Temp">37.80°C</span></div>
+                <div class="info-row"><span class="label">Temp. zakres</span><span class="value" id="info1TempRange" style="font-size:10px;">±0.3°C</span></div>
+                <div class="info-row"><span class="label">Wilgotność SET</span><span class="value" id="info1Hum">50%</span></div>
+                <div class="info-row"><span class="label">RH zakres</span><span class="value" id="info1HumRange" style="font-size:10px;">40-60%</span></div>
+                <div class="info-row"><span class="label">Wrażliwość</span><span class="value" id="info1Sens">KRYTYCZNA</span></div>
+                <div class="info-row"><span class="label">Obracanie</span><span class="value" id="info1Turn">✓ TAK</span></div>
+                <div class="alarm-box ok" id="alarm1">✅ Brak alarmów</div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-title"><span class="sim-label sim2">SIM2</span> <span id="info2Name">Kaczka</span></div>
+                <div class="info-row"><span class="label">Dzień</span><span class="value" id="info2Day">1/28</span></div>
+                <div class="info-row"><span class="label">Temp. SET</span><span class="value" id="info2Temp">37.80°C</span></div>
+                <div class="info-row"><span class="label">Temp. zakres</span><span class="value" id="info2TempRange" style="font-size:10px;">±0.3°C</span></div>
+                <div class="info-row"><span class="label">Wilgotność SET</span><span class="value" id="info2Hum">55%</span></div>
+                <div class="info-row"><span class="label">RH zakres</span><span class="value" id="info2HumRange" style="font-size:10px;">50-62%</span></div>
+                <div class="info-row"><span class="label">Wrażliwość</span><span class="value" id="info2Sens">KRYTYCZNA</span></div>
+                <div class="info-row"><span class="label">Obracanie</span><span class="value" id="info2Turn">✓ TAK</span></div>
+                <div class="alarm-box ok" id="alarm2">✅ Brak alarmów</div>
+            </div>
+
+            <div class="comparison-card">
+                <div class="card-title">🟢 Kompromis (część wspólna)</div>
+                <div class="info-row"><span class="label">Zakres temp.</span><span class="value" id="compTemp">--°C do --°C</span></div>
+                <div class="info-row"><span class="label">Zakres wilg.</span><span class="value" id="compHum">--%  do --%</span></div>
+                <div class="info-row"><span class="label">Kompatybilność</span><span class="value" id="compStatus">--</span></div>
+                <div style="margin-top:4px;font-size:10px;color:#8a9aa8;" id="compDesc">Wyznacz zakresy wspólne dla obu gatunków na wybranym dniu</div>
+            </div>
+        </div>
+
+        <!-- ===== PRZYCISKI ===== -->
+        <div class="button-group">
+            <button class="btn btn-primary" id="exportBtn">💾 Eksportuj CSV</button>
+            <button class="btn btn-primary" id="resetBtn">↺ Reset</button>
+        </div>
+
+        <!-- ===== STATUS ===== -->
+        <div class="status-bar">
+            <span class="msg ok" id="statusMsg">✓ Gotowy</span>
+            <span style="font-size:10px;color:#2a3240;" id="wsDetail">v2.0 • Pełne profile</span>
+        </div>
+
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================================
+            //  PEŁNE FALLBACK PROFILES (z JSON v3.0)
+            // ============================================================
+            const FALLBACK_PROFILES = {
+                chicken: {
+                    common_name: 'Kura',
+                    incubation_days: 21,
+                    day_by_day: [
+                        { day: 1, shell_temp: 37.8, humidity_set: 50, humidity_range: [40, 60], turning: true, sensitivity: 'CRITICAL', notes: 'Początek inkubacji' },
+                        { day: 2, shell_temp: 37.8, humidity_set: 50, humidity_range: [40, 60], turning: true, sensitivity: 'CRITICAL', notes: 'Młody embrion' },
+                        { day: 3, shell_temp: 37.8, humidity_set: 50, humidity_range: [40, 60], turning: true, sensitivity: 'CRITICAL', notes: 'Serce bije' },
+                        { day: 4, shell_temp: 37.8, humidity_set: 50, humidity_range: [40, 60], turning: true, sensitivity: 'HIGH', notes: 'Żyłki' },
+                        { day: 5, shell_temp: 37.8, humidity_set: 50, humidity_range: [40, 60], turning: true, sensitivity: 'HIGH', notes: 'Krótkie otwarcia OK' },
+                        { day: 6, shell_temp: 37.8, humidity_set: 50, humidity_range: [40, 60], turning: true, sensitivity: 'MEDIUM', notes: 'Embrion rośnie' },
+                        { day: 7, shell_temp: 37.8, humidity_set: 50, humidity_range: [40, 60], turning: true, sensitivity: 'MEDIUM', notes: 'Punkt przegięcia' },
+                        { day: 8, shell_temp: 37.8, humidity_set: 50, humidity_range: [40, 60], turning: true, sensitivity: 'MEDIUM', notes: 'Embrion dominuje' },
+                        { day: 9, shell_temp: 37.8, humidity_set: 50, humidity_range: [40, 60], turning: true, sensitivity: 'MEDIUM', notes: 'Widoczny' },
+                        { day: 10, shell_temp: 37.8, humidity_set: 50, humidity_range: [40, 60], turning: true, sensitivity: 'MEDIUM', notes: 'Kandle' },
+                        { day: 11, shell_temp: 37.8, humidity_set: 50, humidity_range: [40, 60], turning: true, sensitivity: 'MEDIUM', notes: 'Stabilna faza' },
+                        { day: 12, shell_temp: 37.8, humidity_set: 50, humidity_range: [40, 60], turning: true, sensitivity: 'MEDIUM', notes: 'Ostatni SET' },
+                        { day: 13, shell_temp: 37.9, humidity_set: 50, humidity_range: [40, 62], turning: true, sensitivity: 'MEDIUM', notes: '+0.1°C wzrost' },
+                        { day: 14, shell_temp: 38.0, humidity_set: 50, humidity_range: [40, 62], turning: true, sensitivity: 'MEDIUM', notes: '+0.2°C' },
+                        { day: 15, shell_temp: 38.1, humidity_set: 50, humidity_range: [40, 63], turning: true, sensitivity: 'HIGH', notes: '+0.3°C' },
+                        { day: 16, shell_temp: 38.2, humidity_set: 50, humidity_range: [40, 64], turning: true, sensitivity: 'CRITICAL', notes: 'NIE OTWIERAJ' },
+                        { day: 17, shell_temp: 38.3, humidity_set: 50, humidity_range: [40, 65], turning: true, sensitivity: 'CRITICAL', notes: '+0.5°C' },
+                        { day: 18, shell_temp: 38.4, humidity_set: 50, humidity_range: [40, 65], turning: true, sensitivity: 'CRITICAL', notes: 'TRANSFER' },
+                        { day: 19, shell_temp: 37.5, humidity_set: 72, humidity_range: [65, 80], turning: false, sensitivity: 'HIGH', notes: 'LOCKDOWN' },
+                        { day: 20, shell_temp: 37.5, humidity_set: 72, humidity_range: [65, 80], turning: false, sensitivity: 'HIGH', notes: 'Drożdżenie' },
+                        { day: 21, shell_temp: 37.5, humidity_set: 72, humidity_range: [65, 80], turning: false, sensitivity: 'CRITICAL', notes: 'HATCH DAY' }
+                    ]
+                },
+                duck_indian_runner: {
+                    common_name: 'Kaczka Biegus',
+                    incubation_days: 28,
+                    day_by_day: [
+                        { day: 1, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'CRITICAL', notes: 'Start' },
+                        { day: 2, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'CRITICAL', notes: 'Młody' },
+                        { day: 3, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'CRITICAL', notes: 'Serce' },
+                        { day: 4, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'HIGH', notes: 'Żyłki' },
+                        { day: 5, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'HIGH', notes: 'OK' },
+                        { day: 6, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'MEDIUM', notes: 'Rośnie' },
+                        { day: 7, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'MEDIUM', notes: 'Punkt' },
+                        { day: 8, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'MEDIUM', notes: '--' },
+                        { day: 9, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'MEDIUM', notes: 'Widoczny' },
+                        { day: 10, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'MEDIUM', notes: 'Kandle+mist' },
+                        { day: 11, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'MEDIUM', notes: 'Misting' },
+                        { day: 12, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'MEDIUM', notes: 'SET' },
+                        { day: 13, shell_temp: 37.86, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'MEDIUM', notes: '+0.06' },
+                        { day: 14, shell_temp: 37.92, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'MEDIUM', notes: '+0.12' },
+                        { day: 15, shell_temp: 37.98, humidity_set: 55, humidity_range: [50, 63], turning: true, sensitivity: 'MEDIUM', notes: '+0.18' },
+                        { day: 16, shell_temp: 38.04, humidity_set: 55, humidity_range: [50, 63], turning: true, sensitivity: 'MEDIUM', notes: '+0.24' },
+                        { day: 17, shell_temp: 38.1, humidity_set: 55, humidity_range: [50, 63], turning: true, sensitivity: 'HIGH', notes: '+0.30' },
+                        { day: 18, shell_temp: 38.16, humidity_set: 55, humidity_range: [50, 64], turning: true, sensitivity: 'HIGH', notes: '+0.36' },
+                        { day: 19, shell_temp: 38.22, humidity_set: 55, humidity_range: [50, 64], turning: true, sensitivity: 'HIGH', notes: '+0.42' },
+                        { day: 20, shell_temp: 38.28, humidity_set: 55, humidity_range: [50, 64], turning: true, sensitivity: 'HIGH', notes: '+0.48' },
+                        { day: 21, shell_temp: 38.34, humidity_set: 55, humidity_range: [50, 64], turning: true, sensitivity: 'CRITICAL', notes: '+0.54' },
+                        { day: 22, shell_temp: 38.34, humidity_set: 56, humidity_range: [50, 65], turning: true, sensitivity: 'CRITICAL', notes: 'Stabil' },
+                        { day: 23, shell_temp: 38.4, humidity_set: 57, humidity_range: [50, 65], turning: true, sensitivity: 'CRITICAL', notes: 'Max' },
+                        { day: 24, shell_temp: 38.4, humidity_set: 58, humidity_range: [50, 65], turning: true, sensitivity: 'CRITICAL', notes: 'Ostatni' },
+                        { day: 25, shell_temp: 38.4, humidity_set: 62, humidity_range: [55, 70], turning: false, sensitivity: 'CRITICAL', notes: 'TRANSFER' },
+                        { day: 26, shell_temp: 37.5, humidity_set: 68, humidity_range: [65, 75], turning: false, sensitivity: 'HIGH', notes: 'LOCKDOWN' },
+                        { day: 27, shell_temp: 37.5, humidity_set: 68, humidity_range: [65, 75], turning: false, sensitivity: 'HIGH', notes: 'Drożdż' },
+                        { day: 28, shell_temp: 37.5, humidity_set: 68, humidity_range: [65, 75], turning: false, sensitivity: 'CRITICAL', notes: 'HATCH' }
+                    ]
+                },
+                goose: {
+                    common_name: 'Gęś',
+                    incubation_days: 30,
+                    day_by_day: [
+                        { day: 1, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'CRITICAL', notes: 'Start' },
+                        { day: 2, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'CRITICAL', notes: '--' },
+                        { day: 3, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'CRITICAL', notes: 'Serce' },
+                        { day: 4, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'HIGH', notes: '--' },
+                        { day: 5, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'HIGH', notes: '--' },
+                        { day: 6, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'MEDIUM', notes: '--' },
+                        { day: 7, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'MEDIUM', notes: '--' },
+                        { day: 8, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'MEDIUM', notes: '--' },
+                        { day: 9, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'MEDIUM', notes: '--' },
+                        { day: 10, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'MEDIUM', notes: 'Mist' },
+                        { day: 11, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'MEDIUM', notes: '--' },
+                        { day: 12, shell_temp: 37.8, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'MEDIUM', notes: '--' },
+                        { day: 13, shell_temp: 37.86, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'MEDIUM', notes: '--' },
+                        { day: 14, shell_temp: 37.92, humidity_set: 55, humidity_range: [50, 62], turning: true, sensitivity: 'MEDIUM', notes: '--' },
+                        { day: 15, shell_temp: 37.98, humidity_set: 55, humidity_range: [50, 63], turning: true, sensitivity: 'MEDIUM', notes: '--' },
+                        { day: 16, shell_temp: 38.04, humidity_set: 55, humidity_range: [50, 63], turning: true, sensitivity: 'MEDIUM', notes: '--' },
+                        { day: 17, shell_temp: 38.1, humidity_set: 55, humidity_range: [50, 63], turning: true, sensitivity: 'HIGH', notes: '--' },
+                        { day: 18, shell_temp: 38.16, humidity_set: 55, humidity_range: [50, 64], turning: true, sensitivity: 'HIGH', notes: '--' },
+                        { day: 19, shell_temp: 38.22, humidity_set: 55, humidity_range: [50, 64], turning: true, sensitivity: 'HIGH', notes: '--' },
+                        { day: 20, shell_temp: 38.28, humidity_set: 55, humidity_range: [50, 64], turning: true, sensitivity: 'HIGH', notes: '--' },
+                        { day: 21, shell_temp: 38.34, humidity_set: 55, humidity_range: [50, 64], turning: true, sensitivity: 'CRITICAL', notes: '--' },
+                        { day: 22, shell_temp: 38.34, humidity_set: 56, humidity_range: [50, 65], turning: true, sensitivity: 'CRITICAL', notes: '--' },
+                        { day: 23, shell_temp: 38.4, humidity_set: 57, humidity_range: [50, 65], turning: true, sensitivity: 'CRITICAL', notes: '--' },
+                        { day: 24, shell_temp: 38.4, humidity_set: 58, humidity_range: [50, 65], turning: true, sensitivity: 'CRITICAL', notes: '--' },
+                        { day: 25, shell_temp: 38.4, humidity_set: 60, humidity_range: [55, 68], turning: true, sensitivity: 'CRITICAL', notes: '--' },
+                        { day: 26, shell_temp: 38.4, humidity_set: 62, humidity_range: [55, 70], turning: false, sensitivity: 'CRITICAL', notes: 'TRANSFER' },
+                        { day: 27, shell_temp: 37.5, humidity_set: 68, humidity_range: [65, 75], turning: false, sensitivity: 'HIGH', notes: 'LOCK' },
+                        { day: 28, shell_temp: 37.5, humidity_set: 68, humidity_range: [65, 75], turning: false, sensitivity: 'HIGH', notes: '--' },
+                        { day: 29, shell_temp: 37.5, humidity_set: 68, humidity_range: [65, 75], turning: false, sensitivity: 'CRITICAL', notes: '--' },
+                        { day: 30, shell_temp: 37.5, humidity_set: 68, humidity_range: [65, 75], turning: false, sensitivity: 'CRITICAL', notes: 'HATCH' }
+                    ]
+                },
+                quail: {
+                    common_name: 'Przepiórka',
+                    incubation_days: 17,
+                    day_by_day: [
+                        { day: 1, shell_temp: 37.8, humidity_set: 50, humidity_range: [45, 60], turning: true, sensitivity: 'CRITICAL', notes: 'Start' },
+                        { day: 2, shell_temp: 37.8, humidity_set: 50, humidity_range: [45, 60], turning: true, sensitivity: 'CRITICAL', notes: '--' },
+                        { day: 3, shell_temp: 37.8, humidity_set: 50, humidity_range: [45, 60], turning: true, sensitivity: 'HIGH', notes: '--' },
+                        { day: 4, shell_temp: 37.8, humidity_set: 50, humidity_range: [45, 60], turning: true, sensitivity: 'HIGH', notes: '--' },
+                        { day: 5, shell_temp: 37.8, humidity_set: 50, humidity_range: [45, 60], turning: true, sensitivity: 'MEDIUM', notes: '--' },
+                        { day: 6, shell_temp: 37.8, humidity_set: 50, humidity_range: [45, 60], turning: true, sensitivity: 'MEDIUM', notes: '--' },
+                        { day: 7, shell_temp: 37.8, humidity_set: 50, humidity_range: [45, 60], turning: true, sensitivity: 'MEDIUM', notes: 'Połowa' },
+                        { day: 8, shell_temp: 37.85, humidity_set: 50, humidity_range: [45, 62], turning: true, sensitivity: 'MEDIUM', notes: '--' },
+                        { day: 9, shell_temp: 37.9, humidity_set: 50, humidity_range: [45, 62], turning: true, sensitivity: 'MEDIUM', notes: '--' },
+                        { day: 10, shell_temp: 37.95, humidity_set: 50, humidity_range: [45, 62], turning: true, sensitivity: 'HIGH', notes: '--' },
+                        { day: 11, shell_temp: 38.0, humidity_set: 50, humidity_range: [45, 63], turning: true, sensitivity: 'HIGH', notes: '--' },
+                        { day: 12, shell_temp: 38.05, humidity_set: 50, humidity_range: [45, 63], turning: true, sensitivity: 'HIGH', notes: '--' },
+                        { day: 13, shell_temp: 38.1, humidity_set: 50, humidity_range: [45, 64], turning: true, sensitivity: 'CRITICAL', notes: '--' },
+                        { day: 14, shell_temp: 38.15, humidity_set: 50, humidity_range: [45, 64], turning: true, sensitivity: 'CRITICAL', notes: '--' },
+                        { day: 15, shell_temp: 38.2, humidity_set: 50, humidity_range: [45, 65], turning: true, sensitivity: 'CRITICAL', notes: '--' },
+                        { day: 16, shell_temp: 37.5, humidity_set: 65, humidity_range: [60, 75], turning: false, sensitivity: 'HIGH', notes: 'TRANSFER' },
+                        { day: 17, shell_temp: 37.5, humidity_set: 65, humidity_range: [60, 75], turning: false, sensitivity: 'CRITICAL', notes: 'HATCH' }
+                    ]
+                }
+            };
+
+            // ============================================================
+            //  GLOBALNE
+            // ============================================================
+            const WS_URL = (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + window.location.hostname + ':81/';
+            let ws = null, wsConnected = false;
+            let allProfiles = { ...FALLBACK_PROFILES };
+            let currentDay = 10;
+            let sim1 = { species: 'chicken', offset: 0, profile: null, color: 'rgba(57,170,255,' };
+            let sim2 = { species: 'duck_indian_runner', offset: 5, profile: null, color: 'rgba(255,100,100,' };
+
+            const sensitivity_color = {
+                'CRITICAL': '#ef4444',
+                'HIGH': '#f97316',
+                'MEDIUM': '#eab308'
+            };
+
+            const sensitivity_label = {
+                'CRITICAL': 'KRYTYCZNA',
+                'HIGH': 'WRAŻLIWA',
+                'MEDIUM': 'NORMALNA'
+            };
+
+            // ============================================================
+            //  DOM ELEMENTS
+            // ============================================================
+            const species1 = document.getElementById('species1');
+            const species2 = document.getElementById('species2');
+            const offset1 = document.getElementById('offset1');
+            const offset2 = document.getElementById('offset2');
+            const daySlider = document.getElementById('daySlider');
+            const dayDisplay = document.getElementById('dayDisplay');
+            const updateBtn = document.getElementById('updateBtn');
+            const exportBtn = document.getElementById('exportBtn');
+            const resetBtn = document.getElementById('resetBtn');
+
+            const tempCanvas = document.getElementById('tempChart');
+            const humCanvas = document.getElementById('humChart');
+            const tempCtx = tempCanvas.getContext('2d');
+            const humCtx = humCanvas.getContext('2d');
+
+            const wsDot = document.getElementById('wsDot');
+            const wsStatus = document.getElementById('wsStatus');
+            const statusMsg = document.getElementById('statusMsg');
+
+            // ============================================================
+            //  FUNKCJE
+            // ============================================================
+            function getToleranceForSensitivity(sensitivity, metric) {
+                if (metric === 'temp') {
+                    return {
+                        'CRITICAL': 0.3,
+                        'HIGH': 0.6,
+                        'MEDIUM': 1.0
+                    }[sensitivity] || 1.0;
+                } else { // humidity
+                    return {
+                        'CRITICAL': 3,
+                        'HIGH': 5,
+                        'MEDIUM': 8
+                    }[sensitivity] || 8;
+                }
+            }
+
+            function getDayData(profile, dayNumber) {
+                if (!profile) return null;
+                const found = profile.day_by_day.find(d => d.day === dayNumber);
+                return found || null;
+            }
+
+            function updateMaxDay() {
+                const maxDays = Math.max(
+                    getProfile(sim1.species).incubation_days,
+                    getProfile(sim2.species).incubation_days
+                );
+                daySlider.max = maxDays;
+            }
+
+            function getProfile(speciesId) {
+                return allProfiles[speciesId] || FALLBACK_PROFILES[speciesId];
+            }
+
+            function populateSelects() {
+                // selects już mają opcje w HTML
+            }
+
+            function updateAll() {
+                sim1.profile = getProfile(sim1.species);
+                sim2.profile = getProfile(sim2.species);
+                sim1.offset = parseInt(offset1.value);
+                sim2.offset = parseInt(offset2.value);
+                
+                updateInfoCards();
+                drawCharts();
+            }
+
+            function updateInfoCards() {
+                updateInfoCard(1);
+                updateInfoCard(2);
+                updateComparisonCard();
+            }
+
+            function updateInfoCard(n) {
+                const sim = n === 1 ? sim1 : sim2;
+                const profile = sim.profile;
+                const displayDay = currentDay - sim.offset;
+
+                const infoPrefix = n === 1 ? 'info1' : 'info2';
+                document.getElementById(infoPrefix + 'Name').textContent = profile.common_name;
+                document.getElementById(infoPrefix + 'Day').textContent = displayDay + '/' + profile.incubation_days;
+
+                const dayData = getDayData(profile, Math.max(1, displayDay));
+                if (!dayData) {
+                    document.getElementById(infoPrefix + 'Temp').textContent = '--';
+                    document.getElementById(infoPrefix + 'Hum').textContent = '--';
+                    return;
+                }
+
+                const tempTol = getToleranceForSensitivity(dayData.sensitivity, 'temp');
+                const humTol = getToleranceForSensitivity(dayData.sensitivity, 'humidity');
+
+                document.getElementById(infoPrefix + 'Temp').textContent = dayData.shell_temp + '°C';
+                document.getElementById(infoPrefix + 'TempRange').textContent = '±' + tempTol + '°C';
+                document.getElementById(infoPrefix + 'Hum').textContent = dayData.humidity_set + '%';
+                document.getElementById(infoPrefix + 'HumRange').textContent = dayData.humidity_range.join('-') + '%';
+                document.getElementById(infoPrefix + 'Sens').innerHTML = '<span style="color:' + sensitivity_color[dayData.sensitivity] + '">' + sensitivity_label[dayData.sensitivity] + '</span>';
+                document.getElementById(infoPrefix + 'Turn').textContent = dayData.turning ? '✓ TAK' : '✗ NIE';
+
+                // Alarm
+                const alarmEl = document.getElementById('alarm' + n);
+                alarmEl.textContent = '✅ Wszystko OK';
+                alarmEl.className = 'alarm-box ok';
+            }
+
+            function updateComparisonCard() {
+                const d1 = getDayData(sim1.profile, Math.max(1, currentDay - sim1.offset));
+                const d2 = getDayData(sim2.profile, Math.max(1, currentDay - sim2.offset));
+
+                if (!d1 || !d2) {
+                    document.getElementById('compTemp').textContent = '-- do --°C';
+                    document.getElementById('compHum').textContent = '-- do --%';
+                    document.getElementById('compStatus').textContent = 'Brak danych';
+                    return;
+                }
+
+                const tMin = Math.max(d1.shell_temp - getToleranceForSensitivity(d1.sensitivity, 'temp'),
+                                     d2.shell_temp - getToleranceForSensitivity(d2.sensitivity, 'temp'));
+                const tMax = Math.min(d1.shell_temp + getToleranceForSensitivity(d1.sensitivity, 'temp'),
+                                     d2.shell_temp + getToleranceForSensitivity(d2.sensitivity, 'temp'));
+
+                const hMin = Math.max(d1.humidity_set - getToleranceForSensitivity(d1.sensitivity, 'humidity'),
+                                     d2.humidity_set - getToleranceForSensitivity(d2.sensitivity, 'humidity'));
+                const hMax = Math.min(d1.humidity_set + getToleranceForSensitivity(d1.sensitivity, 'humidity'),
+                                     d2.humidity_set + getToleranceForSensitivity(d2.sensitivity, 'humidity'));
+
+                const tempOk = tMin <= tMax;
+                const humOk = hMin <= hMax;
+                const compatible = tempOk && humOk;
+
+                document.getElementById('compTemp').textContent = (tempOk ? tMin.toFixed(1) + ' do ' + tMax.toFixed(1) : '---') + '°C';
+                document.getElementById('compHum').textContent = (humOk ? hMin.toFixed(0) + ' do ' + hMax.toFixed(0) : '---') + '%';
+                document.getElementById('compStatus').innerHTML = compatible ? '<span style="color:#70d070;">✓ KOMPATYBILNE</span>' : '<span style="color:#e05050;">✗ KONFLIKT</span>';
+                document.getElementById('compDesc').textContent = compatible ? 'Oba gatunki mogą być hodowane razem w tych warunkach.' : 'Zakresy warunków się nie pokrywają - rozważ osobne lęgi.';
+            }
+
+            function drawCharts() {
+                // TEMP CHART
+                drawChart(tempCtx, 'temp');
+                // HUM CHART
+                drawChart(humCtx, 'humidity');
+            }
+
+            function drawChart(ctx, metric) {
+                const canvas = ctx.canvas;
+                const w = canvas.offsetWidth;
+                const h = canvas.offsetHeight;
+                canvas.width = w;
+                canvas.height = h;
+
+                const pad = { top: 20, right: 20, bottom: 30, left: 40 };
+                const plotW = w - pad.left - pad.right;
+                const plotH = h - pad.top - pad.bottom;
+
+                const minD = 1;
+                const maxD = Math.max(sim1.profile.incubation_days, sim2.profile.incubation_days);
+
+                const mapX = (day) => pad.left + ((day - minD) / (maxD - minD)) * plotW;
+                
+                let minVal, maxVal;
+                if (metric === 'temp') {
+                    minVal = 36;
+                    maxVal = 39;
+                } else {
+                    minVal = 30;
+                    maxVal = 80;
+                }
+                const mapY = (val) => pad.top + plotH - ((val - minVal) / (maxVal - minVal)) * plotH;
+
+                // Tło
+                ctx.fillStyle = 'rgba(12,14,18,0.5)';
+                ctx.fillRect(0, 0, w, h);
+
+                // Grid
+                ctx.strokeStyle = 'rgba(26,30,36,0.3)';
+                ctx.lineWidth = 0.5;
+                for (let i = minVal; i <= maxVal; i += (metric === 'temp' ? 0.5 : 10)) {
+                    const y = mapY(i);
+                    ctx.beginPath();
+                    ctx.moveTo(pad.left, y);
+                    ctx.lineTo(w - pad.right, y);
+                    ctx.stroke();
+                }
+
+                // Osie
+                ctx.strokeStyle = '#2a3240';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(pad.left, pad.top);
+                ctx.lineTo(pad.left, h - pad.bottom);
+                ctx.lineTo(w - pad.right, h - pad.bottom);
+                ctx.stroke();
+
+                // Labels osi Y
+                ctx.fillStyle = '#5a6a7a';
+                ctx.font = '9px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                for (let i = minVal; i <= maxVal; i += (metric === 'temp' ? 1 : 10)) {
+                    const y = mapY(i);
+                    ctx.fillText(i.toFixed(metric === 'temp' ? 1 : 0), pad.left - 8, y);
+                }
+
+                // Rysuj profile
+                [sim1, sim2].forEach((sim, idx) => {
+                    const profile = sim.profile;
+                    const days = profile.day_by_day || [];
+                    const color = idx === 0 ? 'rgba(57,170,255,' : 'rgba(255,100,100,';
+
+                    days.forEach(dayData => {
+                        const d = dayData.day;
+                        const displayDay = d + sim.offset;
+                        if (displayDay < minD || displayDay > maxD) return;
+
+                        const x = mapX(displayDay);
+                        const val = metric === 'temp' ? dayData.shell_temp : dayData.humidity_set;
+                        if (!val) return;
+
+                        const tol = getToleranceForSensitivity(dayData.sensitivity, metric);
+                        const low = val - tol;
+                        const high = val + tol;
+                        const yLow = mapY(low);
+                        const yHigh = mapY(high);
+                        const height = yLow - yHigh;
+
+                        // Zakres
+                        let alpha;
+                        if (dayData.sensitivity === 'CRITICAL') alpha = '0.4)';
+                        else if (dayData.sensitivity === 'HIGH') alpha = '0.25)';
+                        else alpha = '0.15)';
+
+                        ctx.fillStyle = color + alpha;
+                        ctx.fillRect(x - 2, yHigh, 4, height);
+
+                        // Linia idealna
+                        ctx.strokeStyle = color + '0.9)';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        const yIdeal = mapY(val);
+                        ctx.moveTo(x - 2, yIdeal);
+                        ctx.lineTo(x + 2, yIdeal);
+                        ctx.stroke();
+                    });
+                });
+
+                // Linia bieżącego dnia
+                const xCurrent = mapX(currentDay);
+                ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([2, 3]);
+                ctx.beginPath();
+                ctx.moveTo(xCurrent, pad.top);
+                ctx.lineTo(xCurrent, pad.top + plotH);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Legenda
+                ctx.fillStyle = '#8a9aa8';
+                ctx.font = '8px monospace';
+                ctx.textAlign = 'left';
+                const d1 = getDayData(sim1.profile, Math.max(1, currentDay - sim1.offset));
+                const d2 = getDayData(sim2.profile, Math.max(1, currentDay - sim2.offset));
+                const val1 = d1 ? (metric === 'temp' ? d1.shell_temp : d1.humidity_set) : '--';
+                const val2 = d2 ? (metric === 'temp' ? d2.shell_temp : d2.humidity_set) : '--';
+                const legend = 'SIM1: ' + val1 + (metric === 'temp' ? '°C' : '%') + ' | SIM2: ' + val2 + (metric === 'temp' ? '°C' : '%');
+                const elemId = metric === 'temp' ? 'tempLegend' : 'humLegend';
+                document.getElementById(elemId).textContent = legend;
+            }
+
+            // ============================================================
+            //  EVENTS
+            // ============================================================
+            species1.addEventListener('change', function() {
+                sim1.species = this.value;
+                updateMaxDay();
+                updateAll();
+            });
+            species2.addEventListener('change', function() {
+                sim2.species = this.value;
+                updateMaxDay();
+                updateAll();
+            });
+            offset1.addEventListener('change', updateAll);
+            offset2.addEventListener('change', updateAll);
+            daySlider.addEventListener('input', function() {
+                dayDisplay.textContent = this.value;
+                currentDay = parseInt(this.value);
+                updateAll();
+            });
+            updateBtn.addEventListener('click', updateAll);
+
+            exportBtn.addEventListener('click', function() {
+                let csv = 'Dzień,Kura(Temp),Kura(RH%),Kaczka(Temp),Kaczka(RH%)\n';
+                const maxD = Math.max(sim1.profile.incubation_days, sim2.profile.incubation_days);
+                for (let d = 1; d <= maxD; d++) {
+                    const d1 = getDayData(sim1.profile, d);
+                    const d2 = getDayData(sim2.profile, d);
+                    csv += d + ',' + (d1 ? d1.shell_temp : '--') + ',' + (d1 ? d1.humidity_set : '--') + ',' +
+                           (d2 ? d2.shell_temp : '--') + ',' + (d2 ? d2.humidity_set : '--') + '\n';
+                }
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'analiza_legów_' + new Date().getTime() + '.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                statusMsg.textContent = '✓ Pobrano plik CSV';
+                statusMsg.className = 'msg ok';
+            });
+
+            resetBtn.addEventListener('click', function() {
+                sim1.species = 'chicken';
+                sim2.species = 'duck_indian_runner';
+                offset1.value = 0;
+                offset2.value = 5;
+                daySlider.value = 10;
+                species1.value = 'chicken';
+                species2.value = 'duck_indian_runner';
+                currentDay = 10;
+                dayDisplay.textContent = 10;
+                updateMaxDay();
+                updateAll();
+                statusMsg.textContent = '✓ Reset ustawień';
+                statusMsg.className = 'msg ok';
+            });
+
+            // ============================================================
+            //  INIT
+            // ============================================================
+            document.addEventListener('DOMContentLoaded', function() {
+                populateSelects();
+                setWsStatus(false);
+                updateMaxDay();
+                updateAll();
+                setStatus('✓ Gotowy', 'ok');
+            });
+
+            function setWsStatus(connected) {
+                wsConnected = connected;
+                wsDot.className = 'dot' + (connected ? ' online' : ' offline');
+                wsStatus.textContent = connected ? 'Połączono' : 'Offline';
+            }
+
+            function setStatus(text, type) {
+                statusMsg.textContent = text;
+                statusMsg.className = 'msg' + (type ? ' ' + type : '');
+            }
+
+        })();
+    </script>
+
+</body>
+</html>
