@@ -2593,7 +2593,10 @@
                 phasianus_colchicus: 'PHEASANT', pheasant: 'PHEASANT',
                 meleagris_gallopavo: 'TURKEY', turkey: 'TURKEY',
                 cairina_moschata: 'MUSCOVY', muscovy: 'MUSCOVY',
-                columba_livia_domestica: 'PIGEON', pigeon: 'PIGEON'
+                columba_livia_domestica: 'PIGEON', pigeon: 'PIGEON',
+                lactuca_sativa: 'LETTUCE', lettuce: 'LETTUCE', solanum_lycopersicum: 'TOMATO', tomato: 'TOMATO', capsicum_annuum: 'PEPPER', pepper: 'PEPPER',
+                cucumis_sativus: 'CUCUMBER', cucumber: 'CUCUMBER', ocimum_basilicum: 'BASIL', basil: 'BASIL', raphanus_sativus: 'MICROGREENS', microgreens: 'MICROGREENS',
+                medicago_sativa: 'SPROUTS', sprouts: 'SPROUTS', yogurt: 'YOGURT', tempeh: 'TEMPEH', dough: 'DOUGH', sourdough: 'SOURDOUGH'
             };
 
             function getSpeciesInfo(id) {
@@ -4045,6 +4048,7 @@
                 const t = statusData.control_temp != null ? statusData.control_temp : statusData.temp_chamber;
                 fillGauge('tileTemp', t, rg.t, 1, '°C');
                 fillGauge('tileRh', statusData.humidity, rg.rh, 0, '%');
+                if (statusData.humidity_control === false) { const sb = document.getElementById('tileRhSub'); if (sb) sb.textContent = 'Program nie reguluje wilgotności: dyfuzory są wyłączone.'; }
 
                 // nastawa urządzenia a wartość idealna programu
                 const note = document.getElementById('tileTempNote');
@@ -4095,6 +4099,7 @@
                     } else {
                         rows.push('<b>' + endWord + ':</b> za ' + left + ' ' + plDays(left) + ' (ustaw datę startu, aby zobaczyć termin)');
                     }
+                    if (tray.angle_deg != null) rows.push('Pochylenie tacy: ' + Number(tray.angle_deg).toFixed(0) + '°');
                     if (tray.has_last_rotation) rows.push('Ostatni obrót: dzień ' + tray.last_rotation_day + ', ' + pad2(tray.last_rotation_hour) + ':' + pad2(tray.last_rotation_minute));
                     const now = dayAlerts(info, day).filter(function (a) { return a.level !== 'info'; })
                         .sort(function (a, b) { return (LEVEL_RANK[b.level] || 0) - (LEVEL_RANK[a.level] || 0); })[0];
@@ -4285,7 +4290,9 @@
             // ============================================================
             //  ZASTOSOWANIE PROGRAMU DO TACY: tylko na urządzeniu (po potwierdzeniu) albo symulowane w trybie testowym
             // ============================================================
-            const FIRMWARE_SPECIES = { CHICKEN: 'chicken', TURKEY: 'turkey', GOOSE: 'goose', QUAIL: 'quail', GUINEA: 'guinea_fowl', PHEASANT: 'pheasant' };
+            const FIRMWARE_SPECIES = { CHICKEN: 'chicken', TURKEY: 'turkey', GOOSE: 'goose', QUAIL: 'quail', GUINEA: 'guinea_fowl', PHEASANT: 'pheasant',
+                LETTUCE: 'lettuce', TOMATO: 'tomato', PEPPER: 'pepper', CUCUMBER: 'cucumber', BASIL: 'basil', MICROGREENS: 'microgreens', SPROUTS: 'sprouts',
+                YOGURT: 'yogurt', TEMPEH: 'tempeh', DOUGH: 'dough', SOURDOUGH: 'sourdough' };
 
             async function postForm(url, fields) {
                 const resp = await fetch(url, {
@@ -4317,7 +4324,7 @@
                 }
                 const fw = FIRMWARE_SPECIES[key];
                 if (!fw) {
-                    notify('Ten program jest na razie tylko podglądem. Urządzenie obsługuje: kura, indyk, gęś, przepiórka, perliczka, bażant.', 'warn');
+                    notify('Ten program jest na razie tylko podglądem. Urządzenie nie ma profilu tego programu (kaczki, gołębie i inne gatunki ptaków trzeba jeszcze dodać do pliku profili).', 'warn');
                     return;
                 }
                 if (!confirm('Zastosować do TACY ' + (tray + 1) + ':\n' + info.shortName + ', dzień ' + day + '?\n\nTo zmienia ustawienia urządzenia.')) return;
@@ -4968,7 +4975,8 @@
             }
 
             const EVENT_LABEL = {
-                boot: 'Start urządzenia', alarm_on: 'Alarm', alarm_off: 'Koniec alarmu', door_open: 'Drzwi otwarte', door_close: 'Drzwi zamknięte'
+                boot: 'Start urządzenia', alarm_on: 'Alarm', alarm_off: 'Koniec alarmu', door_open: 'Drzwi otwarte', door_close: 'Drzwi zamknięte',
+                rotation_warn: 'Obrót tacy', manual_on: 'Sterowanie ręczne', manual_off: 'Koniec sterowania ręcznego', upload: 'Wgrano plik', clock: 'Zegar'
             };
             const ALARM_CODE_TEXT = { sensor: 'Błąd czujnika', temp_high: 'Temperatura zbyt wysoka', temp_low: 'Temperatura zbyt niska', hum_high: 'Wilgotność zbyt wysoka', hum_low: 'Wilgotność zbyt niska', heater: 'Awaria grzałki' };
 
@@ -5151,6 +5159,11 @@
                             items.push({ key: 'boot', level: 'info', title: 'Urządzenie uruchomiło się ponownie', text: fmtDateTime(eventBrowserMs(last)) + ': ' + last.text + '. Dni tac liczą się z zegara, więc program biegnie dalej.', dismiss: String(last.unix) });
                         }
                     }
+                }
+                if (statusData.manual) items.push({ key: 'manual', level: 'warn', title: 'Sterowanie ręczne', text: 'Regulator jest wyłączony na czas testu, zostało ' + Math.ceil((statusData.manual_remaining_s || 0) / 60) + ' min. Wróć do automatu w Ustawieniach.' });
+                if (deviceEvents.loaded) {
+                    const rot = deviceEvents.events.filter(function (e) { return e.type === 'rotation_warn'; }).pop();
+                    if (rot && (deviceEvents.now_unix - rot.unix) < 3 * 3600) items.push({ key: 'rot' + rot.unix, level: 'warn', title: 'Taca mogła się nie obrócić', text: rot.text });
                 }
                 if (statusData.clock_ok !== false && statusData.now_unix) {
                     const diffMin = Math.round((statusData.now_unix - wallNowUnix()) / 60);
@@ -5338,6 +5351,7 @@
                         '<input type="number" step="0.1" min="0" max="100" placeholder="wzorzec [%]" id="calibHumRef"><span class="calib-new muted" id="calibHumNew">nowa poprawka: –</span>' +
                         '<button type="button" class="btn btn-primary" data-calib="hum">Zapisz</button></div>';
                 }
+                markRisky();
                 const hist = document.getElementById('calibHistory');
                 if (hist) {
                     const items = ((storeData.prefs && storeData.prefs.calibrations) || []).slice(-6).reverse();
@@ -6019,7 +6033,7 @@
                     cfgInput(cfg, 'system.target_temp', 'Nastawa stała [°C]', { min: 30, max: 42, step: 0.1, hint: 'Używana, gdy nastawy z programu są wyłączone.' }) +
                     cfgInput(cfg, 'system.temp_hysteresis', 'Histereza [°C]', { min: 0.1, max: 2, step: 0.05, hint: 'Dotyczy regulatora prostego.' }) +
                     cfgInput(cfg, 'system.alarm_min_temp', 'Alarm: temperatura poniżej [°C]', { min: 30, max: 40, step: 0.1 }) +
-                    cfgInput(cfg, 'system.alarm_max_temp', 'Alarm i odcięcie grzałki powyżej [°C]', { min: 38, max: 41, step: 0.1, hint: 'Powyżej tej wartości grzałka jest wyłączana. Dopuszczalne do 41 °C.' }),
+                    cfgInput(cfg, 'system.alarm_max_temp', 'Alarm i odcięcie grzałki powyżej [°C]', { min: 38, max: 41, step: 0.1, hint: 'Powyżej tej wartości grzałka jest wyłączana (do 41 °C). Przy nastawach z programu progi alarmów podążają za programem: nastawa +1,5 °C i −2 °C.' }),
                     'Kalibracja czujników jest w zakładce Kalibracja.');
 
                 const hum = deviceCard('Wilgotność i dyfuzory', 'hum',
@@ -6034,6 +6048,7 @@
                     const t = cfg.trays[i] || {};
                     return deviceCard('Taca ' + (i + 1) + ': obracanie', 'tray' + i,
                         cfgInput(cfg, 'trays.' + i + '.active', 'Taca aktywna', { type: 'checkbox' }) +
+                        cfgInput(cfg, 'trays.' + i + '.has_angle_sensor', 'Czujnik kąta MPU6050 na tacy (potwierdza obrót)', { type: 'checkbox' }) +
                         cfgInput(cfg, 'trays.' + i + '.rotations_per_day', 'Obrotów na dobę', { min: 0, max: 24, step: 1 }) +
                         cfgInput(cfg, 'trays.' + i + '.rotation_duration_ms', 'Czas jednego obrotu [s]', { min: 1, max: 120, step: 1, scale: 1000 }) +
                         cfgInput(cfg, 'trays.' + i + '.rotation_pwm_speed', 'Siła silnika (0–255)', { min: 20, max: 255, step: 1, hint: 'Zbyt mała nie ruszy tacy, zbyt duża szarpie jajami.' }),
@@ -6054,7 +6069,16 @@
                     '<div class="btn-group" style="margin-top:10px"><button type="button" class="btn btn-primary" data-devsave="dev">Zapisz</button><button type="button" class="btn" data-devact="reboot">Restart urządzenia</button><button type="button" class="btn danger" data-devact="factory">Przywróć ustawienia fabryczne</button></div>' +
                     '<div class="muted small" style="margin-top:8px">Restart nie zmienia dni inkubacji ani zapisanych partii. Ustawienia fabryczne czyszczą konfigurację (nie czyszczą partii ani dziennika).</div></div>';
 
-                box.innerHTML = temp + hum + trayCard(0) + trayCard(1) + startCard(0) + startCard(1) + dev;
+                const manualCard = '<div class="card"><div class="card-header"><span class="card-title">Sterowanie ręczne (diagnostyka)</span></div>' +
+                    '<div class="muted small" style="margin-bottom:8px">Wyłącza regulator na wybrany czas. Po jego upływie, po przekroczeniu górnego progu temperatury albo po kliknięciu „Automat” urządzenie wraca do regulacji.' + (statusData && statusData.manual ? ' <b>Tryb ręczny jest teraz aktywny.</b>' : '') + '</div>' +
+                    '<div class="set-grid">' + fld('Moc grzałki [%]', '<input type="range" id="manPct" min="0" max="100" value="30" oninput="document.getElementById(\'manPctLbl\').textContent=this.value+\'%\'"><b id="manPctLbl">30%</b>') +
+                    fld('Czas [min]', '<select id="manMin"><option value="5">5</option><option value="10" selected>10</option><option value="30">30</option><option value="60">60</option></select>') + '</div>' +
+                    '<div class="btn-group" style="margin-top:10px"><button type="button" class="btn btn-primary" data-devact="manheat">Ustaw moc grzałki</button><button type="button" class="btn" data-devact="mandif" data-on="1">Dyfuzor włącz</button><button type="button" class="btn" data-devact="mandif" data-on="0">Dyfuzor wyłącz</button><button type="button" class="btn danger" data-devact="manauto">Automat</button></div></div>';
+                const uploadCard = '<div class="card"><div class="card-header"><span class="card-title">Aktualizacja plików panelu</span></div>' +
+                    '<div class="muted small" style="margin-bottom:8px">Wgrywa plik na urządzenie bez flashowania: <code>index.html</code> (panel), <code>incubation_profiles.json</code> (programy) lub <code>config.json</code>. Wymaga hasła administratora (to samo co hasło sieci Wi-Fi). Po wgraniu panelu odśwież stronę.</div>' +
+                    '<div class="btn-group"><input type="file" id="lfsFile" accept=".html,.json"><button type="button" class="btn btn-primary" data-devact="upload">Wyślij na urządzenie</button></div></div>';
+                box.innerHTML = temp + hum + trayCard(0) + trayCard(1) + startCard(0) + startCard(1) + manualCard + dev + uploadCard;
+                markRisky();
             }
 
             function devValidate(id, vals) {
@@ -6119,6 +6143,21 @@
                         if (!confirm('Ustawić start inkubacji tacy ' + (tray + 1) + ' na ' + v.replace('T', ' ') + '?')) return;
                         await postForm('/api/tray/set-start', { tray: tray, date: v.slice(0, 10), time: v.slice(11, 16) });
                         notify('Ustawiono start inkubacji.', 'info');
+                    } else if (act === 'manheat') {
+                        const pct = parseInt(document.getElementById('manPct').value, 10), mins = parseInt(document.getElementById('manMin').value, 10);
+                        if (pct > 50 && !confirm('Grzałka ' + pct + '% przez ' + mins + ' min bez regulatora. Pilnuj temperatury. Kontynuować?')) return;
+                        await postForm('/api/heater/set', { ch: 'all', pct: pct, duration_s: mins * 60 });
+                        notify('Grzałka ' + pct + '% na ' + mins + ' min.', 'warn');
+                    } else if (act === 'mandif') {
+                        const wantOn = window.__devClicked && window.__devClicked.getAttribute('data-on') === '1';
+                        await postForm('/api/diffuser/set', { idx: 'all', on: wantOn ? 'true' : 'false', duration_s: parseInt(document.getElementById('manMin').value, 10) * 60 });
+                        notify('Dyfuzor ' + (wantOn ? 'włączony' : 'wyłączony') + ' ręcznie.', 'warn');
+                    } else if (act === 'manauto') {
+                        await postForm('/api/heater/set', { mode: 'auto' });
+                        await postForm('/api/diffuser/set', { mode: 'auto' });
+                        notify('Wrócono do regulacji automatycznej.', 'info');
+                    } else if (act === 'upload') {
+                        await devUploadFile();
                     } else if (act === 'reboot') {
                         if (!confirm('Zrestartować urządzenie? Wróci za ok. 20 sekund. Grzanie na ten czas się wyłączy.')) return;
                         await postForm('/api/reboot', {});
@@ -6134,6 +6173,24 @@
                 } catch (e) { notify('Nie udało się wykonać: ' + e.message, 'error'); }
             }
 
+            async function devUploadFile() {
+                const input = document.getElementById('lfsFile'), file = input && input.files && input.files[0];
+                if (!file) { notify('Wybierz plik.', 'warn'); return; }
+                if (['index.html', 'incubation_profiles.json', 'config.json'].indexOf(file.name) === -1) { notify('Dozwolone pliki: index.html, incubation_profiles.json, config.json.', 'warn'); return; }
+                if (!confirm('Zastąpić ' + file.name + ' w urządzeniu plikiem z tego telefonu (' + Math.round(file.size / 1024) + ' kB)?\n\nBłędny plik panelu może go uszkodzić. Zachowaj kopię poprzedniego.')) return;
+                const pwd = prompt('Hasło administratora (hasło sieci Wi-Fi urządzenia):');
+                if (pwd == null) return;
+                const fd = new FormData();
+                fd.append('file', file, file.name);
+                const r = await fetch('/api/lfs/upload', { method: 'POST', headers: { 'Authorization': 'Basic ' + btoa('admin:' + pwd) }, body: fd });
+                let body = null;
+                try { body = await r.json(); } catch (e) { /* brak treści */ }
+                if (r.status === 401) throw new Error('złe hasło');
+                if (!r.ok || (body && body.error)) throw new Error((body && body.error) || 'HTTP ' + r.status);
+                notify('Wgrano ' + file.name + (file.name === 'index.html' ? '. Odśwież stronę, aby zobaczyć nową wersję.' : '.'), 'info');
+                addLog('cmd', 'Wgrano plik ' + file.name);
+            }
+
             function initDeviceSettings() {
                 const box = document.getElementById('deviceSettings');
                 if (!box) return;
@@ -6141,7 +6198,7 @@
                     const s = ev.target.closest('[data-devsave]');
                     if (s) { devSave(s.getAttribute('data-devsave')); return; }
                     const a = ev.target.closest('[data-devact]');
-                    if (a) devAction(a.getAttribute('data-devact'), parseInt(a.getAttribute('data-tray'), 10));
+                    if (a) { window.__devClicked = a; devAction(a.getAttribute('data-devact'), parseInt(a.getAttribute('data-tray'), 10)); }
                 });
             }
 
