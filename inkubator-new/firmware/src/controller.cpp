@@ -56,10 +56,12 @@ float control_setpoint_temp() {
         const TrayState& st = tray_states[i];
         if (!st.active || !st.incubation_profile) continue;
         const float v = shell ? st.current_day_data.shell_temp : st.current_day_data.air_temp_target;
-        if (v > 30.0f && v < 42.0f) { sum += v; n++; }
+        if (v > 3.0f && v < 55.0f) { sum += v; n++; }
     }
     return n > 0 ? sum / n : fallback;
 }
+
+static bool humidity_off_by_program = false;
 
 // Zakres wilgotności: wartość idealna oraz granice dopuszczalne (z konfiguracji lub z profilu dnia).
 static void control_humidity_band(float& ideal, float& lo, float& hi) {
@@ -79,6 +81,36 @@ static void control_humidity_band(float& ideal, float& lo, float& hi) {
         }
     }
     if (n > 0) { ideal = si / n; lo = sl / n; hi = sh / n; }
+    // Program bez wilgotności (np. jogurt, zakwas): aktywne tace są, ale żadna nie ma nastawy RH, więc dyfuzory stoją.
+    int active = 0;
+    for (int i = 0; i < MAX_TRAYS; i++) if (tray_states[i].active && tray_states[i].incubation_profile) active++;
+    humidity_off_by_program = (active > 0 && n == 0);
+}
+
+// Efektywne progi alarmów. Przy nastawach z programu tac progi podążają za programem (nasiona 20 °C, jogurt 43 °C),
+// bo stałe progi z konfiguracji pasują tylko do jaj. Górny próg jest też progiem odcięcia grzałki.
+float control_humidity_ideal() {
+    float ideal, lo, hi;
+    control_humidity_band(ideal, lo, hi);
+    return humidity_off_by_program ? 0.0f : ideal;
+}
+float effective_alarm_max_temp() {
+    if (!configMgr.cfg.system.use_program_setpoint) return configMgr.cfg.system.alarm_max_temp;
+    return min(55.0f, control_setpoint_temp() + 1.5f);
+}
+float effective_alarm_min_temp() {
+    if (!configMgr.cfg.system.use_program_setpoint) return configMgr.cfg.system.alarm_min_temp;
+    return control_setpoint_temp() - 2.0f;
+}
+float effective_alarm_max_humidity() {
+    const float ideal = control_humidity_ideal();
+    if (!configMgr.cfg.system.use_program_setpoint || ideal <= 0.0f) return configMgr.cfg.system.alarm_max_humidity;
+    return min(100.0f, ideal + 12.0f);
+}
+float effective_alarm_min_humidity() {
+    const float ideal = control_humidity_ideal();
+    if (!configMgr.cfg.system.use_program_setpoint || ideal <= 0.0f) return configMgr.cfg.system.alarm_min_humidity;
+    return max(0.0f, ideal - 20.0f);
 }
 
 static void heaters_control_simple(const SensorData& data) {
@@ -475,7 +507,7 @@ static void heaters_control_adaptive(const SensorData& data) {
     // Ograniczenia bezpieczeństwa
     if (temp_lower > target + 0.4f) pwm_target = 0.0f;
     if (temp_upper > target + 1.0f) pwm_target = 0.0f;
-    if (temp_lower >= configMgr.cfg.system.alarm_max_temp) pwm_target = 0.0f;
+    if (temp_lower >= effective_alarm_max_temp()) pwm_target = 0.0f;
 
     // Łagodny start po uruchomieniu
     if (data.elapsed_ms < HEATER_RAMP_MS) {
@@ -551,7 +583,7 @@ static void heaters_control_pi(const SensorData& data) {
         output = 0.0f;
         pi_integral *= 0.9f;             // po przegrzaniu szybko zmniejszamy całkę
     }
-    if (temp >= configMgr.cfg.system.alarm_max_temp) output = 0.0f;
+    if (temp >= effective_alarm_max_temp()) output = 0.0f;
 
     // Łagodny start po uruchomieniu urządzenia
     if (data.elapsed_ms < HEATER_RAMP_MS) {
@@ -601,6 +633,12 @@ static void diffusers_band_control(const SensorData& data) {
 
     float ideal, rh_min, rh_max;                             // idealna oraz granice dopuszczalne
     control_humidity_band(ideal, rh_min, rh_max);
+    if (humidity_off_by_program) {                           // program bez wilgotności: dyfuzory wyłączone
+        if (diffuser_on) { diffuser_on = false; diffuser_change_ms = millis(); diffuser_switch_count++; }
+        diffuser_active_idx = -1;
+        for (int i = 0; i < dc.count && i < MAX_DIFFUSERS; i++) if (dc.pins[i] >= 0) diffuser_write_pin(dc.pins[i], false);
+        return;
+    }
     const float hyst = max(0.5f, (rh_max - rh_min) / 2.0f);
     const unsigned long now = millis();
     const unsigned long min_on = max(1UL, (unsigned long)dc.on_time_sec) * 1000UL;

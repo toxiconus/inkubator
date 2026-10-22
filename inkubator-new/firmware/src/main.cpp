@@ -207,6 +207,105 @@ static unsigned long last_logged_unix() {
     return unix_time;
 }
 
+// ============================================================================
+//  CZUJNIK KĄTA TACY (MPU6050 na I2C, adres 0x69 lub 0x68). Własny prosty odczyt akcelerometru, bez biblioteki.
+//  DS3231 też używa 0x68, więc na tym adresie rozpoznajemy MPU po rejestrze WHO_AM_I (0x75).
+//  Po każdym obrocie sprawdzamy, czy taca się ruszyła: brak ruchu trafia do dziennika zdarzeń.
+// ============================================================================
+static uint8_t mpu_addr = 0;
+static float mpu_angle_deg = NAN, mpu_roll_deg = NAN, mpu_pitch_deg = NAN;
+static unsigned long mpu_read_ms = 0;
+
+static bool mpu_write_reg(uint8_t reg, uint8_t value) {
+    Wire.beginTransmission(mpu_addr);
+    Wire.write(reg); Wire.write(value);
+    return Wire.endTransmission() == 0;
+}
+
+static bool mpu_probe(uint8_t addr) {
+    Wire.beginTransmission(addr);
+    Wire.write(0x75);
+    if (Wire.endTransmission(false) != 0) return false;
+    if (Wire.requestFrom((int)addr, 1) != 1) return false;
+    const uint8_t who = Wire.read();
+    return who == 0x68 || who == 0x70 || who == 0x72 || who == 0x98;
+}
+
+static void mpu_init() {
+    mpu_addr = 0;
+    for (uint8_t addr : {(uint8_t)0x69, (uint8_t)0x68}) {
+        if (mpu_probe(addr)) { mpu_addr = addr; break; }
+    }
+    if (mpu_addr && !mpu_write_reg(0x6B, 0x00)) mpu_addr = 0;     // wyjście ze stanu uśpienia
+    Serial.printf("[MPU] %s\n", mpu_addr ? "wykryto czujnik kąta" : "brak czujnika kąta");
+}
+
+static bool mpu_refresh(bool force = false) {
+    if (!mpu_addr) return false;
+    if (!force && mpu_read_ms && millis() - mpu_read_ms < 200) return !isnan(mpu_angle_deg);
+    Wire.beginTransmission(mpu_addr);
+    Wire.write(0x3B);
+    if (Wire.endTransmission(false) != 0) return false;
+    if (Wire.requestFrom((int)mpu_addr, 6) != 6) return false;
+    int16_t raw[3];
+    for (int i = 0; i < 3; i++) { const int hi = Wire.read(), lo = Wire.read(); raw[i] = (int16_t)((hi << 8) | lo); }
+    const float ax = raw[0] / 16384.0f, ay = raw[1] / 16384.0f, az = raw[2] / 16384.0f;
+    mpu_angle_deg = atan2f(sqrtf(ax * ax + ay * ay), az) * 57.29578f;
+    mpu_roll_deg = atan2f(ay, az) * 57.29578f;
+    mpu_pitch_deg = atan2f(-ax, sqrtf(ay * ay + az * az)) * 57.29578f;
+    mpu_read_ms = millis();
+    return true;
+}
+
+// Dla tray_status_json: aktualny kąt (NAN, gdy brak czujnika lub odczytu)
+float angle_sensor_deg() { return mpu_refresh() ? mpu_angle_deg : NAN; }
+bool angle_sensor_present() { return mpu_addr != 0; }
+
+// Co 250 ms w trakcie obrotu zapamiętujemy największe wychylenie od pozycji startowej
+static void mpu_track_rotation() {
+    static bool was_rotating[MAX_TRAYS] = {};
+    static float start_roll[MAX_TRAYS] = {}, max_move[MAX_TRAYS] = {};
+    static unsigned long last = 0;
+    if (!mpu_addr || millis() - last < 250) return;
+    last = millis();
+    for (int i = 0; i < MAX_TRAYS; i++) {
+        if (!configMgr.cfg.trays[i].has_angle_sensor) { was_rotating[i] = false; continue; }
+        const bool rot = tray_states[i].currently_rotating || tray_states[i].manual_move_until_ms > millis();
+        if (rot && !was_rotating[i]) { if (mpu_refresh(true)) { start_roll[i] = mpu_roll_deg; max_move[i] = 0; } }
+        else if (rot && mpu_refresh(true)) max_move[i] = max(max_move[i], fabsf(mpu_roll_deg - start_roll[i]));
+        else if (!rot && was_rotating[i]) {
+            if (max_move[i] < 3.0f) event_log("rotation_warn", "Taca " + String(i + 1) + ": brak ruchu podczas obrotu (zmiana kąta " + String(max_move[i], 1) + "°)");
+        }
+        was_rotating[i] = rot;
+    }
+}
+
+// ============================================================================
+//  STEROWANIE RĘCZNE (diagnostyka): grzałka i dyfuzory na zadany czas, potem powrót do automatu.
+//  Strażnik wyłącza tryb ręczny po upływie czasu oraz przy przekroczeniu górnego progu temperatury.
+// ============================================================================
+static unsigned long manual_until_ms = 0;
+
+static bool manual_active() {
+    return heater_manual_mode[0] || heater_manual_mode[1] || diffuser_manual_mode;
+}
+
+static void manual_clear(const char* reason) {
+    if (!manual_active()) return;
+    heater_manual_mode[0] = heater_manual_mode[1] = false;
+    diffuser_manual_mode = false;
+    diffuser_manual_on[0] = diffuser_manual_on[1] = false;
+    manual_until_ms = 0;
+    event_log("manual_off", reason);
+}
+
+static void manual_guard() {
+    if (!manual_active()) return;
+    if ((long)(millis() - manual_until_ms) >= 0) { manual_clear("czas minął"); return; }
+    const float t = control_temperature_value(last_sensor);
+    if (!isnan(t) && t >= effective_alarm_max_temp()) manual_clear("przekroczony górny próg temperatury");
+}
+
 // Pola wspólne dla /api/status i WebSocket: zegar, alarm, drzwi i woda
 static void addExtraStatus(JsonDocument& doc) {
     const unsigned long now_unix = rtc_get_unix_time();
@@ -222,6 +321,14 @@ static void addExtraStatus(JsonDocument& doc) {
     doc["door_open"] = last_sensor.door_open;
     doc["water_enabled"] = configMgr.cfg.sensors.water_level_enabled;
     doc["water_low"] = last_sensor.water_level == 0;
+    doc["angle_sensor"] = angle_sensor_present();
+    doc["manual"] = manual_active();
+    doc["manual_remaining_s"] = manual_active() ? (manual_until_ms - millis()) / 1000UL : 0;
+    doc["alarm_temp_min"] = effective_alarm_min_temp();
+    doc["alarm_temp_max"] = effective_alarm_max_temp();
+    doc["alarm_hum_min"] = effective_alarm_min_humidity();
+    doc["alarm_hum_max"] = effective_alarm_max_humidity();
+    doc["humidity_control"] = control_humidity_ideal() > 0.0f;
     JsonArray offsets = doc["sensor_offsets"].to<JsonArray>();
     for (int i = 0; i < MAX_SENSORS; i++) offsets.add(configMgr.cfg.sensors.ds18b20_offsets[i]);
 }
@@ -273,6 +380,8 @@ void setup() {
         rtc_ok = false;
         Serial.println("[MAIN] RTC initialization failed");
     }
+
+    mpu_init();
 
     // Inicjalizacja sensorów
     Serial.println("[MAIN] Initializing sensors...");
@@ -369,6 +478,8 @@ void loop() {
     // Sterowanie co 2s
     if (now - lastControl > 2000) {
         lastControl = now;
+        manual_guard();
+        mpu_track_rotation();
         heaters_control(last_sensor);
         diffusers_control(last_sensor);
             tray_update_all(now);
@@ -1041,12 +1152,12 @@ void broadcastStatus() {
     bool alarmHumidityHigh = false;
     bool alarmHumidityLow = false;
     if (last_sensor.temp[0] > -50 && last_sensor.temp[0] < 80) {
-        alarmTempHigh = last_sensor.temp[0] > configMgr.cfg.system.alarm_max_temp;
-        alarmTempLow = last_sensor.temp[0] < configMgr.cfg.system.alarm_min_temp;
+        alarmTempHigh = last_sensor.temp[0] > effective_alarm_max_temp();
+        alarmTempLow = last_sensor.temp[0] < effective_alarm_min_temp();
     }
     if (last_sensor.humidity >= 0 && last_sensor.humidity <= 100) {
-        alarmHumidityHigh = last_sensor.humidity > configMgr.cfg.system.alarm_max_humidity;
-        alarmHumidityLow = last_sensor.humidity < configMgr.cfg.system.alarm_min_humidity;
+        alarmHumidityHigh = last_sensor.humidity > effective_alarm_max_humidity();
+        alarmHumidityLow = last_sensor.humidity < effective_alarm_min_humidity();
     }
     doc["alarm_temp_high"] = alarmTempHigh;
     doc["alarm_temp_low"] = alarmTempLow;
@@ -1109,6 +1220,69 @@ static bool parseLogLine(const String& line, unsigned long& ts, float& temp, flo
 
 static String jsonNumberOrNull(float v, int digits) {
     return (isnan(v) || isinf(v)) ? String("null") : String(v, digits);
+}
+
+// ============================================================================
+//  WGRYWANIE PLIKÓW PANELU PRZEZ WWW (bez flashowania): tylko trzy znane pliki, z hasłem administratora
+// ============================================================================
+static File lfs_up_file;
+static String lfs_up_name, lfs_up_error;
+static size_t lfs_up_size = 0;
+static bool lfs_up_done = false;
+
+static bool lfs_upload_allowed(const String& n) {
+    return n == "index.html" || n == "incubation_profiles.json" || n == "config.json";
+}
+
+static void handleLfsUploadData() {
+    HTTPUpload& up = webServer.upload();
+    if (up.status == UPLOAD_FILE_START) {
+        lfs_up_error = ""; lfs_up_done = false; lfs_up_size = 0;
+        String name = up.filename;
+        name = name.substring(name.lastIndexOf('/') + 1);
+        lfs_up_name = name;
+        if (!webServer.authenticate(OTA_USER, OTA_PASSWORD)) { lfs_up_error = "Brak autoryzacji"; return; }
+        if (!lfs_upload_allowed(name)) { lfs_up_error = "Niedozwolona nazwa pliku (dozwolone: index.html, incubation_profiles.json, config.json)"; return; }
+        lfs_up_file = LittleFS.open("/" + name + ".tmp", "w");
+        if (!lfs_up_file) lfs_up_error = "Nie można utworzyć pliku";
+    } else if (up.status == UPLOAD_FILE_WRITE) {
+        if (lfs_up_error.length() || !lfs_up_file) return;
+        lfs_up_size += up.currentSize;
+        if (lfs_up_size > 700000) { lfs_up_error = "Plik za duży (limit 700 kB)"; lfs_up_file.close(); LittleFS.remove("/" + lfs_up_name + ".tmp"); return; }
+        if (lfs_up_file.write(up.buf, up.currentSize) != up.currentSize) lfs_up_error = "Zapis niepełny (brak miejsca?)";
+    } else if (up.status == UPLOAD_FILE_END) {
+        if (lfs_up_file) lfs_up_file.close();
+        const String tmp = "/" + lfs_up_name + ".tmp", path = "/" + lfs_up_name;
+        if (lfs_up_error.length()) { LittleFS.remove(tmp); return; }
+        if (lfs_up_name.endsWith(".json")) {                       // sprawdzenie składni bez wczytywania całości do RAM
+            File f = LittleFS.open(tmp, "r");
+            JsonDocument filter, doc;
+            filter["version"] = true;
+            const DeserializationError err = deserializeJson(doc, f, DeserializationOption::Filter(filter));
+            f.close();
+            if (err) { lfs_up_error = "Nieprawidłowy JSON"; LittleFS.remove(tmp); return; }
+        }
+        LittleFS.remove(path);
+        LittleFS.rename(tmp, path);
+        lfs_up_done = true;
+        if (lfs_up_name == "incubation_profiles.json") loadAllProfiles("/incubation_profiles.json", g_incubation_profiles);
+        event_log("upload", lfs_up_name + " (" + String((unsigned)lfs_up_size) + " B)");
+    } else if (up.status == UPLOAD_FILE_ABORTED) {
+        if (lfs_up_file) lfs_up_file.close();
+        LittleFS.remove("/" + lfs_up_name + ".tmp");
+        lfs_up_error = "Przerwano wysyłanie";
+    }
+}
+
+static void sendLogCsv() {
+    if (LittleFS.exists("/inkubator_log.csv")) {
+        File f = LittleFS.open("/inkubator_log.csv", "r");
+        webServer.sendHeader("Content-Disposition", "attachment; filename=inkubator_log.csv");
+        webServer.streamFile(f, "text/csv");
+        f.close();
+    } else {
+        webServer.send(404, "text/plain", "Brak pliku logu");
+    }
 }
 
 void webserver_setup() {
@@ -1180,16 +1354,8 @@ void webserver_setup() {
         webServer.send(200, "application/json", output);
     });
 
-    webServer.on("/api/log", HTTP_GET, []() {
-        if (LittleFS.exists("/inkubator_log.csv")) {
-            File f = LittleFS.open("/inkubator_log.csv", "r");
-            webServer.sendHeader("Content-Disposition", "attachment; filename=inkubator_log.csv");
-            webServer.streamFile(f, "text/csv");
-            f.close();
-        } else {
-            webServer.send(404, "text/plain", "Brak pliku logu");
-        }
-    });
+    webServer.on("/api/log", HTTP_GET, sendLogCsv);
+    webServer.on("/api/history/csv", HTTP_GET, sendLogCsv);
 
     webServer.on("/api/profiles", HTTP_GET, []() {
         if (LittleFS.exists("/incubation_profiles.json")) {
@@ -1482,6 +1648,71 @@ void webserver_setup() {
         tray_update_days_from_rtc();
         event_log("clock", "ustawiono zegar " + date + " " + time);
         webServer.send(200, "application/json", "{\"ok\":true,\"now_unix\":" + String(rtc_get_unix_time()) + "}");
+    });
+
+    webServer.on("/api/lfs/upload", HTTP_POST, []() {
+        if (!webServer.authenticate(OTA_USER, OTA_PASSWORD)) { webServer.requestAuthentication(); return; }
+        if (lfs_up_done) webServer.send(200, "application/json", "{\"ok\":true,\"file\":\"" + lfs_up_name + "\",\"bytes\":" + String((unsigned)lfs_up_size) + "}");
+        else sendJsonError(400, lfs_up_error.length() ? lfs_up_error.c_str() : "Nie wysłano pliku");
+    }, handleLfsUploadData);
+
+    // Kąt tacy z czujnika MPU6050 (jeśli jest podłączony i włączony w konfiguracji tacy)
+    webServer.on("/api/tray/angle", HTTP_GET, []() {
+        const int tray = webServer.hasArg("tray") ? webServer.arg("tray").toInt() : 0;
+        if (tray < 0 || tray >= MAX_TRAYS) { sendJsonError(400, "Nieprawidłowy numer tacy"); return; }
+        JsonDocument doc;
+        doc["tray"] = tray;
+        doc["has_sensor"] = configMgr.cfg.trays[tray].has_angle_sensor;
+        doc["i2c_found"] = angle_sensor_present();
+        if (!angle_sensor_present()) doc["error"] = "MPU6050 niedostępny";
+        else if (mpu_refresh(true)) {
+            doc["angle_deg"] = mpu_angle_deg; doc["roll_deg"] = mpu_roll_deg; doc["pitch_deg"] = mpu_pitch_deg;
+            doc["age_ms"] = millis() - mpu_read_ms;
+        }
+        String out;
+        serializeJson(doc, out);
+        webServer.send(angle_sensor_present() ? 200 : 503, "application/json", out);
+    });
+
+    // Sterowanie ręczne. Wymaga czasu (domyślnie 10 min, maks. 60 min); po nim wraca automat.
+    webServer.on("/api/heater/set", HTTP_POST, []() {
+        if (webServer.hasArg("mode") && webServer.arg("mode") == "auto") {
+            heater_manual_mode[0] = heater_manual_mode[1] = false;
+            webServer.send(200, "application/json", "{\"ok\":true,\"mode\":\"auto\"}");
+            return;
+        }
+        if (!webServer.hasArg("pct")) { sendJsonError(400, "Brak parametru pct (0-100) lub mode=auto"); return; }
+        const float pct = webServer.arg("pct").toFloat();
+        if (pct < 0.0f || pct > 100.0f) { sendJsonError(400, "Moc poza zakresem 0-100"); return; }
+        const int duration_s = constrain(webServer.hasArg("duration_s") ? webServer.arg("duration_s").toInt() : 600, 10, 3600);
+        const String ch = webServer.hasArg("ch") ? webServer.arg("ch") : String("all");
+        for (int i = 0; i < 2; i++) {
+            if (ch == "all" || ch.toInt() == i) { heater_manual_mode[i] = true; heater_manual_pct[i] = pct; }
+        }
+        manual_until_ms = millis() + (unsigned long)duration_s * 1000UL;
+        event_log("manual_on", "grzałka " + String(pct, 0) + "% na " + String(duration_s / 60) + " min");
+        webServer.send(200, "application/json", "{\"ok\":true,\"pct\":" + String(pct, 0) + ",\"duration_s\":" + String(duration_s) + "}");
+    });
+
+    webServer.on("/api/diffuser/set", HTTP_POST, []() {
+        if (webServer.hasArg("mode") && webServer.arg("mode") == "auto") {
+            diffuser_manual_mode = false;
+            diffuser_manual_on[0] = diffuser_manual_on[1] = false;
+            webServer.send(200, "application/json", "{\"ok\":true,\"mode\":\"auto\"}");
+            return;
+        }
+        if (!webServer.hasArg("on")) { sendJsonError(400, "Brak parametru on (true/false) lub mode=auto"); return; }
+        const bool on = webServer.arg("on") == "true" || webServer.arg("on") == "1";
+        const int duration_s = constrain(webServer.hasArg("duration_s") ? webServer.arg("duration_s").toInt() : 600, 10, 3600);
+        const String idx = webServer.hasArg("idx") ? webServer.arg("idx") : String("all");
+        if (!diffuser_manual_mode) { diffuser_manual_on[0] = diffuser_manual_on[1] = false; }
+        diffuser_manual_mode = true;
+        for (int i = 0; i < 2; i++) {
+            if (idx == "all" || idx.toInt() == i) diffuser_manual_on[i] = on;
+        }
+        manual_until_ms = millis() + (unsigned long)duration_s * 1000UL;
+        event_log("manual_on", String("dyfuzor ") + (on ? "włączony" : "wyłączony") + " na " + String(duration_s / 60) + " min");
+        webServer.send(200, "application/json", "{\"ok\":true,\"on\":" + String(on ? "true" : "false") + ",\"duration_s\":" + String(duration_s) + "}");
     });
 
     // Dziennik zdarzeń: restarty, alarmy, drzwi. Zwraca najnowsze `limit` wpisów (od najstarszego).
