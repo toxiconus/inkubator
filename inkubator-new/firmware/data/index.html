@@ -3604,6 +3604,61 @@
                 return value;
             }
 
+            // Ładne podziałki osi Y (okrągłe wartości zamiast czterech równo oddalonych liczb)
+            function niceTicks(lo, hi, maxTicks) {
+                const span = hi - lo, cands = [0.05, 0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20, 25, 50];
+                let step = cands.find(function (c) { return span / c <= maxTicks; }) || 50;
+                const out = [];
+                for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(+v.toFixed(6));
+                return { ticks: out, step: step };
+            }
+
+            // Podziałki czasu w okrągłych momentach (pełne godziny, północ) w czasie lokalnym
+            function drawTimeAxis(c, m, w, h, t0, t1, mapX) {
+                const span = t1 - t0;
+                if (span <= 0) return;
+                const steps = [5, 10, 15, 30].map(function (x) { return x * 60000; }).concat([1, 2, 3, 6, 12].map(function (x) { return x * 3600000; }), [1, 2].map(function (d) { return d * 86400000; }));
+                const target = Math.max(2, (w - m.left - m.right) / 78);
+                const step = steps.find(function (st) { return span / st <= target; }) || steps[steps.length - 1];
+                const d0 = new Date(t0); d0.setHours(0, 0, 0, 0);
+                c.font = '11px ' + CANVAS_FONT; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+                for (let t = d0.getTime(); t <= t1; t += step) {
+                    if (t < t0) continue;
+                    const x = mapX(t);
+                    if (x < m.left + 14 || x > w - m.right - 14) continue;
+                    c.strokeStyle = PAL.grid; c.lineWidth = 1;
+                    c.beginPath(); c.moveTo(x, m.top); c.lineTo(x, h - m.bottom); c.stroke();
+                    const d = new Date(t);
+                    const hh = pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+                    const label = step >= 86400000 ? d.toLocaleDateString('pl-PL', { weekday: 'short', day: 'numeric', month: 'numeric' })
+                        : (span > 26 * 3600000 ? d.toLocaleDateString('pl-PL', { weekday: 'short' }) + ' ' + hh : hh);
+                    c.fillStyle = (d.getHours() === 0 && d.getMinutes() === 0) ? PAL.ink : PAL.dim;
+                    c.fillText(label, x, h - 5);
+                }
+            }
+
+            // Noc (22:00-6:00) jako lekko przyciemnione tło, żeby widać było rytm doby
+            function drawNightBands(c, m, h, t0, t1, mapX) {
+                if (t1 - t0 > 8 * 86400000) return;
+                const d = new Date(t0); d.setHours(0, 0, 0, 0);
+                c.fillStyle = PAL.grid;
+                for (let day = d.getTime() - 86400000; day <= t1; day += 86400000) {
+                    const dd = new Date(day);
+                    const a = new Date(dd.getFullYear(), dd.getMonth(), dd.getDate(), 22).getTime(), b = new Date(dd.getFullYear(), dd.getMonth(), dd.getDate() + 1, 6).getTime();
+                    const x0 = Math.max(mapX(a), m.left), x1 = Math.min(mapX(b), mapX(t1));
+                    if (x1 > x0 && b > t0 && a < t1) c.fillRect(x0, m.top, x1 - x0, h - m.top - m.bottom);
+                }
+            }
+
+            // Odstęp, powyżej którego uznajemy, że brak danych (restart, utrata łączności), i linia się przerywa
+            function chartGapMs(points) {
+                if (points.length < 3) return Infinity;
+                const dts = [];
+                for (let i = 1; i < points.length; i++) dts.push(points[i].t - points[i - 1].t);
+                dts.sort(function (a, b) { return a - b; });
+                return Math.max(3 * dts[Math.floor(dts.length / 2)], 15 * 60000);
+            }
+
             function fmtAxisTime(ms, hours) {
                 const d = new Date(ms);
                 if (hours <= 24) return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
@@ -3642,31 +3697,25 @@
 
                 const m = { top: 10, bottom: 20, left: 40, right: 10 };
                 const plotW = w - m.left - m.right, plotH = h - m.top - m.bottom;
-                const t0 = data[0].t, t1 = data[data.length - 1].t;
+                const t0 = points[0].t, t1 = points[points.length - 1].t;
                 const mapX = function (t) { return m.left + (t1 === t0 ? 0 : (t - t0) / (t1 - t0)) * plotW; };
                 const mapY = function (v) { return m.top + plotH - ((v - lo) / (hi - lo)) * plotH; };
+                drawNightBands(ctx2, m, h, t0, t1, mapX);
 
                 // siatka i oś Y
                 ctx2.font = '11px ' + CANVAS_FONT;
                 ctx2.textBaseline = 'middle';
                 ctx2.textAlign = 'right';
-                for (let i = 0; i <= 3; i++) {
-                    const v = lo + (hi - lo) * i / 3, y = mapY(v);
+                const yt = niceTicks(lo, hi, 4);
+                yt.ticks.forEach(function (v) {
+                    const y = mapY(v);
                     ctx2.strokeStyle = PAL.grid;
                     ctx2.lineWidth = 1;
                     ctx2.beginPath(); ctx2.moveTo(m.left, y); ctx2.lineTo(w - m.right, y); ctx2.stroke();
                     ctx2.fillStyle = PAL.dim;
-                    ctx2.fillText(v.toFixed(opt.digits), m.left - 5, y);
-                }
-                // oś czasu
-                ctx2.textBaseline = 'alphabetic';
-                ctx2.textAlign = 'center';
-                const hours = (t1 - t0) / 3600000;
-                for (let i = 0; i <= 4; i++) {
-                    const t = t0 + (t1 - t0) * i / 4;
-                    ctx2.fillStyle = PAL.dim;
-                    ctx2.fillText(fmtAxisTime(t, hours), Math.min(w - 18, Math.max(m.left + 14, mapX(t))), h - 5);
-                }
+                    ctx2.fillText(v.toFixed(yt.step < 1 ? (yt.step < 0.1 ? 2 : 1) : 0), m.left - 5, y);
+                });
+                drawTimeAxis(ctx2, m, w, h, t0, t1, mapX);
 
                 // pasmo zakresu dopuszczalnego i wartość idealna
                 if (opt.min != null) {
@@ -3692,12 +3741,20 @@
                 const inRange = function (v) { return opt.min == null || (v >= opt.min && v <= opt.max); };
                 ctx2.lineWidth = 1.8;
                 ctx2.lineJoin = 'round';
-                let inCount = 0;
+                let inCount = 0, outMs = 0, longestMs = 0, runMs = 0;
+                const gapMs = chartGapMs(data);
                 for (let i = 1; i < data.length; i++) {
                     const a = data[i - 1], b = data[i];
+                    if (b.t - a.t > gapMs) {                       // przerwa w danych: linia się przerywa
+                        ctx2.fillStyle = PAL.faint; ctx2.globalAlpha = 0.18;
+                        ctx2.fillRect(mapX(a.t), m.top, mapX(b.t) - mapX(a.t), plotH);
+                        ctx2.globalAlpha = 1; runMs = 0;
+                        continue;
+                    }
                     const ok = inRange(pick(a)) && inRange(pick(b));
                     ctx2.strokeStyle = ok ? (opt.color || PAL.temp) : PAL.err;
                     ctx2.beginPath(); ctx2.moveTo(mapX(a.t), mapY(pick(a))); ctx2.lineTo(mapX(b.t), mapY(pick(b))); ctx2.stroke();
+                    if (!ok) { outMs += b.t - a.t; runMs += b.t - a.t; longestMs = Math.max(longestMs, runMs); } else runMs = 0;
                 }
                 data.forEach(function (p) { if (inRange(pick(p))) inCount++; });
 
@@ -3705,6 +3762,9 @@
                 const last = data[data.length - 1];
                 ctx2.fillStyle = inRange(pick(last)) ? PAL.ok : PAL.err;
                 ctx2.beginPath(); ctx2.arc(mapX(last.t), mapY(pick(last)), 3.5, 0, Math.PI * 2); ctx2.fill();
+                ctx2.font = '700 12px ' + CANVAS_FONT; ctx2.textAlign = 'left'; ctx2.textBaseline = 'top';
+                ctx2.fillStyle = opt.color || PAL.temp;
+                ctx2.fillText('teraz ' + pick(last).toFixed(opt.digits) + ' ' + opt.unit, m.left + 6, h - m.bottom - 17);
 
                 // krzyżyk z wartością (dotyk lub mysz)
                 if (hoverX != null && hoverX >= m.left && hoverX <= w - m.right) {
@@ -3733,7 +3793,7 @@
                 }
 
                 const avg = vals.reduce(function (a, b) { return a + b; }, 0) / vals.length;
-                return { min: Math.min.apply(null, vals), max: Math.max.apply(null, vals), avg: avg, inPct: Math.round(100 * inCount / data.length), n: data.length };
+                return { min: Math.min.apply(null, vals), max: Math.max.apply(null, vals), avg: avg, inPct: Math.round(100 * inCount / data.length), n: data.length, outMs: outMs, longestMs: longestMs };
             }
 
             // Moc grzałki (linia) i praca dyfuzorów (pasy na dole)
@@ -3756,11 +3816,13 @@
                     ctx2.fillText('Brak danych o mocy grzałki', w / 2, h / 2);
                     return null;
                 }
-                const m = { top: 10, bottom: 26, left: 40, right: 10 };
+                const m = { top: 10, bottom: 38, left: 40, right: 10 };
                 const plotW = w - m.left - m.right, plotH = h - m.top - m.bottom;
-                const t0 = data[0].t, t1 = data[data.length - 1].t;
+                const t0 = points[0].t, t1 = points[points.length - 1].t;
                 const mapX = function (t) { return m.left + (t1 === t0 ? 0 : (t - t0) / (t1 - t0)) * plotW; };
                 const mapY = function (v) { return m.top + plotH - (v / 100) * plotH; };
+                drawNightBands(ctx2, m, h, t0, t1, mapX);
+                drawTimeAxis(ctx2, m, w, h, t0, t1, mapX);
                 ctx2.font = '11px ' + CANVAS_FONT;
                 ctx2.textAlign = 'right';
                 ctx2.textBaseline = 'middle';
@@ -3771,7 +3833,7 @@
                     ctx2.fillText(v + '%', m.left - 5, mapY(v));
                 });
                 // dyfuzory: niebieskie pasy pod wykresem
-                const stripY = h - m.bottom + 6;
+                const stripY = h - m.bottom + 4;
                 ctx2.fillStyle = PAL.dif;
                 for (let i = 1; i < data.length; i++) {
                     if (data[i - 1].dif) ctx2.fillRect(mapX(data[i - 1].t), stripY, Math.max(1, mapX(data[i].t) - mapX(data[i - 1].t)), 8);
@@ -3784,8 +3846,12 @@
                 ctx2.strokeStyle = PAL.pow;
                 ctx2.lineWidth = 1.8;
                 ctx2.beginPath();
-                data.forEach(function (p, i) { if (i === 0) ctx2.moveTo(mapX(p.t), mapY(p.heater)); else ctx2.lineTo(mapX(p.t), mapY(p.heater)); });
+                const pGap = chartGapMs(data);
+                data.forEach(function (p, i) { if (i === 0 || p.t - data[i - 1].t > pGap) ctx2.moveTo(mapX(p.t), mapY(p.heater)); else ctx2.lineTo(mapX(p.t), mapY(p.heater)); });
                 ctx2.stroke();
+                const pl = data[data.length - 1];
+                ctx2.font = '700 12px ' + CANVAS_FONT; ctx2.textAlign = 'left'; ctx2.textBaseline = 'top'; ctx2.fillStyle = PAL.pow;
+                ctx2.fillText('teraz ' + pl.heater.toFixed(0) + '%' + (pl.dif ? ' · dyfuzor włączony' : ''), m.left + 6, h - m.bottom - 17);
                 if (hoverX != null && hoverX >= m.left && hoverX <= w - m.right) {
                     const tt = t0 + (hoverX - m.left) / plotW * (t1 - t0);
                     let best = data[0];
@@ -3826,11 +3892,11 @@
                     const onMove = function (ev) {
                         const r = canvas.getBoundingClientRect();
                         const x = (ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left;
-                        if (chartViews[id]) chartViews[id].draw(x);
+                        Object.keys(chartViews).forEach(function (k) { chartViews[k].draw(x); });   // wszystkie wykresy pokazują tę samą chwilę
                     };
                     canvas.addEventListener('pointermove', onMove);
                     canvas.addEventListener('pointerdown', onMove);
-                    canvas.addEventListener('pointerleave', function () { if (chartViews[id]) chartViews[id].draw(null); });
+                    canvas.addEventListener('pointerleave', function () { Object.keys(chartViews).forEach(function (k) { chartViews[k].draw(null); }); });
                     canvas.style.touchAction = 'pan-y';
                 }
             }
@@ -3838,7 +3904,7 @@
             function chartStatsText(s, unit, digits, hasRange) {
                 if (!s) return '';
                 return 'min ' + s.min.toFixed(digits) + ' · śr. ' + s.avg.toFixed(digits) + ' · maks. ' + s.max.toFixed(digits) + ' ' + unit +
-                    (hasRange ? ' · w zakresie ' + s.inPct + '%' : '');
+                    (hasRange ? ' · w zakresie ' + s.inPct + '%' + (s.outMs > 0 ? ' · poza zakresem łącznie ' + fmtSpan(s.outMs / 3600000) + ', najdłużej ' + fmtSpan(s.longestMs / 3600000) : '') : '');
             }
 
             async function renderCharts(force) {
