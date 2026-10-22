@@ -359,6 +359,12 @@ String tray_status_json(unsigned long long now_millis) {
         t["should_rotate"] = st.should_rotate;
         t["in_lockdown"] = st.in_lockdown;
         t["start_unix"] = configMgr.cfg.trays[i].start_unix;
+        t["has_last_rotation"] = st.has_last_rotation;
+        if (st.has_last_rotation) {
+            t["last_rotation_day"] = st.last_rotation_day;
+            t["last_rotation_hour"] = st.last_rotation_hour;
+            t["last_rotation_minute"] = st.last_rotation_minute;
+        }
         if (st.incubation_profile) {
             t["species_id"] = st.incubation_profile->id;
             t["species_name"] = st.incubation_profile->common_name;

@@ -187,6 +187,10 @@ String ConfigManager::to_json() {
     for (int i = 0; i < MAX_SENSORS; i++) {
         sensorLabels.add(cfg.sensors.ds18b20_labels[i]);
     }
+    JsonArray sensorOffsets = sensors["ds18b20_offsets"].to<JsonArray>();
+    for (int i = 0; i < MAX_SENSORS; i++) {
+        sensorOffsets.add(cfg.sensors.ds18b20_offsets[i]);
+    }
     sensors["dht11_enabled"] = cfg.sensors.dht11_enabled;
     sensors["dht11_pin"] = cfg.sensors.dht11_pin;
     sensors["water_level_enabled"] = cfg.sensors.water_level_enabled;
@@ -292,6 +296,11 @@ bool ConfigManager::from_json(const String& json) {
             const char* label = sensorLabels[i] | cfg.sensors.ds18b20_labels[i];
             strncpy(cfg.sensors.ds18b20_labels[i], label, sizeof(cfg.sensors.ds18b20_labels[i]) - 1);
             cfg.sensors.ds18b20_labels[i][sizeof(cfg.sensors.ds18b20_labels[i]) - 1] = '\0';
+        }
+        JsonArray sensorOffsets = sensors["ds18b20_offsets"].as<JsonArray>();
+        for (int i = 0; i < MAX_SENSORS && i < (int)sensorOffsets.size(); i++) {
+            const float off = sensorOffsets[i] | cfg.sensors.ds18b20_offsets[i];
+            cfg.sensors.ds18b20_offsets[i] = constrain(off, -5.0f, 5.0f);   // poprawka większa niż 5 °C to błąd, nie kalibracja
         }
         cfg.sensors.dht11_enabled = sensors["dht11_enabled"] | cfg.sensors.dht11_enabled;
         cfg.sensors.dht11_pin = sensors["dht11_pin"] | cfg.sensors.dht11_pin;

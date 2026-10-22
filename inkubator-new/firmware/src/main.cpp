@@ -162,6 +162,71 @@ bool rtc_has_lost_power() {
 }
 
 // ============================================================================
+//  DZIENNIK ZDARZEŃ (restarty, alarmy, drzwi) w LittleFS: unix,uptime_ms,typ,tekst
+// ============================================================================
+#define EVENTS_FILE "/events.csv"
+#define EVENTS_MAX_BYTES 32768
+
+void event_log(const char* type, const String& text) {
+    File f = LittleFS.open(EVENTS_FILE, "a");
+    if (!f) return;
+    String safe = text;
+    safe.replace(",", ";");
+    safe.replace("\n", " ");
+    f.printf("%lu,%lu,%s,%s\n", rtc_get_unix_time(), millis(), type, safe.c_str());
+    const size_t size = f.size();
+    f.close();
+    if (size > EVENTS_MAX_BYTES) {                      // zostaw nowszą połowę
+        File r = LittleFS.open(EVENTS_FILE, "r");
+        if (!r) return;
+        r.seek(size / 2);
+        r.readStringUntil('\n');
+        const String rest = r.readString();
+        r.close();
+        File w = LittleFS.open(EVENTS_FILE, "w");
+        if (w) { w.print(rest); w.close(); }
+    }
+}
+
+// Czas (unix) ostatniego wpisu w logu minutowym. Służy do oszacowania przerwy w zasilaniu po restarcie.
+static unsigned long last_logged_unix() {
+    File f = LittleFS.open("/inkubator_log.csv", "r");
+    if (!f) return 0;
+    const size_t size = f.size();
+    if (size > 200) { f.seek(size - 200); f.readStringUntil('\n'); }
+    unsigned long unix_time = 0;
+    while (f.available()) {
+        const String line = f.readStringUntil('\n');
+        int commas = 0, pos = -1;
+        for (int i = 0; i < (int)line.length(); i++) {
+            if (line[i] == ',' && ++commas == 7) { pos = i; break; }
+        }
+        if (pos >= 0) unix_time = strtoul(line.c_str() + pos + 1, nullptr, 10);
+    }
+    f.close();
+    return unix_time;
+}
+
+// Pola wspólne dla /api/status i WebSocket: zegar, alarm, drzwi i woda
+static void addExtraStatus(JsonDocument& doc) {
+    const unsigned long now_unix = rtc_get_unix_time();
+    doc["now_unix"] = now_unix;
+    doc["boot_unix"] = now_unix > millis() / 1000UL ? now_unix - millis() / 1000UL : 0;
+    doc["clock_ok"] = rtc_ok && !rtc.lostPower();
+    const bool alarm = alarm_code()[0] != '\0';
+    doc["alarm"] = alarm;
+    doc["alarm_code"] = alarm_code();
+    doc["alarm_msg"] = alarm_message();
+    doc["alarm_since_s"] = alarm ? (millis() - alarm_since_ms()) / 1000UL : 0;
+    doc["door_enabled"] = configMgr.cfg.sensors.door_sensor_enabled;
+    doc["door_open"] = last_sensor.door_open;
+    doc["water_enabled"] = configMgr.cfg.sensors.water_level_enabled;
+    doc["water_low"] = last_sensor.water_level == 0;
+    JsonArray offsets = doc["sensor_offsets"].to<JsonArray>();
+    for (int i = 0; i < MAX_SENSORS; i++) offsets.add(configMgr.cfg.sensors.ds18b20_offsets[i]);
+}
+
+// ============================================================================
 //  SETUP
 // ============================================================================
 void setup() {
@@ -221,6 +286,19 @@ void setup() {
     Serial.println("[MAIN] Updating tray days from RTC...");
     tray_update_days_from_rtc();
 
+    // Czujniki drzwi i poziomu wody: styk do masy (INPUT_PULLUP). Drzwi: HIGH = otwarte. Woda: LOW = jest woda.
+    if (configMgr.cfg.sensors.door_sensor_enabled && configMgr.cfg.sensors.door_sensor_pin >= 0) pinMode(configMgr.cfg.sensors.door_sensor_pin, INPUT_PULLUP);
+    if (configMgr.cfg.sensors.water_level_enabled && configMgr.cfg.sensors.water_level_pin >= 0) pinMode(configMgr.cfg.sensors.water_level_pin, INPUT_PULLUP);
+
+    // Wpis o starcie z oszacowaną przerwą w zasilaniu (dni tacy liczą się z zegara RTC, więc program biegnie dalej)
+    {
+        const unsigned long last_unix = last_logged_unix();
+        const unsigned long now_unix = rtc_get_unix_time();
+        String text = rtc_has_lost_power() ? "RTC utracił zasilanie, sprawdź czas; " : "";
+        if (last_unix > 0 && now_unix > last_unix) text += "przerwa ok. " + String((now_unix - last_unix) / 60) + " min";
+        event_log("boot", text.length() ? text : String("start"));
+    }
+
     // Wi-Fi AP
     WiFi.mode(WIFI_AP);
     WiFi.softAPConfig(WIFI_AP_IP, WIFI_AP_IP, WIFI_AP_NETMASK);
@@ -272,6 +350,14 @@ void loop() {
         sensors_read(last_sensor);
         check_alarms(last_sensor);
         handle_learning_record(last_sensor);   // próbka do uczenia przy każdym nowym odczycie
+
+        // Otwarcie i zamknięcie drzwi trafia do dziennika zdarzeń (znaczniki na wykresach)
+        static bool door_known = false, door_prev = false;
+        if (configMgr.cfg.sensors.door_sensor_enabled) {
+            if (door_known && last_sensor.door_open != door_prev) event_log(last_sensor.door_open ? "door_open" : "door_close", "");
+            door_prev = last_sensor.door_open;
+            door_known = true;
+        }
 
         // CSV log co minutę
         if (now - lastCsvWrite > CSV_LOG_INTERVAL_MS) {
@@ -349,7 +435,7 @@ void sensors_read(SensorData& data) {
         if (t == DEVICE_DISCONNECTED_C || t < -50 || t > 125) {
             data.temp[i] = -99.0f;
         } else {
-            data.temp[i] = t + configMgr.cfg.system.temp_calibration;
+            data.temp[i] = t + configMgr.cfg.system.temp_calibration + sc.ds18b20_offsets[i];
         }
     }
     for (int i = sc.ds18b20_count; i < MAX_SENSORS; i++) {
@@ -372,6 +458,8 @@ void sensors_read(SensorData& data) {
     data.elapsed_ms = millis();
     data.water_level = -1;
     data.door_open = false;
+    if (sc.water_level_enabled && sc.water_level_pin >= 0) data.water_level = digitalRead(sc.water_level_pin) == LOW ? 1 : 0;
+    if (sc.door_sensor_enabled && sc.door_sensor_pin >= 0) data.door_open = digitalRead(sc.door_sensor_pin) == HIGH;
     data.heater_pwm_pct = (int)heater_pwm_pct;
     data.heater_pwm_raw = (int)round(constrain(heater_pwm_pct, 0, 100) * 10.23f);
     data.diffuser_on = diffuser_on;
@@ -389,18 +477,19 @@ void csvWriteLog(const SensorData& data) {
     if (!f) return;
 
     if (!exists) {
-        f.println("timestamp_ms,temp_chamber,temp_aquarium,humidity,heater_pct,heater_raw,diffuser_on");
+        f.println("timestamp_ms,temp_chamber,temp_aquarium,humidity,heater_pct,heater_raw,diffuser_on,unix");
     }
 
-    char buf[128];
-    snprintf(buf, sizeof(buf), "%llu,%.2f,%.2f,%.2f,%d,%d,%d\n",
+    char buf[144];
+    snprintf(buf, sizeof(buf), "%llu,%.2f,%.2f,%.2f,%d,%d,%d,%lu\n",
         millis(),
         data.temp[0],
         data.temp[1],
         data.humidity,
         data.heater_pwm_pct,
         data.heater_pwm_raw,
-        data.diffuser_on ? 1 : 0);
+        data.diffuser_on ? 1 : 0,
+        rtc_get_unix_time());
     f.print(buf);
     f.close();
 
@@ -945,6 +1034,7 @@ void broadcastStatus() {
     doc["diffuser_0_on"] = diffuser_on && (diffuser_active_idx < 0 || diffuser_active_idx == 0);
     doc["diffuser_1_on"] = diffuser_on && configMgr.cfg.diffusers.count > 1 && (diffuser_active_idx < 0 || diffuser_active_idx == 1);
     doc["esp_internal_temp"] = temperatureRead();
+    addExtraStatus(doc);
 
     bool alarmTempHigh = false;
     bool alarmTempLow = false;
@@ -1043,6 +1133,7 @@ void webserver_setup() {
         doc["diffuser_1_on"] = diffuser_on && configMgr.cfg.diffusers.count > 1 && (diffuser_active_idx < 0 || diffuser_active_idx == 1);
         doc["esp_internal_temp"] = temperatureRead();
         doc["uptime_ms"] = millis();
+        addExtraStatus(doc);
         String json;
         serializeJson(doc, json);
         webServer.send(200, "application/json", json);
@@ -1375,6 +1466,77 @@ void webserver_setup() {
                "],\"hum\":[" + hum_s + "],\"heater\":[" + heater_s + "],\"dif\":[" + dif_s + "]}";
         webServer.sendHeader("Cache-Control", "no-store");
         webServer.send(200, "application/json", out);
+    });
+
+    // Dziennik zdarzeń: restarty, alarmy, drzwi. Zwraca najnowsze `limit` wpisów (od najstarszego).
+    webServer.on("/api/events", HTTP_GET, []() {
+        const int limit = constrain(webServer.hasArg("limit") ? webServer.arg("limit").toInt() : 100, 1, 300);
+        JsonDocument doc;
+        doc["now_ms"] = millis();
+        doc["now_unix"] = rtc_get_unix_time();
+        JsonArray arr = doc["events"].to<JsonArray>();
+        if (LittleFS.exists(EVENTS_FILE)) {
+            File f = LittleFS.open(EVENTS_FILE, "r");
+            std::vector<String> lines;
+            while (f.available()) {
+                String line = f.readStringUntil('\n');
+                line.trim();
+                if (line.length() > 5) lines.push_back(line);
+            }
+            f.close();
+            const int from = (int)lines.size() > limit ? (int)lines.size() - limit : 0;
+            for (int i = from; i < (int)lines.size(); i++) {
+                const String& l = lines[i];
+                const int c1 = l.indexOf(','), c2 = l.indexOf(',', c1 + 1), c3 = l.indexOf(',', c2 + 1);
+                if (c1 < 0 || c2 < 0 || c3 < 0) continue;
+                JsonObject o = arr.add<JsonObject>();
+                o["unix"] = (unsigned long)strtoul(l.substring(0, c1).c_str(), nullptr, 10);
+                o["ms"] = (unsigned long)strtoul(l.substring(c1 + 1, c2).c_str(), nullptr, 10);
+                o["type"] = l.substring(c2 + 1, c3);
+                o["text"] = l.substring(c3 + 1);
+            }
+        }
+        String out;
+        serializeJson(doc, out);
+        webServer.sendHeader("Cache-Control", "no-store");
+        webServer.send(200, "application/json", out);
+    });
+
+    // Dane panelu zapisane w urządzeniu (partie, dziennik, zadania, własne programy, ustawienia panelu).
+    // Panel zapisuje cały dokument JSON, urządzenie sprawdza tylko poprawność i rozmiar.
+    auto storeName = []() -> String {
+        const String n = webServer.hasArg("name") ? webServer.arg("name") : String("");
+        return (n == "batches" || n == "journal" || n == "tasks" || n == "programs" || n == "prefs") ? n : String("");
+    };
+    webServer.on("/api/store", HTTP_GET, [storeName]() {
+        const String name = storeName();
+        if (!name.length()) { sendJsonError(400, "Nieznana nazwa zbioru"); return; }
+        const String path = "/store_" + name + ".json";
+        webServer.sendHeader("Cache-Control", "no-store");
+        if (!LittleFS.exists(path)) { webServer.send(200, "application/json", "null"); return; }
+        File f = LittleFS.open(path, "r");
+        webServer.streamFile(f, "application/json");
+        f.close();
+    });
+    webServer.on("/api/store", HTTP_POST, [storeName]() {
+        const String name = storeName();
+        if (!name.length()) { sendJsonError(400, "Nieznana nazwa zbioru"); return; }
+        if (!webServer.hasArg("plain")) { sendJsonError(400, "Brak body"); return; }
+        const String body = webServer.arg("plain");
+        if (body.length() > 40000) { sendJsonError(413, "Zbiór za duży (limit 40 kB)"); return; }
+        {
+            JsonDocument check;
+            if (deserializeJson(check, body)) { sendJsonError(400, "Nieprawidłowy JSON"); return; }
+        }
+        const String path = "/store_" + name + ".json", tmp = path + ".tmp";
+        File f = LittleFS.open(tmp, "w");
+        if (!f) { sendJsonError(500, "Nie można zapisać"); return; }
+        const size_t written = f.print(body);
+        f.close();
+        if (written != body.length()) { LittleFS.remove(tmp); sendJsonError(500, "Zapis niepełny (brak miejsca?)"); return; }
+        LittleFS.remove(path);
+        LittleFS.rename(tmp, path);
+        webServer.send(200, "application/json", "{\"ok\":true,\"bytes\":" + String((unsigned)body.length()) + "}");
     });
 
     webServer.onNotFound([]() {

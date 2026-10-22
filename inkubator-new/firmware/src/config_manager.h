@@ -33,6 +33,7 @@ struct SensorConfig {
     int ds18b20_count = 1;
     int ds18b20_pins[MAX_SENSORS] = {6, -1, -1, -1};
     char ds18b20_labels[MAX_SENSORS][20] = {"Chamber", "", "", ""};
+    float ds18b20_offsets[MAX_SENSORS] = {0.0f, 0.0f, 0.0f, 0.0f};   // poprawka z kalibracji każdego czujnika [°C]
     bool dht11_enabled = true;
     int dht11_pin = 8;
     bool water_level_enabled = false;
